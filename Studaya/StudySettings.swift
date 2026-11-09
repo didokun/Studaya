@@ -1,0 +1,132 @@
+import SwiftUI
+import SwiftData
+import UserNotifications
+
+struct StudySettings: View {
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var db
+    @Query var profiles: [AcademicProfile]
+    @AppStorage("studentName") var name = ""
+    @AppStorage("weeklyHours") var goal = 5
+    @AppStorage("focusMinutes") var focus = 25
+    @AppStorage("breakMinutes") var rest = 5
+    @State private var edit = false
+    @State private var confirm = false
+    @State private var error: String?
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    row("Profil étudiant","person.crop.circle") {
+                        Form { TextField("Prénom", text: $name); Stepper("Objectif · \(goal) h par semaine", value: $goal, in: 1...60) }
+                    }
+                    row("Études et calendrier","graduationcap") {
+                        Form {
+                            if let p = profiles.first {
+                                LabeledContent("Formation", value: p.program)
+                                LabeledContent("Niveau", value: p.level)
+                                if !p.institution.isEmpty { LabeledContent("Établissement", value: p.institution) }
+                                LabeledContent("Durée", value: p.years == 1 ? "Un an" : "Deux ans")
+                                LabeledContent("Matières", value: p.courses.joined(separator: ", "))
+                            }
+                            Button("Revoir ma configuration") { edit = true }
+                        }
+                    }
+                    row("Rythme de révision","calendar") { RhythmSettings() }
+                    row("Concentration","timer") {
+                        Form {
+                            Stepper("Focus · \(focus) min", value: $focus, in: 5...90, step: 5)
+                            Stepper("Pause · \(rest) min", value: $rest, in: 1...30)
+                        }
+                    }
+                    row("Rappel quotidien","bell") { ReminderSettings() }
+                }
+                Section {
+                    row("Abonnement","star.circle") { PremiumOptions().padding(.horizontal) }
+                    row("Données et confidentialité","hand.raised") {
+                        Form {
+                            Text("Ton profil et tes révisions sont conservés sur cet appareil. Les achats sont gérés par Apple.")
+                            Link("Conditions d’utilisation Apple", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                            Button("Effacer les données de Studaya", role: .destructive) { confirm = true }
+                        }
+                    }
+                }
+            }.navigationTitle("Réglages").toolbar { Button("Terminé") { dismiss() } }
+        }.sheet(isPresented: $edit) { if let p = profiles.first { AcademicSetup(profile: p) { edit = false } } }
+        .alert("Effacer le profil et toutes les révisions ?", isPresented: $confirm) {
+            Button("Annuler", role: .cancel) {}
+            Button("Effacer et recommencer", role: .destructive) { reset() }
+        } message: { Text("Cette action est définitive. Ton abonnement reste géré par Apple.") }
+        .alert("Erreur", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
+    }
+    private func row<V: View>(_ title: String, _ symbol: String, @ViewBuilder content: @escaping () -> V) -> some View {
+        NavigationLink { content().navigationTitle(title).navigationBarTitleDisplayMode(.inline) } label: {
+            HStack(spacing: 14) {
+                Image(systemName: symbol).frame(width: 38,height: 38).background(Color.mintBrand.opacity(0.16), in: RoundedRectangle(cornerRadius: 12))
+                Text(title).font(.headline)
+            }.foregroundStyle(Color.navy)
+        }
+    }
+    private func reset() {
+        do {
+            for p in try db.fetch(FetchDescriptor<AcademicProfile>()) { db.delete(p) }
+            for x in try db.fetch(FetchDescriptor<Subject>()) { db.delete(x) }
+            for x in try db.fetch(FetchDescriptor<Chapter>()) { db.delete(x) }
+            for x in try db.fetch(FetchDescriptor<Session>()) { db.delete(x) }
+            for x in try db.fetch(FetchDescriptor<Flashcard>()) { db.delete(x) }
+            for x in try db.fetch(FetchDescriptor<FocusLog>()) { db.delete(x) }
+            try db.save()
+            for key in ["studentName","welcomed","weeklyHours","weekdays","startHour","endHour","sessionMinutes","focusMinutes","breakMinutes","focusSubject","timerEnd","timerRemaining","timerLength","timerRest","reminderHour","reminderEnabled"] { StudyPreferences.current.removeObject(forKey: key) }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["studaya.daily"])
+            dismiss()
+        } catch { db.rollback(); self.error = error.localizedDescription }
+    }
+}
+
+struct RhythmSettings: View {
+    @Environment(\.modelContext) var db
+    @State var rhythm = Availability.saved
+    @State var status = ""
+    var body: some View {
+        Form {
+            RhythmFields(rhythm: $rhythm)
+            Button("Enregistrer et replanifier") {
+                do {
+                    let missing = try Scheduler.rebuild(db, availability: rhythm)
+                    rhythm.persist()
+                    status = missing == 0 ? "Planning mis à jour." : "\(missing) séances d’examen sans créneau."
+                } catch { db.rollback(); status = error.localizedDescription }
+            }.disabled(rhythm.weekdays.isEmpty)
+            if !status.isEmpty { Text(status) }
+        }
+    }
+}
+
+struct ReminderSettings: View {
+    @AppStorage("reminderEnabled") var enabled = false
+    @AppStorage("reminderHour") var hour = 18
+    @State var message = ""
+    @State var busy = false
+    var body: some View {
+        Form {
+            Stepper("Heure du rappel · \(hour) h", value: $hour, in: 0...23)
+            Button(enabled ? "Mettre à jour le rappel" : "Activer le rappel") {
+                busy = true
+                Task { @MainActor in
+                    defer { busy = false }
+                    let center = UNUserNotificationCenter.current()
+                    do {
+                        guard try await center.requestAuthorization(options: [.alert, .sound]) else { message = "Autorise les notifications de Studaya dans les réglages iOS."; return }
+                        let content = UNMutableNotificationContent()
+                        content.title = "Ton planning Studaya"; content.body = "Retrouve tes révisions du jour."; content.sound = .default
+                        let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: hour, minute: 0), repeats: true)
+                        try await center.add(UNNotificationRequest(identifier: "studaya.daily", content: content, trigger: trigger))
+                        enabled = true; message = "Rappel programmé."
+                    } catch { message = error.localizedDescription }
+                }
+            }.disabled(busy)
+            if enabled { Button("Désactiver le rappel") { UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["studaya.daily"]); enabled = false; message = "" } }
+            if !message.isEmpty { Text(message) }
+        }
+    }
+}
