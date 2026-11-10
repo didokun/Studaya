@@ -8,15 +8,15 @@ Ouvrir Studaya.xcodeproj dans Xcode 26, sélectionner le schéma Studaya et un s
 
 ## Premier planning
 
-1. Suivre les six étapes de configuration. Renseigner la formation, le niveau, les matières, la période et les disponibilités. Le prénom et l’établissement sont facultatifs.
-2. Vérifier le récapitulatif, puis choisir une formule Premium ou continuer gratuitement. Studaya inscrit une séance tournante par jour disponible pendant un ou deux ans.
+1. Suivre les six étapes de configuration. Renseigner la formation, le niveau, la période et les disponibilités. Une étape dédiée propose d’activer les notifications. Le prénom et l’établissement sont facultatifs.
+2. Vérifier le récapitulatif, puis choisir une formule Premium ou continuer gratuitement. La configuration initiale conserve uniquement le profil et le rythme ; les matières sont créées séparément.
 3. Consulter Today et parcourir les semestres dans Planner. Ajouter ses dates d’examen et chapitres dans Révision. Leur préparation prend la priorité sur les séances régulières.
 4. Utiliser Réglages pour revoir le parcours, modifier le rythme, programmer le rappel quotidien ou gérer l’abonnement. La reconfiguration conserve les séances terminées.
 5. Le premier lancement après mise à jour propose le nouveau parcours aux profils de la première version. Les matières et l’historique existants sont conservés.
 
 ## Planification
 
-Scheduling.swift reçoit le contexte SwiftData, les disponibilités, l’heure de référence et le calendrier. Le premier passage réserve les créneaux entiers avant le jour de l’examen. Il traite les échéances les plus proches en premier et équilibre les chapitres de même priorité. Un chapitre fragile bénéficie d’un rappel supplémentaire. Le second passage espace les répétitions dans les créneaux libres en remontant depuis la date d’examen.
+Scheduling.swift reçoit le contexte SwiftData, les disponibilités, l’heure de référence et le calendrier. Le premier passage réserve les créneaux entiers avant le jour de l’échéance (examen, contrôle, présentation ou rendu). Il traite les échéances les plus proches en premier et équilibre les chapitres de même priorité. À échéance égale, les cours et TD fragiles passent en priorité. Un chapitre fragile bénéficie d’un rappel supplémentaire. Le second passage espace les répétitions dans les créneaux libres en remontant depuis la date d’examen.
 
 Les modifications des chapitres, examens ou disponibilités déclenchent un recalcul. Les séances terminées gardent leur identité et réservent leur créneau. Les séances manquées sont recalculées au retour dans l’application. Le bouton de replanification indique combien de séances restent sans créneau.
 
@@ -31,3 +31,67 @@ Pour activer la synchronisation, provisionner un conteneur iCloud, activer les c
 Le schéma partagé Studaya charge Studaya.storekit à l’exécution depuis Xcode. Trois produits locaux reprennent la structure de Tidiva, mensuel, annuel et achat à vie. Les formules récurrentes ont une offre introductive de sept jours pour les comptes éligibles. Premium déverrouille le bilan Focus sur trente jours, le détail par matière et l’export CSV. Les prix proviennent de StoreKit.
 
 PremiumOptions charge les produits, vérifie les transactions, traite les mises à jour, restaure les achats et ouvre la gestion Apple des abonnements. MembershipTests vérifie le catalogue et l’activation par achat annuel dans la boutique de test. Pour distribuer ces offres, configurer dans App Store Connect les identifiants studaya.premium.monthly, studaya.premium.yearly et studaya.premium.lifetime, le groupe, les tarifs et les essais de production.
+
+## Organisation étudiante
+
+Le créateur « Parcours de révision », accessible depuis Today et Révision, accepte plusieurs matières et les répartit par année et semestre ou par matière. Chaque matière possède son mode et sa date prévue d’examen. Les révisions régulières respectent l’année et le semestre affectés ; les préparations ne commencent pas avant cette période.
+
+Chaque matière contient des cours et TD. Les cours suivent les séances réalisées ; les TD suivent le nombre d’exercices terminés. Une fois tous les exercices faits, le coach recommande un exercice de synthèse de bout en bout sans correction. Sa validation permet de classer le TD dans une section séparée, sans supprimer les notes, flashcards et séances. Les unités terminées sortent de la planification.
+
+Les échéances supplémentaires (contrôle, examen, présentation, rendu) ont une date avec heure, un objectif de préparation et un rappel configurable de 0 à 30 jours avant. Leurs rappels sont affichés dans l’application ; les notifications iOS d’échéance sont activables dans Réglages → Rappels et notifications. Elles sont programmées localement et peuvent être reçues lorsque l’app est fermée, selon les autorisations et réglages de concentration iOS. L’accueil affiche les échéances, les retards, le compte à rebours du prochain examen et la progression du travail suivi. Ce pourcentage mesure l’avancement déclaré, pas une garantie de maîtrise ou de note.
+
+Le calendrier mensuel et hebdomadaire affiche des points sur les jours contenant un rappel ou une échéance, y compris les rappels d’examen J−7/J−1 et les rappels espacés. Le planning prépare les échéances proches avant les suivantes, signale les séances sans place et conserve l’historique des séances effectuées.
+
+## Emploi du temps et reports
+
+Dans Planner ou Réglages → Emploi du temps et indisponibilités, ajouter une période ponctuelle (vacances comprises) ou une occupation hebdomadaire avec date de fin. Les séances automatiques, leur espacement et les révisions régulières évitent ces périodes. Les séances déjà réalisées sont conservées. Une occupation qui chevauche une séance reportée demande de déplacer cette séance au préalable.
+
+Un appui long sur une séance à faire propose de la travailler avec Focus ou de la reporter. Le report vérifie les autres séances, les indisponibilités et l’échéance liée. La séance garde son identité et son créneau lors des recalculs, et compte dans le travail restant.
+
+## Focus et entretien des acquis
+
+Démarrer Focus depuis un cours/TD ou depuis une séance conserve le lien avec ce travail. La fin d’un cycle enregistre une seule fois le temps étudié, valide la séance liée ou crée une séance réalisée pour le cours. Le bilan demande explicitement le nombre d’exercices réellement terminés dans un TD. Fermer le bilan conserve le temps de travail, sans inventer d’exercices terminés. Les réglages du minuteur et sa cible survivent à la suspension de l’app.
+
+Valider un cours ou un TD crée trois rappels à J+2, J+7 et J+21 à 18 h, dans une section indépendante. Ils apparaissent sur l’accueil à l’approche de leur date, dans le calendrier et dans les archives. Ils peuvent être validés directement ou travaillés avec Focus. Le cours/TD reste terminé. Le remettre en cours annule ses rappels futurs non effectués ; les rappels déjà faits restent dans l’historique.
+
+## Notifications
+
+Réglages → Rappels et notifications permet d’activer le rappel quotidien et les notifications d’échéance séparément. Les examens d’une matière reçoivent des rappels J−7, J−1 et le jour même à 9 h. Les contrôles, présentations et rendus utilisent la date de rappel choisie et leur échéance exacte. Les rappels espacés suivent leur date à 18 h. Les modifications et validations actualisent les notifications ; supprimer un travail annule ses notifications futures. Aucune autorisation n’est demandée avant une activation explicite.
+
+L’app garde au maximum 60 notifications locales en attente, rappel quotidien compris. Si le parcours dépasse cette capacité, les plus proches sont programmées et le statut dans les réglages l’indique. Les suivantes sont rechargées à l’ouverture de l’app. Les autorisations, le mode Concentration et la livraison effective doivent aussi être vérifiés sur appareil réel.
+
+## Archives, suppression et sauvegarde
+
+La bibliothèque permet de rechercher une matière et d’ouvrir les archives des cours/TD et échéances terminés. Les archives disposent de leur propre recherche et affichent les rappels futurs ainsi que leur historique. Glisser une matière ou un cours/TD pour le supprimer ; une confirmation détaille les données liées supprimées. Une échéance se supprime dans son écran de modification. Le temps Focus historique est conservé en retirant les liens vers les travaux supprimés.
+
+Réglages → Sauvegarde et restauration exporte un fichier JSON versionné dans Fichiers, iCloud Drive ou une autre destination choisie. Il comprend le profil, les matières, les cours/TD et notes, les cartes, les échéances, les séances et reports, les journaux Focus, les indisponibilités, les rappels espacés et les préférences. Ce fichier n’est ni une synchronisation automatique ni une sauvegarde des droits Premium, gérés par Apple.
+
+La restauration valide le format, la version, les identifiants, les liens et les valeurs avant de proposer une confirmation de remplacement. Elle remplace les données locales en une transaction, puis rétablit les préférences. Une sauvegarde invalide est refusée sans remplacement. Les fichiers sont limités à 20 Mo et 50 000 enregistrements. Le minuteur en cours est réinitialisé ; les notifications sont reprogrammées selon les autorisations de l’appareil destinataire. Exporter le parcours actuel avant de le remplacer si on souhaite le conserver.
+
+## Créateur « Parcours de révision »
+
+Les matières et TD sont séparés du formulaire initial. Depuis Today ou Révision, choisir **Créer mon Parcours de révision**. Saisir les matières, puis renseigner pour chacune : les cours/TD avec leur date de début, les présentations éventuelles, les contrôles éventuels, puis la date de l’examen final si elle est connue. Un récapitulatif précède la création ; les brouillons ne sont pas enregistrés avant validation.
+
+Une timeline de génération à six étapes reliées reste visible au moins 15 secondes avant la confirmation. Elle affiche les matières, cours/TD et échéances du parcours, anime l’étape active, coche les étapes terminées et défile automatiquement. Elle respecte Réduire les animations et laisse ensuite ouvrir Planner. L’app signale les séances qui n’ont pas trouvé de créneau. Une matière déjà présente sous le même nom, année et semestre est réutilisée, avec ses notes et son historique conservés ; les nouveaux cours et échéances y sont ajoutés.
+
+Les dates de début sont conservées dans la sauvegarde complète. Le planning respecte à la fois le semestre et le début de chaque cours/TD. Les cours sans échéance connue ont un horizon de planification de 90 jours à partir de leur disponibilité. Dès qu’une matière contient des cours/TD suivis, ces séances remplacent la rotation générique de la matière.
+
+L’étape Notifications du profil propose explicitement **Activer les notifications**, qui ouvre la demande iOS si l’autorisation n’a pas encore été décidée. **Plus tard** permet de continuer. Pour les profils existants qui n’ont jamais vu cette invitation, elle apparaît dans Today. Après un refus iOS, le lien vers les réglages permet de modifier l’autorisation ; iOS ne réaffiche pas sa demande système à chaque lancement.
+
+Le choix d’organisation du profil pilote tous les écrans : « Par semestre » affiche et utilise S1/S2 ; « Par matière » (cours/TD) masque le semestre dans le créateur et l’éditeur, regroupe les matières par année et propose une navigation annuelle dans Planner. Le moteur ignore alors les anciennes valeurs de semestre, sans effacer les données existantes.
+
+## Import photo du planning — Premium
+
+Dans une matière, **Importer un planning en photo** ouvre une vérification de l’abonnement. La version gratuite et le statut d’abonnement encore inconnu ne donnent pas accès à l’import ; l’écran Premium permet l’achat ou la restauration. L’autorisation est également contrôlée avant l’analyse et après une nouvelle vérification StoreKit au moment de l’enregistrement. Les données importées restent lisibles après la fin d’un abonnement, comme les autres cours et échéances de l’étudiant.
+
+Les abonnés choisissent une photo avec le sélecteur système ou utilisent l’appareil photo après autorisation iOS. Vision lit le texte localement, en conservant les positions pour aider à comprendre les tableaux. Sur iOS 26 et les iPhone où le modèle Apple Intelligence est disponible, Foundation Models propose jusqu’à 30 éléments structurés pour la matière choisie. Sur les autres appareils, ou en cas d’échec de l’IA, le texte reste disponible et l’étudiant prépare les éléments manuellement. Aucun service d’IA distant ni clé API n’est utilisé.
+
+La prévisualisation permet de corriger le titre, le type (cours, TD, présentation, contrôle ou examen final), la date de début ou la date et l’heure de l’échéance, et les objectifs de préparation. Chaque élément sélectionné doit recevoir une confirmation explicite de vérification. Les dates incomplètes ou ambiguës restent à renseigner ; aucun millésime n’est déduit d’un simple jour de semaine. Une photo longue peut être partiellement analysée : le texte intégral reste consultable pour compléter les éléments manquants.
+
+L’import limite les photos à 30 Mo et les brouillons à 50 éléments. Les doublons, les dates manquantes, les examens incohérents avec les dates de début et le remplacement non confirmé d’un examen existant sont refusés avant écriture. L’ajout et la replanification sont sauvegardés ensemble. La photo est conservée en mémoire pendant l’import, sans être ajoutée aux sauvegardes du parcours ; seul l’extrait textuel justificatif est ajouté aux notes des cours/TD importés.
+
+Validation : tests OCR sur une image générée, refus de données image invalides, dates impossibles ou sans année, vérification manuelle obligatoire, doublons et contrôle Premium gratuit/inconnu. Le test d’import après achat utilise un achat StoreKit simulé. Sur le runtime iOS Simulator 26.5 installé ici, les tests d’achat existants et ce test échouent dans le service StoreKit (`SKInternalErrorDomain Code=3`, `notEntitled`) avant la mutation. Le parcours d’achat/import Premium, l’appareil photo et l’inférence Apple Intelligence doivent être confirmés sur une destination compatible avec StoreKit Test fonctionnel ou en TestFlight. Aucun déverrouillage de contournement n’a été ajouté pour les tests.
+
+Toutes les entrées Premium restent visibles et cliquables en version gratuite : import photo dans une matière, bilan Focus sur 30 jours, temps par matière et export CSV dans Stats. Un badge Premium les identifie. Le clic vérifie l’abonnement puis affiche soit la fonctionnalité, soit la page d’abonnement avec achat et restauration. Après activation de Premium, le contenu demandé s’affiche dans le même écran. Les fonctionnalités gratuites restent accessibles comme auparavant.
+
+L’import photo est aussi disponible directement dans le **Parcours de révision**, sur la carte de chaque matière et à l’étape **Cours et TD**. Le bouton reste visible en gratuit et ouvre alors l’abonnement. Pour Premium, renseigner le nom de la matière avant l’analyse permet de filtrer le planning. Les éléments vérifiés remplissent le brouillon du parcours, y compris les présentations, contrôles et l’examen final. Ils restent modifiables aux étapes suivantes ; aucun modèle persistant n’est créé avant **Créer mon planning**. Les cours/TD déjà saisis sont conservés et les doublons sont refusés.

@@ -13,27 +13,20 @@ struct AcademicSetup: View {
     @State private var school = ""
     @State private var start = Date()
     @State private var years = 1
-    @State private var courseText = ""
+    @State private var organization = "Par semestre"
+    @State private var examMode = "Par semestre"
     @State private var rhythm = Availability.saved
     @State private var step = 0
     @State private var error: String?
     @State private var loaded = false
     @FocusState private var typing: Bool
-    private let titles = ["Ton année commence ici.", "Qu’étudies-tu ?", "Sur quelle période ?", "Quelles matières réviser ?", "Quand es-tu disponible ?", "Ton parcours de révision"]
-    private let symbols = ["book.pages","graduationcap","calendar","books.vertical","clock","checkmark.seal"]
-    private var courses: [String] {
-        var seen = Set<String>()
-        return courseText.components(separatedBy: CharacterSet(charactersIn: ",\n")).compactMap {
-            let word = $0.trimmingCharacters(in: .whitespacesAndNewlines)
-            return !word.isEmpty && seen.insert(word.lowercased()).inserted ? word : nil
-        }
-    }
+    private let titles = ["Ton année commence ici.", "Qu’étudies-tu ?", "Sur quelle période ?", "Quand es-tu disponible ?", "Garde une longueur d’avance.", "Ton profil est prêt."]
+    private let symbols = ["book.pages","graduationcap","calendar","clock","bell.badge","checkmark.seal"]
     private var valid: Bool {
         switch step {
         case 1: return !program.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case 2: return Calendar.current.date(byAdding: .year, value: years, to: start)! > Date.now
-        case 3: return !courses.isEmpty
-        case 4: return !rhythm.weekdays.isEmpty
+        case 3: return !rhythm.weekdays.isEmpty
         default: return true
         }
     }
@@ -59,7 +52,7 @@ struct AcademicSetup: View {
                 }.scrollDismissesKeyboard(.interactively)
                 HStack {
                     if step > 0 { Button("Retour") { typing = false; step -= 1 }.padding(.trailing, 8) }
-                    Button(step == 0 ? "Commencer" : step == 5 ? "Valider mon planning" : "Continuer") {
+                    Button(step == 0 ? "Commencer" : step == 5 ? "Valider mon profil" : "Continuer") {
                         typing = false
                         if step == 5 && profile != nil { save() } else { step += 1 }
                     }.buttonStyle(Primary()).disabled(!valid).opacity(valid ? 1 : 0.45)
@@ -71,8 +64,10 @@ struct AcademicSetup: View {
             guard !loaded else { return }; loaded = true; name = savedName
             if let profile {
                 program = profile.program; school = profile.institution; level = profile.level
-                years = profile.years; start = profile.firstDay; courseText = profile.courses.joined(separator: ", "); step = 1
+                years = profile.years; start = profile.firstDay
+                organization = profile.organization; examMode = profile.examMode; step = 1
             }
+
         }
         .alert("Enregistrement impossible", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
@@ -88,23 +83,24 @@ struct AcademicSetup: View {
             }.foregroundStyle(.white).padding(26).frame(maxWidth: .infinity, alignment: .leading).background(Color.navy, in: RoundedRectangle(cornerRadius: 24))
         case 1:
             entry("Prénom (facultatif)", $name)
-            Picker("Niveau d’études", selection: $level) { ForEach(["Lycée","BTS / BUT","Licence","Master","Doctorat","Autre"], id: \.self) { Text($0) } }.pickerStyle(.menu)
+            Picker("Niveau d’études", selection: $level) { ForEach(["Lycée","BTS / BUT","Licence","Master","Doctorat","Autre"], id: \.self) { Text($0) } }.studyMenu("Niveau d’études", value: level)
             entry("Formation", $program)
             entry("Université ou établissement (facultatif)", $school)
         case 2:
             DatePicker("Début du planning", selection: $start, in: Calendar.current.date(byAdding: .year, value: -2, to: .now)!..., displayedComponents: .date)
-            ForEach([1,2], id: \.self) { n in
-                Button { years = n } label: {
-                    HStack { Label(n == 1 ? "Une année" : "Deux années", systemImage: "calendar"); Spacer(); Image(systemName: years == n ? "checkmark.circle.fill" : "circle") }
-                        .padding().background(Color.mintBrand.opacity(years == n ? 0.17 : 0.04), in: RoundedRectangle(cornerRadius: 14))
-                }
-            }
+            Stepper("Parcours de \(years) année(s)", value: $years, in: 1...8)
+            Picker("Organisation", selection: $organization) {
+                Text("Par semestre").tag("Par semestre"); Text("Par matière").tag("Par matière")
+            }.studyMenu("Organisation", value: organization)
+            Picker("Les examens ont lieu…", selection: $examMode) {
+                Text("En fin de semestre").tag("Par semestre")
+                Text("À la fin de chaque matière").tag("En fin de matière")
+            }.studyMenu("Les examens ont lieu…", value: examMode == "Par semestre" ? "En fin de semestre" : "À la fin de chaque matière")
+            Text("Chaque matière garde sa propre date d’examen, même en organisation semestrielle.").font(.footnote)
         case 3:
-            Text("Saisis tes matières, séparées par des virgules. Elles alterneront dans tes créneaux de révision.")
-            entry("Matières", $courseText)
-            Text("Exemple · Biologie, Chimie, Statistiques").font(.footnote).foregroundStyle(.secondary)
-        case 4:
             RhythmFields(rhythm: $rhythm)
+        case 4:
+            NotificationInvitation()
         default:
             VStack(alignment: .leading, spacing: 14) {
                 Text(program).font(.title.bold())
@@ -112,26 +108,21 @@ struct AcademicSetup: View {
                 Divider()
                 Label("\(start.formatted(.dateTime.month().year())) – \(Calendar.current.date(byAdding: .year, value: years, to: start)!.formatted(.dateTime.month().year()))", systemImage: "calendar")
                 Label("\(rhythm.weekdays.count) jours par semaine · \(rhythm.minutes) min par séance", systemImage: "clock")
-                Text(courses.joined(separator: " · ")).font(.headline)
+                Label("Matières et TD dans ton Parcours de révision", systemImage: "point.topleft.down.to.point.bottomright.curvepath")
             }.padding(20).frame(maxWidth: .infinity,alignment: .leading).background(Color.mintBrand.opacity(0.12), in: RoundedRectangle(cornerRadius: 20))
-            Text("Tes révisions de cours seront inscrites au calendrier. Quand tu ajouteras un examen, sa préparation prendra la priorité.")
+            Text("Ton profil est prêt. Crée ensuite ton Parcours de révision : matières, cours, TD, présentations, contrôles et examens.")
         }
     }
     func entry(_ title: String, _ binding: Binding<String>) -> some View {
-        VStack(alignment: .leading) { Text(title).font(.subheadline.bold()); TextField(title, text: binding).focused($typing).textFieldStyle(.roundedBorder).submitLabel(.done) }
+        VStack(alignment: .leading) { Text(title).font(.body.weight(.medium)); TextField(title, text: binding).focused($typing).textFieldStyle(StudyTextFieldStyle(boxed: true)).submitLabel(.done) }
     }
     func save() {
         let p = profile ?? AcademicProfile()
         if profile == nil { db.insert(p) }
         p.program = program; p.level = level; p.institution = school
-        p.courses = courses; p.firstDay = start; p.years = years
+        p.firstDay = start; p.years = years
+        p.organization = organization; p.examMode = examMode
         do {
-            let library = try db.fetch(FetchDescriptor<Subject>())
-            for course in courses where !library.contains(where: { $0.name.localizedCaseInsensitiveCompare(course) == .orderedSame }) {
-                let subject = Subject(course, exam: start)
-                subject.hasExam = false
-                db.insert(subject)
-            }
             try Scheduler.rebuild(db, availability: rhythm)
             rhythm.persist(); savedName = name
             finished()
@@ -149,7 +140,7 @@ struct RhythmFields: View {
                 ForEach([2,3,4,5,6,7,1], id: \.self) { d in
                     Button(days[d-1]) {
                         if rhythm.weekdays.contains(d) { rhythm.weekdays.remove(d) } else { rhythm.weekdays.insert(d) }
-                    }.frame(maxWidth: .infinity).padding(.vertical, 9).background(rhythm.weekdays.contains(d) ? Color.mintBrand.opacity(0.35) : Color.gray.opacity(0.1), in: Capsule()).buttonStyle(.plain)
+                    }.frame(maxWidth: .infinity, minHeight: 48).background(rhythm.weekdays.contains(d) ? Color.mintBrand.opacity(0.35) : Color.gray.opacity(0.1), in: Capsule()).buttonStyle(.plain)
                     .accessibilityAddTraits(rhythm.weekdays.contains(d) ? .isSelected : [])
                 }
             }

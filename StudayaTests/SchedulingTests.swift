@@ -78,4 +78,56 @@ import SwiftData
         XCTAssertEqual(try Scheduler.rebuild(db, availability: unavailable, now: now, calendar: calendar), 3)
         XCTAssertTrue(try db.fetch(FetchDescriptor<Session>()).isEmpty)
     }
+    func testDeadlinePreparationWinsBeforeLaterExamAndStopsWhenDone() throws {
+        let container = try Storage.container(memory: true)
+        let db = container.mainContext
+        _ = seed(db, days: 5, target: 2)
+        let subject = Subject("Projet", exam: now)
+        subject.hasExam = false
+        db.insert(subject)
+        let item = StudyDeadline(subject: subject.id)
+        item.title = "Présentation"; item.due = calendar.date(byAdding: .day, value: 1, to: now)!
+        item.preparationSessions = 2
+        db.insert(item)
+        try Scheduler.rebuild(db, availability: window, now: now, calendar: calendar)
+        let query = FetchDescriptor<Session>(sortBy: [SortDescriptor(\.start)])
+        let sessions = try db.fetch(query)
+        XCTAssertEqual(sessions.prefix(2).map(\.deadlineID), [item.id, item.id])
+        let first = try XCTUnwrap(sessions.first)
+        first.done = true; item.done = true
+        try Scheduler.rebuild(db, availability: window, now: now, calendar: calendar)
+        let rebuilt = try db.fetch(query)
+        XCTAssertEqual(rebuilt.filter { $0.deadlineID == item.id }.count, 1)
+        XCTAssertTrue(rebuilt.contains { $0.persistentModelID == first.persistentModelID && $0.done })
+    }
+
+    func testCompletedTDIsExcludedAndProgressRecommendsSynthesis() throws {
+        let container = try Storage.container(memory: true)
+        let db = container.mainContext
+        let td = seed(db, days: 3, target: 2)
+        td.kind = "TD"; td.exerciseCount = 3; td.exercisesDone = 3
+        XCTAssertEqual(StudyCoach.progress(td, sessions: []), 1)
+        XCTAssertTrue(StudyCoach.advice(td, sessions: []).contains("synthèse"))
+        td.synthesisDone = true; td.completed = true
+        XCTAssertEqual(try Scheduler.rebuild(db, availability: window, now: now, calendar: calendar), 0)
+        XCTAssertTrue(try db.fetch(FetchDescriptor<Session>()).isEmpty)
+        XCTAssertEqual(try db.fetch(FetchDescriptor<Chapter>()).count, 1)
+    }
+
+    func testFutureAcademicYearDoesNotSchedulePreparationEarly() throws {
+        let container = try Storage.container(memory: true)
+        let db = container.mainContext
+        let profile = AcademicProfile()
+        profile.firstDay = now; profile.years = 2
+        db.insert(profile)
+        let chapter = seed(db, days: 370, target: 2)
+        let subject = try XCTUnwrap(db.fetch(FetchDescriptor<Subject>()).first)
+        subject.year = 2
+        try Scheduler.rebuild(db, availability: window, now: now, calendar: calendar)
+        let sessions = try db.fetch(FetchDescriptor<Session>())
+        let secondYear = calendar.date(byAdding: .year, value: 1, to: now)!
+        XCTAssertEqual(sessions.count, chapter.requiredSessions)
+        XCTAssertTrue(sessions.allSatisfy { $0.start >= secondYear })
+    }
+
 }

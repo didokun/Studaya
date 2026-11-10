@@ -24,21 +24,55 @@ struct Availability {
 }
 
 enum Scheduler {
+    private struct Work {
+        let id: UUID
+        let subject: Subject
+        let chapter: Chapter?
+        let deadline: StudyDeadline?
+        let due: Date
+        let availableFrom: Date
+        let required: Int
+        var name: String { chapter?.name ?? deadline?.title ?? "" }
+        var confidence: Int { chapter?.confidence ?? 2 }
+    }
     /// Rebuild pending work in one save. Completed blocks retain identity and reserve their time.
     @discardableResult static func rebuild(_ db: ModelContext, availability a: Availability = .saved,
                                            now: Date = .now, calendar: Calendar = .current) throws -> Int {
-        let subjects = try db.fetch(FetchDescriptor<Subject>()).filter(\.hasExam)
+        let subjects = try db.fetch(FetchDescriptor<Subject>())
+        let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>()).filter { !$0.done }
         let chapters = try db.fetch(FetchDescriptor<Chapter>())
         let sessions = try db.fetch(FetchDescriptor<Session>())
-        let completed = sessions.filter(\.done)
-        var assigned = Dictionary(grouping: completed, by: \.chapterID).mapValues(\.count)
+        func relevant(_ session: Session) -> Bool {
+            if let id = session.deadlineID { return deadlines.contains { $0.id == id } }
+            if let chapter = chapters.first(where: { $0.id == session.chapterID }) { return !chapter.completed }
+            return session.subjectID == nil || subjects.contains { $0.id == session.subjectID }
+        }
+        let completed = sessions.filter { $0.done || ($0.pinned && relevant($0)) }
+        let unavailable = try db.fetch(FetchDescriptor<TimeBlock>())
+        var assigned = Dictionary(grouping: completed.filter { $0.reviewID == nil }, by: { $0.deadlineID ?? $0.chapterID }).mapValues(\.count)
+        let profile = try db.fetch(FetchDescriptor<AcademicProfile>()).first
+        func availableFrom(_ subject: Subject) -> Date {
+            guard let profile else { return .distantPast }
+            let months = (subject.year - 1) * 12 + (profile.usesSemesters ? (subject.semester - 1) * 6 : 0)
+            return calendar.date(byAdding: .month, value: months, to: calendar.startOfDay(for: profile.firstDay)) ?? now
+        }
         let subjectByID = Dictionary(subjects.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let eligible = chapters.filter { subjectByID[$0.subjectID] != nil }
-        var remaining = eligible.reduce(0) { $0 + max(0, $1.requiredSessions - assigned[$1.id, default: 0]) }
-        for old in sessions where !old.done { db.delete(old) }
+        let eligible: [Work] = chapters.compactMap { chapter in
+            guard !chapter.completed, let subject = subjectByID[chapter.subjectID] else { return nil }
+            let dates = deadlines.filter { $0.subjectID == subject.id }.map(\.due) + (subject.hasExam ? [subject.exam] : [])
+            let first = max(availableFrom(subject), calendar.startOfDay(for: chapter.startDate ?? .distantPast))
+            let horizon = calendar.date(byAdding: .day, value: 90, to: max(first, now))!
+            let due = dates.filter { calendar.startOfDay(for: $0) > first }.min() ?? dates.min() ?? horizon
+            return Work(id: chapter.id, subject: subject, chapter: chapter, deadline: nil, due: due, availableFrom: first, required: chapter.requiredSessions)
+        } + deadlines.compactMap { item in
+            guard let subject = subjectByID[item.subjectID] else { return nil }
+            return Work(id: item.id, subject: subject, chapter: nil, deadline: item, due: item.due, availableFrom: availableFrom(subject), required: item.preparationSessions)
+        }
+        var remaining = eligible.reduce(0) { $0 + max(0, $1.required - assigned[$1.id, default: 0]) }
+        for old in sessions where !old.done && (!old.pinned || !relevant(old)) { db.delete(old) }
         var planned: [(Session, Date, Int, Int)] = []
         var day = calendar.startOfDay(for: now)
-        let last = subjects.map(\.exam).max() ?? now
+        let last = eligible.map(\.due).max() ?? now
         while remaining > 0 && day < calendar.startOfDay(for: last) && !a.weekdays.isEmpty && a.minutes > 0 && a.endHour > a.startHour {
             if a.weekdays.contains(calendar.component(.weekday, from: day)),
                var slot = calendar.date(bySettingHour: a.startHour, minute: 0, second: 0, of: day),
@@ -46,22 +80,28 @@ enum Scheduler {
                 let duration = Double(a.minutes * 60)
                 while remaining > 0 && slot.addingTimeInterval(duration) <= end {
                     defer { slot = slot.addingTimeInterval(duration) }
-                    guard slot >= now, !completed.contains(where: {
+                    guard slot >= now, !unavailable.contains(where: { $0.conflicts(start: slot, minutes: a.minutes, calendar: calendar) }), !completed.contains(where: {
                         $0.start < slot.addingTimeInterval(duration) && $0.start.addingTimeInterval(Double($0.minutes * 60)) > slot
                     }) else { continue }
                     let candidates = eligible.filter {
-                        assigned[$0.id, default: 0] < $0.requiredSessions && day < calendar.startOfDay(for: subjectByID[$0.subjectID]!.exam)
+                        day >= $0.availableFrom && assigned[$0.id, default: 0] < $0.required && day < calendar.startOfDay(for: $0.due)
                     }
                     guard let chapter = candidates.min(by: {
-                        let left = (calendar.startOfDay(for: subjectByID[$0.subjectID]!.exam), assigned[$0.id, default: 0], $0.name, $0.id.uuidString)
-                        let right = (calendar.startOfDay(for: subjectByID[$1.subjectID]!.exam), assigned[$1.id, default: 0], $1.name, $1.id.uuidString)
+                        let left = (calendar.startOfDay(for: $0.due), $0.confidence, assigned[$0.id, default: 0], $0.name, $0.id.uuidString)
+                        let right = (calendar.startOfDay(for: $1.due), $1.confidence, assigned[$1.id, default: 0], $1.name, $1.id.uuidString)
                         return left < right
                     }) else { break }
-                    let subject = subjectByID[chapter.subjectID]!
-                    let session = Session(chapter, subject: subject, start: slot, minutes: a.minutes)
+                    let session: Session
+                    if let unit = chapter.chapter {
+                        session = Session(unit, subject: chapter.subject, start: slot, minutes: a.minutes)
+                    } else {
+                        session = Session(course: chapter.subject.name + " · " + chapter.name, start: slot, minutes: a.minutes)
+                        session.deadlineID = chapter.id
+                    }
+                    session.subjectID = chapter.subject.id
                     let round = assigned[chapter.id, default: 0]
-                    session.activity = round == 0 ? "Apprentissage" : (round == 1 ? "Entraînement" : "Rappel actif")
-                    planned.append((session, subject.exam, round, chapter.requiredSessions))
+                    session.activity = chapter.deadline.map { "Préparation · " + $0.kind } ?? (round == 0 ? "Apprentissage" : (round == 1 ? "Entraînement" : "Rappel actif"))
+                    planned.append((session, chapter.due, round, chapter.required))
                     db.insert(session)
                     assigned[chapter.id, default: 0] += 1
                     remaining -= 1
@@ -83,7 +123,7 @@ enum Scheduler {
                    let end = calendar.date(bySettingHour: a.endHour, minute: 0, second: 0, of: candidate) {
                     let duration = Double(a.minutes * 60)
                     while slot.addingTimeInterval(duration) <= end {
-                        if !occupied.contains(slot) && !completed.contains(where: {
+                        if !occupied.contains(slot) && !unavailable.contains(where: { $0.conflicts(start: slot, minutes: a.minutes, calendar: calendar) }) && !completed.contains(where: {
                             $0.start < slot.addingTimeInterval(duration) && $0.start.addingTimeInterval(Double($0.minutes * 60)) > slot
                         }) {
                             occupied.remove(session.start)
@@ -99,7 +139,7 @@ enum Scheduler {
             }
         }
         if let profile = try db.fetch(FetchDescriptor<AcademicProfile>()).first {
-            profile.schedule(in: db, availability: a, reserved: completed + planned.map { $0.0 }, now: now, calendar: calendar)
+            try profile.schedule(in: db, availability: a, reserved: completed + planned.map { $0.0 }, now: now, calendar: calendar)
         }
         try db.save()
         return remaining

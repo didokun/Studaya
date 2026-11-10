@@ -50,6 +50,7 @@ struct PremiumOptions: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Studaya Premium").font(.largeTitle.bold())
                     VStack(alignment: .leading, spacing: 12) {
+                        perk("Importer un planning depuis une photo", "camera.viewfinder")
                         perk("Bilan de concentration sur 30 jours", "chart.bar")
                         perk("Temps étudié par matière", "books.vertical")
                         

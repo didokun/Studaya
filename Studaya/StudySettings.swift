@@ -26,12 +26,14 @@ struct StudySettings: View {
                                 LabeledContent("Formation", value: p.program)
                                 LabeledContent("Niveau", value: p.level)
                                 if !p.institution.isEmpty { LabeledContent("Établissement", value: p.institution) }
-                                LabeledContent("Durée", value: p.years == 1 ? "Un an" : "Deux ans")
+                                LabeledContent("Durée", value: "\(p.years) année(s)")
                                 LabeledContent("Matières", value: p.courses.joined(separator: ", "))
                             }
                             Button("Revoir ma configuration") { edit = true }
                         }
                     }
+                    row("Emploi du temps et indisponibilités", "calendar.badge.minus") { UnavailabilitySettings() }
+                    row("Sauvegarde et restauration", "externaldrive") { BackupSettings() }
                     row("Rythme de révision","calendar") { RhythmSettings() }
                     row("Concentration","timer") {
                         Form {
@@ -39,7 +41,7 @@ struct StudySettings: View {
                             Stepper("Pause · \(rest) min", value: $rest, in: 1...30)
                         }
                     }
-                    row("Rappel quotidien","bell") { ReminderSettings() }
+                    row("Rappels et notifications","bell") { ReminderSettings() }
                 }
                 Section {
                     row("Abonnement","star.circle") { PremiumOptions().padding(.horizontal) }
@@ -69,15 +71,13 @@ struct StudySettings: View {
     }
     private func reset() {
         do {
-            for p in try db.fetch(FetchDescriptor<AcademicProfile>()) { db.delete(p) }
-            for x in try db.fetch(FetchDescriptor<Subject>()) { db.delete(x) }
-            for x in try db.fetch(FetchDescriptor<Chapter>()) { db.delete(x) }
-            for x in try db.fetch(FetchDescriptor<Session>()) { db.delete(x) }
-            for x in try db.fetch(FetchDescriptor<Flashcard>()) { db.delete(x) }
-            for x in try db.fetch(FetchDescriptor<FocusLog>()) { db.delete(x) }
+            try StudyBackup.removeAll(db)
             try db.save()
-            for key in ["studentName","welcomed","weeklyHours","weekdays","startHour","endHour","sessionMinutes","focusMinutes","breakMinutes","focusSubject","timerEnd","timerRemaining","timerLength","timerRest","reminderHour","reminderEnabled"] { StudyPreferences.current.removeObject(forKey: key) }
+            for key in ["studentName","welcomed","weeklyHours","weekdays","startHour","endHour","sessionMinutes","focusMinutes","breakMinutes","focusSubject","timerEnd","timerRemaining","timerLength","timerRest","reminderHour","reminderEnabled","eventRemindersEnabled","focusChapter","focusSession","focusReview","focusRunID"] { StudyPreferences.current.removeObject(forKey: key) }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["studaya.daily"])
+            StudyPreferences.current.removeObject(forKey: "dataChangeReason")
+            StudyPreferences.current.set(UUID().uuidString, forKey: "dataRevision")
+            Task { await EventReminders.shared.refresh(db) }
             dismiss()
         } catch { db.rollback(); self.error = error.localizedDescription }
     }
@@ -109,6 +109,7 @@ struct ReminderSettings: View {
     @State var busy = false
     var body: some View {
         Form {
+            EventReminderSettings()
             Stepper("Heure du rappel · \(hour) h", value: $hour, in: 0...23)
             Button(enabled ? "Mettre à jour le rappel" : "Activer le rappel") {
                 busy = true
