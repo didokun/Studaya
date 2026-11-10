@@ -93,7 +93,15 @@ struct Home: View {
     func page<V: View>(_ name: String, _ icon: String, _ index: Int, @ViewBuilder content: () -> V) -> some View {
         NavigationStack {
             content().studyScreen().navigationTitle(name).navigationBarTitleDisplayMode(.inline).toolbar {
-                ToolbarItem(placement: .topBarLeading) { HStack(spacing: 8) { Image("Logo").resizable().frame(width: 28, height: 28).clipShape(RoundedRectangle(cornerRadius: 6.02, style: .continuous)); Text("Studaya").font(.system(.subheadline, design: .rounded, weight: .bold)) }.accessibilityHidden(true) }
+                ToolbarItem(placement: .topBarLeading) {
+                    Image("Logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 32)
+                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                        .frame(width: 44, height: 44, alignment: .center)
+                        .accessibilityHidden(true)
+                }
                 ToolbarItem(placement: .topBarTrailing) { Button("Réglages", systemImage: "slider.horizontal.3") { settings = true } }
             }
         }.tabItem { Label(name, systemImage: icon) }.tag(index)
