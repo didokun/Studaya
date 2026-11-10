@@ -33,7 +33,7 @@ struct AcademicSetup: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Image("Logo").resizable().frame(width: 32,height: 32)
+                Image("Logo").resizable().frame(width: 32,height: 32).clipShape(RoundedRectangle(cornerRadius: 6.88, style: .continuous))
                 Text("Studaya").font(.title3.bold())
                 Spacer()
                 if profile != nil { Button("Fermer") { dismiss() } }
@@ -77,7 +77,7 @@ struct AcademicSetup: View {
         case 0:
             Text("De tes cours de la semaine aux examens de fin d’année, construis un programme qui suit tes études.").font(.title3)
             VStack(alignment: .leading, spacing: 14) {
-                Image("Logo").resizable().frame(width: 76,height: 76)
+                Image("Logo").resizable().frame(width: 76,height: 76).clipShape(RoundedRectangle(cornerRadius: 16.34, style: .continuous))
                 Text("Mon carnet de révision").font(.title2.bold())
                 Label("Formation · Matières · Emploi du temps", systemImage: "bookmark")
             }.foregroundStyle(.white).padding(26).frame(maxWidth: .infinity, alignment: .leading).background(StudyDesign.hero, in: RoundedRectangle(cornerRadius: 28))

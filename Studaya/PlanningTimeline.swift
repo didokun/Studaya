@@ -16,7 +16,7 @@ struct PlanningTimeline: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 14) {
-                Image("Logo").resizable().frame(width: 48, height: 48)
+                Image("Logo").resizable().frame(width: 48, height: 48).clipShape(RoundedRectangle(cornerRadius: 10.32, style: .continuous))
                 Text(finished ? "Ton planning est prêt !" : "Création de ton planning").font(.title.bold())
             }
             ProgressView(value: Double(stage), total: Double(Self.stages.count)).tint(.mintBrand)
