@@ -45,7 +45,7 @@ struct AcademicSetup: View {
                 ProgressView(value: Double(step + 1), total: 6).tint(.mintBrand).padding(.horizontal)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Image(systemName: symbols[step]).font(.system(size: 38, weight: .medium)).foregroundStyle(Color.mintBrand)
+                        StudyBadge(symbol: symbols[step], size: 64)
                         Text(titles[step]).font(.system(.largeTitle, design: .rounded, weight: .bold)).fixedSize(horizontal: false, vertical: true)
                         content
                     }.frame(maxWidth: 560, alignment: .leading).padding(24).frame(maxWidth: .infinity)
@@ -58,7 +58,7 @@ struct AcademicSetup: View {
                     }.buttonStyle(Primary()).disabled(!valid).opacity(valid ? 1 : 0.45)
                 }.padding()
             }
-        }.foregroundStyle(Color.navy).background(Color.white).tint(.navy)
+        }.foregroundStyle(StudyDesign.ink).background(StudyDesign.canvas).tint(StudyDesign.accent)
         .interactiveDismissDisabled(profile == nil)
         .onAppear {
             guard !loaded else { return }; loaded = true; name = savedName
@@ -80,7 +80,7 @@ struct AcademicSetup: View {
                 Image("Logo").resizable().frame(width: 76,height: 76)
                 Text("Mon carnet de révision").font(.title2.bold())
                 Label("Formation · Matières · Emploi du temps", systemImage: "bookmark")
-            }.foregroundStyle(.white).padding(26).frame(maxWidth: .infinity, alignment: .leading).background(Color.navy, in: RoundedRectangle(cornerRadius: 24))
+            }.foregroundStyle(.white).padding(26).frame(maxWidth: .infinity, alignment: .leading).background(StudyDesign.hero, in: RoundedRectangle(cornerRadius: 28))
         case 1:
             entry("Prénom (facultatif)", $name)
             Picker("Niveau d’études", selection: $level) { ForEach(["Lycée","BTS / BUT","Licence","Master","Doctorat","Autre"], id: \.self) { Text($0) } }.studyMenu("Niveau d’études", value: level)

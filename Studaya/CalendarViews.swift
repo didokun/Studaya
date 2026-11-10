@@ -78,7 +78,7 @@ struct Today: View {
                     }.studyCard()
                 }.buttonStyle(.plain).accessibilityLabel("Créer mon Parcours de révision")
                 HStack(spacing: 12) {
-                    quickAction("Ouvrir mes matières", detail: "Mon campus", symbol: "books.vertical.fill", color: StudyDesign.accent) { tab = 3 }
+                    quickAction("Ouvrir mes matières", detail: "Mes matières", symbol: "books.vertical.fill", color: StudyDesign.accent) { tab = 3 }
                     quickAction("Démarrer un Pomodoro", detail: "Un moment Focus", symbol: "headphones", color: StudyDesign.mint) { tab = 2 }
                 }
                 VStack(alignment: .leading, spacing: 14) {
@@ -105,7 +105,7 @@ struct Today: View {
                     }
                 }
                 if let unit = recommended {
-                    StudySection(title: "Ta prochaine petite victoire") {
+                    StudySection(title: "Ta prochaine étape") {
                         NavigationLink { ChapterPage(chapter: unit) } label: {
                             HStack(alignment: .top, spacing: 14) {
                                 StudyBadge(symbol: unit.kind == "TD" ? "pencil.and.outline" : "lightbulb.fill", color: StudyDesign.mint)
@@ -149,7 +149,7 @@ struct Today: View {
                     }
                 }
                 if reviews.contains(where: { !$0.done && $0.due <= Date.now.addingTimeInterval(86400) }) {
-                    StudySection(title: "Garde tes acquis au chaud") {
+                    StudySection(title: "Entretenir tes acquis") {
                         ForEach(reviews.filter { !$0.done && $0.due <= Date.now.addingTimeInterval(86400) }) { review in
                             if let chapter = chapters.first(where: { $0.id == review.chapterID }) { ReviewRow(review: review, chapter: chapter).studyCard() }
                         }
@@ -172,7 +172,7 @@ struct Today: View {
             VStack(alignment: .leading, spacing: 16) {
                 Label("TON ÉLAN DU JOUR", systemImage: "sparkles").font(.caption.weight(.bold)).tracking(1)
                     .foregroundStyle(.white.opacity(0.75))
-                Text(remaining.isEmpty ? "Fais de la place\npour tes idées." : "Un pas de plus\nvers tes objectifs.")
+                Text(remaining.isEmpty ? "On prépare\nla suite ?" : "Tes objectifs,\nun pas à la fois.")
                     .font(.system(.title, design: .rounded, weight: .bold)).fixedSize(horizontal: false, vertical: true)
                 Text("\(remaining.count) séance(s) à faire").font(.subheadline.weight(.semibold)).foregroundStyle(.white.opacity(0.85))
             }
@@ -215,6 +215,13 @@ struct Planner: View {
     var calendar: Calendar { var c = Calendar.current; c.firstWeekday = 2; return c }
     var body: some View {
         List {
+            HStack(spacing: 14) {
+                StudyBadge(symbol: "calendar.badge.clock", size: 48)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("TON TEMPO").font(.caption.weight(.semibold)).tracking(1.3).foregroundStyle(.secondary)
+                    Text("Ton planning").font(.system(.title2, design: .rounded, weight: .bold))
+                }
+            }.padding(.vertical, 8).listRowBackground(Color.clear).listRowInsets(EdgeInsets())
             if let p = profiles.first {
                 Section(p.program) {
                     Menu {
@@ -244,11 +251,12 @@ struct Planner: View {
                         let day = calendar.date(byAdding: .day, value: i, to: start)!
                         Button { date = day } label: {
                             VStack {
-                                Text(day, format: .dateTime.weekday(.narrow)); Text(day, format: .dateTime.day()).bold()
-                                Circle().fill(marked(day) ? Color.navy : .clear).frame(width: 5, height: 5)
+                                Text(day, format: .dateTime.weekday(.narrow)).font(.caption.weight(.medium)); Text(day, format: .dateTime.day()).font(.system(.title3, design: .rounded, weight: .bold))
+                                Circle().fill(marked(day) ? (calendar.isDate(day, inSameDayAs: date) ? Color.white : StudyDesign.accent) : .clear).frame(width: 5, height: 5)
                             }
                                 .frame(maxWidth: .infinity).padding(.vertical, 8)
-                                .background(calendar.isDate(day, inSameDayAs: date) ? Color.mintBrand : .clear, in: Capsule())
+                                .foregroundStyle(calendar.isDate(day, inSameDayAs: date) ? .white : StudyDesign.ink)
+                                .background(calendar.isDate(day, inSameDayAs: date) ? StudyDesign.accent : StudyDesign.canvas, in: RoundedRectangle(cornerRadius: 16))
                         }.buttonStyle(.plain).accessibilityLabel(Text(day, format: .dateTime.weekday(.wide).day().month()))
                     }
                 }
@@ -299,13 +307,13 @@ struct Stats: View {
     @Query var cards: [Flashcard]
     var body: some View {
         List {
-            Banner(caption: "Temps de concentration", value: "\(logs.reduce(0) { $0 + $1.minutes }) min", icon: "timer")
+            Banner(caption: "CHAQUE EFFORT COMPTE", value: "\(logs.reduce(0) { $0 + $1.minutes }) min", icon: "timer")
             Section("Focus · 7 derniers jours") {
                 Chart {
                     ForEach(-6...0, id: \.self) { i in
                         let day = Calendar.current.date(byAdding: .day, value: i, to: .now)!
                         let minutes = logs.filter { Calendar.current.isDate($0.date, inSameDayAs: day) }.reduce(0) { $0 + $1.minutes }
-                        BarMark(x: .value("Jour", day, unit: .day), y: .value("Minutes", minutes)).foregroundStyle(Color.mintBrand)
+                        BarMark(x: .value("Jour", day, unit: .day), y: .value("Minutes", minutes)).foregroundStyle(StudyDesign.accent.gradient)
                     }
                 }.chartYAxisLabel("min").frame(height: 170)
             }

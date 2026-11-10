@@ -24,7 +24,9 @@ final class NavigationTests: XCTestCase {
         app.buttons["Continuer"].tap()
         app.buttons["Valider mon profil"].tap()
         app.buttons["Continuer gratuitement"].tap()
-        app.tabBars.buttons["Révision"].tap()
+        capture("Accueil", app)
+        app.tabBars.buttons["Matières"].tap()
+        capture("Matières", app)
         XCTAssertTrue(app.buttons["Ajouter une matière"].waitForExistence(timeout: 5))
         app.buttons["Ajouter une matière"].tap()
         let name = app.textFields["Nom de la matière"]
@@ -42,15 +44,17 @@ final class NavigationTests: XCTestCase {
         chapter.typeText("Cellules")
         app.buttons["Enregistrer"].tap()
         XCTAssertTrue(app.staticTexts["Cellules"].waitForExistence(timeout: 5))
-        app.tabBars.buttons["Planner"].tap()
+        app.tabBars.buttons["Planning"].tap()
         app.buttons["Calendrier"].tap()
+        capture("Planning", app)
         XCTAssertTrue(app.buttons["calendar.nextMonth"].waitForExistence(timeout: 10), app.debugDescription)
         app.tabBars.buttons["Focus"].tap()
+        capture("Focus", app)
         app.buttons["Commencer"].tap()
         app.buttons["Mettre en pause"].tap()
         XCTAssertTrue(app.buttons["Reprendre"].exists)
         app.buttons["Réinitialiser"].tap()
-        app.tabBars.buttons["Stats"].tap()
+        app.tabBars.buttons["Progrès"].tap()
         for title in ["Bilan de concentration sur 30 jours", "Temps étudié par matière", "Exporter les sessions Focus en CSV"] {
             let feature = app.buttons[title]
             for _ in 0..<6 { if feature.isHittable { break }; app.swipeUp() }
@@ -64,7 +68,7 @@ final class NavigationTests: XCTestCase {
             if app.staticTexts["Pomodoros terminés"].isHittable { break }; app.swipeUp()
         }
         XCTAssertTrue(app.staticTexts["Pomodoros terminés"].exists)
-        app.tabBars.buttons["Today"].tap()
+        app.tabBars.buttons["Accueil"].tap()
         for _ in 0..<6 {
             if app.buttons["Ouvrir mes matières"].isHittable { break }; app.swipeUp()
         }
@@ -77,4 +81,10 @@ final class NavigationTests: XCTestCase {
         app.buttons["Revoir ma configuration"].tap()
         XCTAssertEqual(app.textFields["Formation"].value as? String, "Sciences")
     }
+    @MainActor private func capture(_ name: String, _ app: XCUIApplication) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name; attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
 }

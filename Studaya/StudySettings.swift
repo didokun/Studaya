@@ -53,7 +53,7 @@ struct StudySettings: View {
                         }
                     }
                 }
-            }.navigationTitle("Réglages").toolbar { Button("Terminé") { dismiss() } }
+            }.studyScreen().navigationTitle("Réglages").toolbar { Button("Terminé") { dismiss() } }
         }.sheet(isPresented: $edit) { if let p = profiles.first { AcademicSetup(profile: p) { edit = false } } }
         .alert("Effacer le profil et toutes les révisions ?", isPresented: $confirm) {
             Button("Annuler", role: .cancel) {}
@@ -62,9 +62,9 @@ struct StudySettings: View {
         .alert("Erreur", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
     private func row<V: View>(_ title: String, _ symbol: String, @ViewBuilder content: @escaping () -> V) -> some View {
-        NavigationLink { content().navigationTitle(title).navigationBarTitleDisplayMode(.inline) } label: {
+        NavigationLink { content().studyScreen().navigationTitle(title).navigationBarTitleDisplayMode(.inline) } label: {
             HStack(spacing: 14) {
-                Image(systemName: symbol).frame(width: 38,height: 38).background(Color.mintBrand.opacity(0.16), in: RoundedRectangle(cornerRadius: 12))
+                StudyBadge(symbol: symbol, size: 40)
                 Text(title).font(.headline)
             }.foregroundStyle(Color.navy)
         }

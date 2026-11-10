@@ -122,7 +122,8 @@ struct RevisionPathBuilder: View {
                 } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        Text(titles[step]).font(.largeTitle.bold())
+                        StudyPill(title: step == 0 ? "TON CAMPUS" : "TON PARCOURS", symbol: "sparkles")
+                        Text(titles[step]).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         if (1...4).contains(step) {
                             Text(subjects[index].name).font(.title2.weight(.semibold))
                             Text("Matière \(index + 1) sur \(subjects.count)").foregroundStyle(.secondary)
@@ -139,7 +140,7 @@ struct RevisionPathBuilder: View {
                 } else if step == 7 {
                     Button("Découvrir mon planning") { onCreated(); dismiss() }.buttonStyle(Primary()).padding()
                 }
-            }.navigationTitle("Parcours de révision").navigationBarTitleDisplayMode(.inline)
+            }.studyScreen().navigationTitle("Parcours de révision").navigationBarTitleDisplayMode(.inline)
             .toolbar { if step < 6 { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } } }
             .sheet(item: $photoTarget) { target in
                 PremiumAccess(title: "Import photo Premium") {
@@ -171,7 +172,7 @@ struct RevisionPathBuilder: View {
                         Picker("Semestre", selection: $subject.semester) { Text("S1").tag(1); Text("S2").tag(2) }.studyMenu("Semestre", value: "S\(subject.semester)")
                     }
                     if subjects.count > 1 { Button("Retirer la matière", role: .destructive) { subjects.removeAll { $0.id == subject.id } } }
-                }.padding().background(Color.mintBrand.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+                }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))
             }
             Button("Ajouter une autre matière", systemImage: "plus") { subjects.append(PathSubject()) }.buttonStyle(.bordered)
         case 1:
@@ -185,7 +186,7 @@ struct RevisionPathBuilder: View {
                     Stepper("Objectif · \(unit.sessions) séances", value: $unit.sessions, in: 1...30)
                     if unit.kind == "TD" { Stepper("\(unit.exercises) exercices", value: $unit.exercises, in: 1...100) }
                     if subjects[index].units.count > 1 { Button("Retirer ce cours ou TD", role: .destructive) { subjects[index].units.removeAll { $0.id == unit.id } } }
-                }.padding().background(Color.mintBrand.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+                }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))
             }
             Button("Ajouter un cours ou TD", systemImage: "plus") { subjects[index].units.append(PathUnit()) }.buttonStyle(.bordered)
         case 2:
@@ -207,7 +208,7 @@ struct RevisionPathBuilder: View {
                     ForEach(subject.units) { unit in Text("\(unit.kind) · \(unit.name) · début \(unit.start.formatted(date: .abbreviated, time: .omitted))") }
                     Text("\(subject.presentations.count) présentations · \(subject.controls.count) contrôles")
                     Text(subject.hasExam ? "Examen final · " + subject.exam.formatted(date: .abbreviated, time: .omitted) : "Examen final à préciser")
-                }.padding().frame(maxWidth: .infinity, alignment: .leading).background(Color.mintBrand.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+                }.padding().frame(maxWidth: .infinity, alignment: .leading).background(.white, in: RoundedRectangle(cornerRadius: 24))
             }
             Text("Le planning tiendra compte de tes disponibilités et des échéances les plus proches. Rien n’est enregistré avant la création.")
         default:
@@ -228,7 +229,7 @@ struct RevisionPathBuilder: View {
                 DatePicker("Date limite", selection: $event.due)
                 Stepper("Préparation · \(event.preparation) séances", value: $event.preparation, in: 1...30)
                 Button("Retirer", role: .destructive) { binding.wrappedValue.removeAll { $0.id == event.id } }
-            }.padding().background(Color.mintBrand.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+            }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))
         }
     }
     private func next() {

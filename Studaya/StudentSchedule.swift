@@ -54,7 +54,7 @@ struct TimeBlockEditor: View {
                 DatePicker("Fin", selection: $end)
                 if weekly { DatePicker("Répéter jusqu’au", selection: $until, displayedComponents: .date) }
                 Text("Aucune révision automatique ne sera placée sur cette période. Pour des vacances, choisis une période sans répétition.").font(.footnote)
-            }.navigationTitle("Indisponibilité").toolbar {
+            }.studyScreen().navigationTitle("Indisponibilité").toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(saved || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || end <= start || (weekly && (end.timeIntervalSince(start) > 86400 || until < start))) }
             }
@@ -121,7 +121,7 @@ struct SessionReschedule: View {
                     do { try StudyActions.reschedule(session, to: date, db: db); dismiss() }
                     catch { self.error = error.localizedDescription }
                 }
-            }.navigationTitle("Reporter").toolbar { Button("Fermer") { dismiss() } }
+            }.studyScreen().navigationTitle("Reporter").toolbar { Button("Fermer") { dismiss() } }
         }.onAppear { date = max(session.start, Date.now.addingTimeInterval(3600)) }
         .alert("Créneau indisponible", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }

@@ -4,12 +4,12 @@ enum StudyDesign {
     static let accent = Color(red: 0.39, green: 0.32, blue: 0.85)
     static let canvas = Color(red: 0.96, green: 0.96, blue: 0.985)
     static let ink = Color(red: 0.13, green: 0.14, blue: 0.23)
-    static let mint = Color(red: 0.08, green: 0.57, blue: 0.43)
-    static let coral = Color(red: 0.85, green: 0.33, blue: 0.30)
+    static let mint = Color(red: 0.06, green: 0.46, blue: 0.35)
+    static let coral = Color(red: 0.72, green: 0.23, blue: 0.22)
     static let line = Color(red: 0.88, green: 0.88, blue: 0.93)
     static let hero = LinearGradient(colors: [Color(red: 0.18, green: 0.14, blue: 0.35), Color(red: 0.36, green: 0.28, blue: 0.63)], startPoint: .topLeading, endPoint: .bottomTrailing)
     static func color(for name: String) -> Color {
-        let colors = [accent, mint, coral, Color(red: 0.18, green: 0.43, blue: 0.77), Color(red: 0.67, green: 0.28, blue: 0.53)]
+        let colors = [accent, mint, coral, Color(red: 0.16, green: 0.38, blue: 0.70), Color(red: 0.67, green: 0.28, blue: 0.53)]
         let index = name.unicodeScalars.reduce(0) { ($0 + Int($1.value)) % colors.count }
         return colors[index]
     }

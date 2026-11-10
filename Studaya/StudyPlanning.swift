@@ -85,7 +85,7 @@ struct DeadlineEditor: View {
                     Text("Le rappel apparaît dans l’accueil et le calendrier. Active les notifications d’échéance dans Réglages pour le recevoir même lorsque l’app est fermée.").font(.footnote)
                 }
                 if existing != nil { Button("Supprimer l’échéance", role: .destructive) { confirmDelete = true } }
-            }.navigationTitle("Échéance").toolbar {
+            }.studyScreen().navigationTitle("Échéance").toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(saved || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
             }

@@ -21,12 +21,12 @@ private struct StudyTextInput<Label: View>: View {
             .padding(.vertical, boxed ? 4 : 0)
             .background {
                 if boxed {
-                    RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemGroupedBackground))
+                    RoundedRectangle(cornerRadius: 16).fill(Color.white)
                 }
             }
             .overlay {
                 if boxed {
-                    RoundedRectangle(cornerRadius: 12).strokeBorder(Color(.separator).opacity(0.5))
+                    RoundedRectangle(cornerRadius: 16).strokeBorder(StudyDesign.line)
                 }
             }
             .contentShape(Rectangle())
@@ -40,8 +40,8 @@ private struct StudyMenuButtonStyle: ButtonStyle {
             .font(.body)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
             .padding(.horizontal, 14)
-            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
-            .overlay { RoundedRectangle(cornerRadius: 12).strokeBorder(Color(.separator).opacity(0.5)) }
+            .background(.white, in: RoundedRectangle(cornerRadius: 16))
+            .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(StudyDesign.line) }
             .contentShape(RoundedRectangle(cornerRadius: 12))
             .opacity(configuration.isPressed ? 0.7 : 1)
     }
@@ -65,9 +65,9 @@ extension View {
                 self.labelsHidden().pickerStyle(.inline)
             } label: {
                 HStack(spacing: 12) {
-                    Text(value).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                    Text(value).fontWeight(.medium).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 8)
-                    Image(systemName: "chevron.up.chevron.down").font(.body.weight(.medium))
+                    Image(systemName: "chevron.down").font(.caption.weight(.semibold)).foregroundStyle(StudyDesign.accent)
                 }
             }
             .buttonStyle(StudyMenuButtonStyle())

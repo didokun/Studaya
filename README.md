@@ -95,3 +95,9 @@ Validation : tests OCR sur une image générée, refus de données image invalid
 Toutes les entrées Premium restent visibles et cliquables en version gratuite : import photo dans une matière, bilan Focus sur 30 jours, temps par matière et export CSV dans Stats. Un badge Premium les identifie. Le clic vérifie l’abonnement puis affiche soit la fonctionnalité, soit la page d’abonnement avec achat et restauration. Après activation de Premium, le contenu demandé s’affiche dans le même écran. Les fonctionnalités gratuites restent accessibles comme auparavant.
 
 L’import photo est aussi disponible directement dans le **Parcours de révision**, sur la carte de chaque matière et à l’étape **Cours et TD**. Le bouton reste visible en gratuit et ouvre alors l’abonnement. Pour Premium, renseigner le nom de la matière avant l’analyse permet de filtrer le planning. Les éléments vérifiés remplissent le brouillon du parcours, y compris les présentations, contrôles et l’examen final. Ils restent modifiables aux étapes suivantes ; aucun modèle persistant n’est créé avant **Créer mon planning**. Les cours/TD déjà saisis sont conservés et les doublons sont refusés.
+
+## Identité visuelle
+
+Studaya utilise une palette violet profond, papier clair, menthe et corail. La typographie système arrondie conserve Dynamic Type et les icônes SF Symbols restent natives. Les cinq onglets sont Accueil, Planning, Focus, Matières et Progrès. L’accueil présente la progression du jour, les actions rapides, l’objectif hebdomadaire et les échéances dans des cartes. Les matières ont des couleurs stables et des icônes adaptées à leur domaine. Focus dispose d’un cadran à dégradé et d’états distincts pour le travail et la pause.
+
+Les apparitions de cartes, retours visuels des boutons et changements d’état respectent Réduire les animations. Les champs conservent leurs zones tactiles agrandies, les sélecteurs natifs et les fonctions Premium visibles en gratuit.

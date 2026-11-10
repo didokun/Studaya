@@ -20,7 +20,7 @@ struct Library: View {
     }
     var body: some View {
         List {
-            Banner(caption: "Bibliothèque", value: "Mes matières", icon: "books.vertical")
+            Banner(caption: "TON CAMPUS", value: "De la curiosité à la maîtrise.", icon: "books.vertical.fill")
             Button("Créer mon Parcours de révision", systemImage: "sparkles") { creatingPath = true }
             ForEach(groups, id: \.self) { key in
                 Section(key) {
@@ -44,16 +44,21 @@ struct Library: View {
         .alert("Suppression", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
     private func subjectRow(_ subject: Subject) -> some View {
-        NavigationLink { SubjectPage(subject: subject) } label: {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text(subject.name).font(.headline)
-                                if subject.hasExam { Text(subject.exam, format: .dateTime.day().month(.wide).year()).foregroundStyle(.secondary) }
-                                else { Text("Date d’examen à préciser").foregroundStyle(.secondary) }
-                                SubjectProgress(subject: subject, chapters: chapters, sessions: sessions)
-                            }
-                        }.swipeActions {
-                            Button("Supprimer", role: .destructive) { removing = subject; confirmDelete = true }
-                        }
+        let color = StudyDesign.color(for: subject.name)
+        return NavigationLink { SubjectPage(subject: subject) } label: {
+            HStack(alignment: .top, spacing: 14) {
+                StudyBadge(symbol: StudyDesign.symbol(for: subject.name), color: color, size: 50)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(subject.name).font(.system(.title3, design: .rounded, weight: .bold)).foregroundStyle(StudyDesign.ink)
+                    if subject.hasExam {
+                        Label(subject.exam.formatted(.dateTime.day().month(.wide)), systemImage: "calendar").font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                    } else { Text("Date d’examen à préciser").font(.caption).foregroundStyle(.secondary) }
+                    SubjectProgress(subject: subject, chapters: chapters, sessions: sessions).tint(color)
+                }
+            }.padding(.vertical, 10)
+        }.swipeActions {
+            Button("Supprimer", role: .destructive) { removing = subject; confirmDelete = true }
+        }
     }
 
 }
@@ -104,7 +109,7 @@ struct SubjectPage: View {
                 ForEach(units.filter(\.completed)) { chapter in unitRow(chapter) }
                 ForEach(deadlines.filter { $0.subjectID == subject.id && $0.done }) { DeadlineRow(item: $0) }
             }
-        }.navigationTitle(subject.name)
+        }.studyScreen().navigationTitle(subject.name)
         .sheet(isPresented: $edit) { RevisionEditor(kind: .subject(subject)) }
         .sheet(isPresented: $importPhoto) { PhotoPlanningGate(subject: subject) }
         .sheet(isPresented: $add) { RevisionEditor(kind: .chapter(subject.id, nil)) }
@@ -122,7 +127,12 @@ struct SubjectPage: View {
     func unitRow(_ chapter: Chapter) -> some View {
         NavigationLink { ChapterPage(chapter: chapter) } label: {
             VStack(alignment: .leading, spacing: 6) {
-                Label(chapter.name, systemImage: chapter.completed ? "checkmark.circle.fill" : chapter.kind == "TD" ? "pencil.and.list.clipboard" : "book")
+                HStack(spacing: 12) {
+                    StudyBadge(symbol: chapter.completed ? "checkmark.seal.fill" : chapter.kind == "TD" ? "pencil.and.outline" : "text.book.closed.fill", color: chapter.completed ? StudyDesign.mint : StudyDesign.color(for: subject.name), size: 38)
+                    Text(chapter.name).font(.headline)
+                    Spacer(minLength: 0)
+                    StudyPill(title: chapter.kind, color: StudyDesign.color(for: subject.name))
+                }
                 ProgressView(value: StudyCoach.progress(chapter, sessions: sessions))
                 Text(chapter.kind == "TD" ? "\(chapter.exercisesDone) / \(chapter.exerciseCount) exercices" : "\(Int(StudyCoach.progress(chapter, sessions: sessions) * 100)) % · \(chapter.requiredSessions) séances visées").font(.caption)
             }
@@ -177,7 +187,7 @@ struct ChapterPage: View {
                 Button("Créer une flashcard", systemImage: "plus") { add = true }
             }
             Button("Réviser les cartes") { reviewing = true }.disabled(cards.isEmpty)
-        }.navigationTitle(chapter.name)
+        }.studyScreen().navigationTitle(chapter.name)
         .alert("Planning", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
         .sheet(isPresented: $add) { RevisionEditor(kind: .card(chapter.id)) }
         .sheet(isPresented: $edit) { RevisionEditor(kind: .chapter(chapter.subjectID, chapter)) }
@@ -276,7 +286,7 @@ struct RevisionEditor: View {
                     TextField("Question", text: $name, axis: .vertical)
                     TextField("Réponse", text: $answer, axis: .vertical)
                 }
-            }.navigationTitle(title).toolbar {
+            }.studyScreen().navigationTitle(title).toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(!valid || saved) }
             }

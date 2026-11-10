@@ -106,7 +106,7 @@ struct Primary: ButtonStyle {
         configuration.label.font(.system(.headline, design: .rounded, weight: .semibold))
             .frame(maxWidth: .infinity, minHeight: 24).padding(18)
             .foregroundStyle(.white)
-            .background(LinearGradient(colors: [StudyDesign.accent, StudyDesign.accent.opacity(0.87)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 20))
+            .background(LinearGradient(colors: [StudyDesign.accent, Color(red: 0.31, green: 0.24, blue: 0.72)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 20))
             .shadow(color: StudyDesign.accent.opacity(0.17), radius: 10, x: 0, y: 5)
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
             .opacity(configuration.isPressed ? 0.85 : 1)

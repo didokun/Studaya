@@ -73,6 +73,7 @@ struct PhotoPlanningImporter: View {
                 }
             }
         }
+        .studyScreen()
         .sheet(isPresented: $camera) {
             PlanningCamera { image in
                 camera = false

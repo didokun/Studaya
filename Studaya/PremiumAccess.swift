@@ -13,7 +13,7 @@ struct PremiumAccess<Content: View>: View {
                 if !checked || membership.premium == nil { ProgressView("Vérification de Premium…") }
                 else if membership.premium == true { content() }
                 else { PremiumOptions().padding(.horizontal) }
-            }.navigationTitle(title).navigationBarTitleDisplayMode(.inline)
+            }.studyScreen().navigationTitle(title).navigationBarTitleDisplayMode(.inline)
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() }.accessibilityIdentifier("premium.close") } }
         }.task { await membership.refresh(); checked = true }
     }
@@ -26,9 +26,9 @@ struct PremiumFeatureLabel: View {
         HStack(spacing: 12) {
             Label(title, systemImage: symbol)
             Spacer(minLength: 8)
-            Text("Premium").font(.caption.weight(.semibold))
+            Label("Premium", systemImage: "sparkles").font(.caption.weight(.semibold)).foregroundStyle(StudyDesign.accent)
                 .padding(.horizontal, 8).padding(.vertical, 4)
-                .background(Color.mintBrand.opacity(0.15), in: Capsule())
+                .background(StudyDesign.accent.opacity(0.1), in: Capsule())
         }.accessibilityElement(children: .combine).accessibilityLabel(title).accessibilityValue("Premium")
     }
 }
