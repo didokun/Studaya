@@ -99,9 +99,21 @@ struct SubjectPage: View {
                 }
                 Button("Ajouter une échéance", systemImage: "calendar.badge.plus") { addDeadline = true }
             }
-            ForEach(["Cours", "TD"], id: \.self) { kind in
-                Section(kind == "TD" ? "TD en cours" : "Cours en cours") {
-                    ForEach(units.filter { !$0.completed && $0.kind == kind }) { chapter in unitRow(chapter) }
+            Section("Chronologie des cours et TD") {
+                let active = TimelineOrder.chapters(units.filter { !$0.completed })
+                UnitTimeline(ids: active.map(\.id)) { order in
+                    for (position, id) in order.enumerated() {
+                        active.first { $0.id == id }?.timelineIndex = position
+                    }
+                    do { try db.save() } catch { db.rollback(); message = error.localizedDescription }
+                } card: { id in
+                    if let chapter = active.first(where: { $0.id == id }) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            if let date = chapter.startDate { Text(date, format: .dateTime.day().month(.wide)).font(.caption) }
+                            unitRow(chapter).buttonStyle(.plain)
+                            Button("Supprimer", role: .destructive) { removingChapter = chapter; confirmChapterDelete = true }.font(.caption).buttonStyle(.borderless)
+                        }
+                    }
                 }
             }
             Button("Ajouter un cours ou un TD", systemImage: "plus") { add = true }

@@ -7,14 +7,40 @@ import OSLog
     static let products = ["studaya.premium.monthly", "studaya.premium.yearly", "studaya.premium.lifetime"]
     @Published private(set) var premium: Bool?
     @Published private(set) var activeIDs = Set<String>()
+    private var refreshGeneration = 0
     func refresh() async {
+        refreshGeneration += 1
+        let generation = refreshGeneration
+        var verificationFailed = false
         var active = Set<String>()
         for await result in Transaction.currentEntitlements {
+            if case .unverified(let transaction, _) = result, Self.products.contains(transaction.productID) { verificationFailed = true }
             if case .verified(let transaction) = result, Self.products.contains(transaction.productID),
                transaction.revocationDate == nil, !transaction.isUpgraded { active.insert(transaction.productID) }
         }
+        // A device can have a verified renewal in its transaction history
+        // before the current-entitlements sequence reflects it.
+        if active.isEmpty && !verificationFailed {
+            for id in Self.products where id != "studaya.premium.lifetime" {
+                guard !Task.isCancelled else { return }
+                switch await Transaction.latest(for: id) {
+                case .verified(let renewal):
+                    if renewal.productID == id, Self.isCurrentRenewal(expiration: renewal.expirationDate,
+                       revoked: renewal.revocationDate != nil, upgraded: renewal.isUpgraded, now: .now) {
+                        active.insert(id)
+                    }
+                case .unverified: verificationFailed = true
+                case nil: break
+                }
+            }
+        }
+        guard generation == refreshGeneration, !Task.isCancelled else { return }
         activeIDs = active
-        premium = !active.isEmpty
+        premium = active.isEmpty && verificationFailed ? nil : !active.isEmpty
+    }
+    static func isCurrentRenewal(expiration: Date?, revoked: Bool, upgraded: Bool, now: Date) -> Bool {
+        guard !revoked, !upgraded, let expiration else { return false }
+        return expiration > now
     }
     func observe() async {
         for await result in Transaction.updates {
@@ -74,7 +100,7 @@ struct PremiumOptions: View {
                         }
                         if loaded && catalog.count < Membership.products.count {
                             #if DEBUG
-                            Text("For test purchases, run Studaya from Xcode with Studaya.storekit selected in the scheme’s Run options.").font(.footnote)
+                            Text("Pour tester des achats fictifs, utilise le schéma Studaya dans Xcode.").font(.footnote)
                             #endif
                             if let priceMessage { Text(priceMessage).font(.footnote).foregroundStyle(.secondary) }
                             Button(loadingPrices ? "Loading…" : "Reload prices") { Task { await load() } }

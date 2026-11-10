@@ -22,6 +22,7 @@ import StoreKit
     var kind = "Cours"
     var completed = false
     var synthesisDone = false
+    var timelineIndex: Int?
     var exerciseCount = 5
     var exercisesDone = 0
     var confidence = 2

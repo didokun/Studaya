@@ -28,7 +28,7 @@ Pour activer la synchronisation, provisionner un conteneur iCloud, activer les c
 
 ## Abonnements StoreKit 2
 
-Le schéma partagé Studaya charge Studaya.storekit à l’exécution depuis Xcode. Trois produits locaux reprennent la structure de Tidiva, mensuel, annuel et achat à vie. Les formules récurrentes ont une offre introductive de sept jours pour les comptes éligibles. Premium déverrouille le bilan Focus sur trente jours, le détail par matière et l’export CSV. Les prix proviennent de StoreKit.
+Le schéma Studaya conserve la boutique de test locale pour lancer l’app depuis Xcode sur iPhone et retrouver ses achats de test. Le schéma Studaya Sandbox utilise les produits configurés dans App Store Connect. Les achats Xcode sont propres à leur environnement. Trois produits locaux reprennent la structure de Tidiva, mensuel, annuel et achat à vie. Les formules récurrentes ont une offre introductive de sept jours pour les comptes éligibles. Premium déverrouille le bilan Focus sur trente jours, le détail par matière et l’export CSV. Les prix proviennent de StoreKit.
 
 PremiumOptions charge les produits, vérifie les transactions, traite les mises à jour, restaure les achats et ouvre la gestion Apple des abonnements. MembershipTests vérifie le catalogue et l’activation par achat annuel dans la boutique de test. Pour distribuer ces offres, configurer dans App Store Connect les identifiants studaya.premium.monthly, studaya.premium.yearly et studaya.premium.lifetime, le groupe, les tarifs et les essais de production.
 

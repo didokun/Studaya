@@ -4,6 +4,14 @@ import StoreKitTest
 @testable import Studaya
 
 @MainActor final class MembershipTests: XCTestCase {
+    func testRenewalFallbackRejectsExpiredRefundedAndUpgradedPurchases() {
+        let now = Date(), future = now.addingTimeInterval(3600)
+        XCTAssertTrue(Membership.isCurrentRenewal(expiration: future, revoked: false, upgraded: false, now: now))
+        XCTAssertFalse(Membership.isCurrentRenewal(expiration: now, revoked: false, upgraded: false, now: now))
+        XCTAssertFalse(Membership.isCurrentRenewal(expiration: nil, revoked: false, upgraded: false, now: now))
+        XCTAssertFalse(Membership.isCurrentRenewal(expiration: future, revoked: true, upgraded: false, now: now))
+        XCTAssertFalse(Membership.isCurrentRenewal(expiration: future, revoked: false, upgraded: true, now: now))
+    }
     func testTestStoreOffersAndUnlocksPremium() async throws {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Studaya", withExtension: "storekit"))
         let session = try SKTestSession(contentsOf: url)

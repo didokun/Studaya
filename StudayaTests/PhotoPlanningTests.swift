@@ -5,6 +5,27 @@ import StoreKitTest
 @testable import Studaya
 
 @MainActor final class PhotoPlanningTests: XCTestCase {
+    func testTimelineMovesOneCardInBothDirections() {
+        let a = UUID(), b = UUID(), c = UUID()
+        XCTAssertEqual(TimelineOrder.dropping(a, on: c, in: [a,b,c]), [b,c,a])
+        XCTAssertEqual(TimelineOrder.dropping(c, on: a, in: [a,b,c]), [c,a,b])
+        XCTAssertNil(TimelineOrder.dropping(UUID(), on: c, in: [a,b,c]))
+    }
+    func testCourseTableKeepsUndatedSessionsAndReadsExplicitDates() {
+        let entries = PlanningTable.drafts([
+            ["", "Séance", "Thème", "Cas"],
+            ["AMPHI", "", "Introduction au contrôle de gestion", "CAS LUCKY DUCK"],
+            ["TD", "1", "coût\nL’arbitrage coût et valeur", "CAS LM"],
+            ["TD", "2", "Les tableaux de bord", "12/11/2026"]
+        ])
+        XCTAssertEqual(entries.map(\.kind), [.course, .td, .td])
+        XCTAssertNil(entries[0].date)
+        XCTAssertEqual(entries[1].title, "L’arbitrage coût et valeur")
+        XCTAssertNil(entries[1].date)
+        XCTAssertNotNil(entries[2].date)
+        XCTAssertTrue(entries.allSatisfy { !$0.verified })
+    }
+
     func testPremiumRequiredIncludingUnknownStatus() {
         XCTAssertThrowsError(try PhotoPlanning.requirePremium(nil))
         XCTAssertThrowsError(try PhotoPlanning.requirePremium(false))

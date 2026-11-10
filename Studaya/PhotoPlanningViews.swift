@@ -21,6 +21,7 @@ struct PhotoPlanningImporter: View {
     @Environment(\.modelContext) private var db
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var membership = Membership.shared
+    @State private var onlyTD = false
     @State private var photo: PhotosPickerItem?
     @State private var camera = false
     @State private var preview: UIImage?
@@ -37,7 +38,7 @@ struct PhotoPlanningImporter: View {
     var body: some View {
         Form {
             Section(subjectName) {
-                Text("Photographie un planning de cette matière ou sélectionne une image. La lecture et l’analyse sont réalisées sur l’iPhone. Rien n’est ajouté sans ta validation.")
+                Text("Photographie un planning de cette matière ou sélectionne une image. La photo est analysée sur ton iPhone. Rien n’est ajouté sans ta validation.")
                 PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
                     Label("Choisir une photo du planning", systemImage: "photo")
                 }.disabled(busy || membership.premium != true)
@@ -48,7 +49,7 @@ struct PhotoPlanningImporter: View {
             }
             if busy { Section { ProgressView("Lecture et analyse du planning…"); Button("Annuler l’analyse") { operationID = UUID(); work?.cancel(); busy = false; status = "Analyse annulée. Aucun élément ajouté." } } }
             if !status.isEmpty { Section("Résultat de la lecture") { Text(status) } }
-            if !sourceText.isEmpty {
+            if !sourceText.isEmpty || !entries.isEmpty {
                 Section {
                     DisclosureGroup("Consulter le texte lu sur la photo") { Text(sourceText).font(.callout).textSelection(.enabled) }
                     Text("Un jour de semaine sans date complète doit être complété manuellement. Vérifie également les éléments qui pourraient manquer.").font(.footnote).foregroundStyle(.secondary)
@@ -57,8 +58,29 @@ struct PhotoPlanningImporter: View {
                 }
                 Section("Prévisualisation · \(selectedCount) sélectionné(s)") {
                     Text("Compare chaque élément à la photo. Complète les dates manquantes et vérifie l’heure des contrôles, présentations et examens.").font(.footnote)
-                    ForEach($entries) { $entry in PhotoPlanningEntryEditor(entry: $entry) }
-                        .onDelete { offsets in entries.remove(atOffsets: offsets) }
+                    Toggle("Afficher uniquement les TD", isOn: $onlyTD)
+                    let visible = entries.filter { !onlyTD || $0.kind == .td }.map(\.id)
+                    UnitTimeline(ids: visible) { order in
+                        let lookup = Dictionary(uniqueKeysWithValues: entries.map { ($0.id, $0) })
+                        var reordered = order.makeIterator()
+                        entries = entries.map { row in
+                            guard visible.contains(row.id), let next = reordered.next() else { return row }
+                            return lookup[next] ?? row
+                        }
+                    } card: { id in
+                        if let i = entries.firstIndex(where: { $0.id == id }) {
+                            DisclosureGroup {
+                                PhotoPlanningEntryEditor(entry: $entries[i])
+                                Button("Retirer cet élément", role: .destructive) { entries.removeAll { $0.id == id } }
+                            } label: {
+                                VStack(alignment: .leading) {
+                                    Text(entries[i].kind.rawValue).font(.caption.bold())
+                                    Text(entries[i].title.isEmpty ? "Nouvel élément" : entries[i].title).font(.headline)
+                                    Text(entries[i].date?.formatted(date: .abbreviated, time: .omitted) ?? "Date à préciser").font(.caption)
+                                }
+                            }
+                        }
+                    }
                 }
                 if let existingExam, entries.contains(where: { $0.selected && $0.kind == .exam }) {
                     Section("Examen final existant") {
@@ -119,6 +141,7 @@ struct PhotoPlanningImporter: View {
     }
     private func process(_ data: Data, token: UUID) async {
         guard operationID == token else { return }
+        onlyTD = false
         busy = true; saved = false; replaceExam = false
         entries = []; sourceText = ""; status = ""; preview = nil
         do {
@@ -138,7 +161,14 @@ struct PhotoPlanningImporter: View {
                 preview = UIImage(cgImage: image)
             }
             sourceText = result.text
-            let analysis = try await PhotoPlanning.analyze(result.text, layout: result.layoutText, subject: subjectName)
+            let analysis: (entries: [ImportedPlanningEntry], message: String)
+            let tableEntries = (try? await PlanningTable.read(data)) ?? []
+            try Task.checkCancellation()
+            if tableEntries.isEmpty {
+                analysis = try await PhotoPlanning.analyze(result.text, layout: result.layoutText, subject: subjectName)
+            } else {
+                analysis = (tableEntries, "\(tableEntries.count) séances proposées pour \(subjectName) à partir des lignes du tableau. Vérifie les matières, les dates et les extraits avant l’import.")
+            }
             try Task.checkCancellation()
             guard operationID == token else { return }
             entries = analysis.entries

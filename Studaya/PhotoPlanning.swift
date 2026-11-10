@@ -112,7 +112,7 @@ enum PlanningPhotoOCR {
             return ([], "L’IA locale n’a pas pu structurer ce planning. Le texte reste disponible : ajoute les éléments manuellement.")
         }
         #endif
-        return ([], "L’IA Apple locale n’est pas disponible sur cet iPhone. Le texte a été lu sur l’appareil : ajoute et vérifie les éléments manuellement. Apple Intelligence doit être disponible et activé pour l’analyse automatique.")
+        return ([], "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.")
     }
     static func validate(_ entries: [ImportedPlanningEntry]) throws -> [ImportedPlanningEntry] {
         let selected = entries.filter(\.selected)
@@ -152,10 +152,14 @@ enum PlanningPhotoOCR {
             guard rows.filter({ $0.kind.isUnit }).allSatisfy({ Calendar.current.startOfDay(for: $0.date!) < Calendar.current.startOfDay(for: subject.exam) }) else { throw StudyError.invalid("Un cours ou TD commence après l’examen final existant. Corrige la date avant l’import.") }
         }
         do {
+            let previous = TimelineOrder.chapters(chapters)
+            for (position, chapter) in previous.enumerated() { chapter.timelineIndex = position }
+            var position = previous.count
             for row in rows {
                 let title = row.title.trimmingCharacters(in: .whitespacesAndNewlines)
                 if row.kind.isUnit {
                     let chapter = Chapter(title, subject: subject.id, target: row.sessions)
+                    chapter.timelineIndex = position; position += 1
                     chapter.kind = row.kind.rawValue; chapter.startDate = row.date; chapter.exerciseCount = row.exercises
                     chapter.notes = row.evidence.isEmpty ? "" : "Source · planning importé\n" + row.evidence
                     db.insert(chapter)

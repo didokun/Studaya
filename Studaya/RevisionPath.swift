@@ -60,8 +60,11 @@ struct PathSubject: Identifiable {
                 subject.year = draft.year
                 if usesSemesters { subject.semester = draft.semester }
                 if draft.hasExam { subject.exam = draft.exam; subject.hasExam = true }
-                for unit in draft.units {
+                let previous = TimelineOrder.chapters(try db.fetch(FetchDescriptor<Chapter>()).filter { $0.subjectID == subject.id })
+                for (position, chapter) in previous.enumerated() { chapter.timelineIndex = position }
+                for (offset, unit) in draft.units.enumerated() {
                     let chapter = Chapter(unit.name.trimmingCharacters(in: .whitespacesAndNewlines), subject: subject.id, target: unit.sessions)
+                    chapter.timelineIndex = previous.count + offset
                     chapter.notes = unit.notes
                     chapter.kind = unit.kind; chapter.startDate = unit.start; chapter.exerciseCount = unit.exercises
                     db.insert(chapter)
@@ -178,15 +181,13 @@ struct RevisionPathBuilder: View {
         case 1:
             photoButton(subjects[index])
             Text("À quelle date commence chaque cours ou TD ? Les révisions ne démarreront pas avant cette date.")
-            ForEach($subjects[index].units) { $unit in
-                VStack(alignment: .leading, spacing: 14) {
-                    TextField("Nom du cours ou TD", text: $unit.name).textFieldStyle(StudyTextFieldStyle(boxed: true))
-                    Picker("Type", selection: $unit.kind) { Text("Cours").tag("Cours"); Text("TD").tag("TD") }.studyMenu("Type", value: unit.kind)
-                    DatePicker("Date de début", selection: $unit.start, displayedComponents: .date)
-                    Stepper("Objectif · \(unit.sessions) séances", value: $unit.sessions, in: 1...30)
-                    if unit.kind == "TD" { Stepper("\(unit.exercises) exercices", value: $unit.exercises, in: 1...100) }
-                    if subjects[index].units.count > 1 { Button("Retirer ce cours ou TD", role: .destructive) { subjects[index].units.removeAll { $0.id == unit.id } } }
-                }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))
+            UnitTimeline(ids: subjects[index].units.map(\.id)) { order in
+                let units = subjects[index].units
+                subjects[index].units = order.compactMap { id in units.first { $0.id == id } }
+            } card: { id in
+                if let i = subjects[index].units.firstIndex(where: { $0.id == id }) {
+                    unitEditor($subjects[index].units[i])
+                }
             }
             Button("Ajouter un cours ou TD", systemImage: "plus") { subjects[index].units.append(PathUnit()) }.buttonStyle(.bordered)
         case 2:
@@ -213,6 +214,25 @@ struct RevisionPathBuilder: View {
             Text("Le planning tiendra compte de tes disponibilités et des échéances les plus proches. Rien n’est enregistré avant la création.")
         default:
             EmptyView()
+        }
+    }
+    private func unitEditor(_ binding: Binding<PathUnit>) -> some View {
+        let unit = binding.wrappedValue
+        return DisclosureGroup {
+                VStack(alignment: .leading, spacing: 14) {
+                    TextField("Nom du cours ou TD", text: binding.name).textFieldStyle(StudyTextFieldStyle(boxed: true))
+                    Picker("Type", selection: binding.kind) { Text("Cours").tag("Cours"); Text("TD").tag("TD") }.studyMenu("Type", value: unit.kind)
+                    DatePicker("Date de début", selection: binding.start, displayedComponents: .date)
+                    Stepper("Objectif · \(unit.sessions) séances", value: binding.sessions, in: 1...30)
+                    if unit.kind == "TD" { Stepper("\(unit.exercises) exercices", value: binding.exercises, in: 1...100) }
+                    if subjects[index].units.count > 1 { Button("Retirer ce cours ou TD", role: .destructive) { subjects[index].units.removeAll { $0.id == unit.id } } }
+                }
+        } label: {
+            VStack(alignment: .leading) {
+                Text(unit.kind).font(.caption.bold())
+                Text(unit.name.isEmpty ? "Nouveau cours ou TD" : unit.name).font(.headline)
+                Text(unit.start, format: .dateTime.day().month(.wide)).font(.caption)
+            }
         }
     }
     private func photoButton(_ subject: PathSubject) -> some View {

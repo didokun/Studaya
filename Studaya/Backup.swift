@@ -41,6 +41,7 @@ struct ChapterData: Codable {
     var kind: String
     var completed: Bool
     var synthesisDone: Bool
+    var timelineIndex: Int?
     var exerciseCount: Int
     var exercisesDone: Int
     var confidence: Int
@@ -54,6 +55,7 @@ struct ChapterData: Codable {
         kind = model.kind
         completed = model.completed
         synthesisDone = model.synthesisDone
+        timelineIndex = model.timelineIndex
         exerciseCount = model.exerciseCount
         exercisesDone = model.exercisesDone
         confidence = model.confidence
@@ -69,6 +71,7 @@ struct ChapterData: Codable {
         model.kind = kind
         model.completed = completed
         model.synthesisDone = synthesisDone
+        model.timelineIndex = timelineIndex
         model.exerciseCount = exerciseCount
         model.exercisesDone = exercisesDone
         model.confidence = confidence
