@@ -155,6 +155,7 @@ struct SubjectProgress: View {
 struct StudyMonth: View {
     @Binding var selection: Date
     let marked: (Date) -> Bool
+    var markers: (Date) -> [CalendarDayMarker] = { _ in [] }
     var calendar: Calendar { var c = Calendar.current; c.firstWeekday = 2; return c }
     var body: some View {
         let first = calendar.dateInterval(of: .month, for: selection)!.start
@@ -179,24 +180,29 @@ struct StudyMonth: View {
                         ForEach(0..<7, id: \.self) { weekday in
                             let index = week * 7 + weekday
                             if index < offset || index >= offset + count {
-                                Color.clear.frame(maxWidth: .infinity).frame(height: 44)
+                                Color.clear.frame(maxWidth: .infinity).frame(height: 72)
                             } else {
                                 let day = calendar.date(byAdding: .day, value: index - offset, to: first)!
+                                let dayMarkers = markers(day)
+                                let hasReminder = marked(day)
                                 Button { selection = day } label: {
                                     VStack(spacing: 4) {
                                         Text(day, format: .dateTime.day())
-                                        Circle().fill(marked(day) ? Color.mintBrand : .clear).frame(width: 5, height: 5)
-                                    }.frame(maxWidth: .infinity).frame(height: 44)
-                                        .background(calendar.isDate(day, inSameDayAs: selection) ? Color.mintBrand.opacity(0.2) : .clear, in: RoundedRectangle(cornerRadius: 12))
+                                        CalendarDayIcons(markers: dayMarkers, showCode: true)
+                                        Circle().fill(hasReminder ? StudyDesign.accent : .clear).frame(width: 4, height: 4)
+                                    }.frame(maxWidth: .infinity).frame(height: 72)
+                                        .background((dayMarkers.first?.kind.color ?? Color.clear).opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+                                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(calendar.isDate(day, inSameDayAs: selection) ? StudyDesign.accent : .clear, lineWidth: 2))
                                 }.buttonStyle(.plain)
-                                    .accessibilityLabel(day.formatted(date: .complete, time: .omitted) + (marked(day) ? ", rappel ou échéance" : ""))
+                                    .accessibilityLabel(day.formatted(date: .complete, time: .omitted) + ", " + dayMarkers.map { $0.kind.rawValue + " " + $0.code }.joined(separator: ", ") + (hasReminder ? ", rappel ou échéance" : ""))
                                     .accessibilityAddTraits(calendar.isDate(day, inSameDayAs: selection) ? .isSelected : [])
                             }
                         }
-                    }.frame(height: 44)
+                    }.frame(height: 72)
                 }
             }
-            Label("Un point vert indique un rappel ou une échéance", systemImage: "circle.fill").font(.caption).foregroundStyle(.secondary)
+            CalendarLegend()
+            Text("Icônes et codes : matières prévues · point violet : rappel ou échéance").font(.caption2).foregroundStyle(.secondary)
         }
     }
     func move(_ months: Int) { selection = calendar.date(byAdding: .month, value: months, to: selection)! }

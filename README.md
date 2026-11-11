@@ -107,3 +107,13 @@ Les apparitions de cartes, retours visuels des boutons et changements d’état 
 Les présentations et contrôles proposent un lien facultatif vers un cours ou TD de la matière (y compris dans l’import photo). Aucun titre n’est à saisir : le nom vient du cours/TD choisi, ou de la matière si « Toute la matière » est sélectionné. Les examens restent associés à la matière. Ces liens sont conservés dans les sauvegardes ; supprimer un cours ou TD rattache ses évaluations à la matière.
 
 Chaque matière possède un code facultatif, modifiable à la création et à l’édition ainsi que dans le parcours. Si le champ reste vide, les initiales de chaque mot du nom sont calculées automatiquement (Analyse numérique → AN). Les cartes, séances, rappels et plannings affichent ce code ; le nom complet reste conservé et recherchable, et les codes personnalisés sont inclus dans les sauvegardes.
+
+## Calendrier interne et Calendrier Apple
+
+Les vues semaine et mois affichent les icônes et codes des matières, avec des fonds rouges pour les examens, ambre pour les contrôles et bleus pour les présentations. Plusieurs types le même jour conservent leurs marqueurs et la couleur prioritaire de l’examen. Les séances seules sont aussi signalées ; une légende et les libellés VoiceOver expliquent les marqueurs.
+
+Planning → Synchroniser avec Calendrier Apple (ou Réglages → Calendrier Apple) active un export unidirectionnel après autorisation complète EventKit. Studaya crée un calendrier dédié sur une source modifiable disponible. Les séances conservent leur durée ; les examens dont seule la date est connue sont sur la journée ; les autres échéances et rappels sont des repères de 15 minutes. Les éléments sans date ne sont pas exportés. Aucune alarme Apple supplémentaire n’est créée : les notifications restent gérées par Studaya.
+
+L’ouverture de l’app et les modifications du planning mettent à jour les événements exportés avec des identifiants stables. Les modifications effectuées dans Calendrier Apple ne sont pas importées dans Studaya et peuvent être réécrites lors de la prochaine synchronisation. « Arrêter la synchronisation » conserve les événements exportés. « Tout supprimer de Calendrier Apple » exige une confirmation, retire uniquement les événements identifiés comme exportés par cette installation et désactive la synchronisation pour empêcher leur recréation. Les rendez-vous personnels, même ajoutés manuellement au calendrier Studaya, ne sont pas supprimés. Le suivi d’export reste propre à l’appareil et n’est pas inclus dans les sauvegardes de parcours ; une désinstallation efface ce suivi.
+
+Référence : [EventKit et les autorisations Calendrier Apple](https://developer.apple.com/documentation/eventkit/accessing-calendar-using-eventkit-and-eventkitui).

@@ -15,7 +15,7 @@ enum StudyDesign {
     }
     static func symbol(for name: String) -> String {
         let text = name.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-        if text.contains("math") || text.contains("stat") { return "function" }
+        if text.contains("math") || text.contains("stat") || text.contains("analyse numer") || text.contains("algebre") || text.contains("geometr") { return "function" }
         if text.contains("bio") { return "leaf.fill" }
         if text.contains("chim") { return "flask.fill" }
         if text.contains("phys") { return "atom" }

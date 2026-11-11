@@ -128,7 +128,7 @@ struct Today: View {
                     } else {
                         ForEach(Array(deadlines.filter { !$0.done }.prefix(3))) { item in
                             VStack(alignment: .leading, spacing: 12) {
-                                DeadlineRow(item: item)
+                                DeadlineRow(item: item).listRowBackground(CalendarStudyKind.deadline(item.kind).color.opacity(0.12))
                                 let done = sessions.filter { $0.deadlineID == item.id && $0.done }.count
                                 ProgressView(value: Double(min(done, item.preparationSessions)), total: Double(max(1, item.preparationSessions))).tint(StudyDesign.accent)
                                 Text("\(done) / \(item.preparationSessions) séances de préparation").font(.caption).foregroundStyle(.secondary)
@@ -235,10 +235,11 @@ struct Planner: View {
                     } label: { Label(p.usesSemesters ? "Parcourir mes semestres" : "Parcourir mes années", systemImage: "graduationcap") }
                 }
             }
+            NavigationLink { CalendarSyncSettings() } label: { Label("Synchroniser avec Calendrier Apple", systemImage: "calendar.badge.clock") }
             NavigationLink("Gérer mes indisponibilités") { UnavailabilitySettings().navigationTitle("Indisponibilités") }
             Picker("Vue", selection: $month) { Text("Semaine").tag(false); Text("Calendrier").tag(true) }.pickerStyle(.segmented)
             if month {
-                StudyMonth(selection: $date, marked: marked)
+                StudyMonth(selection: $date, marked: marked, markers: markers)
             } else {
                 HStack {
                     Button("Précédente", systemImage: "chevron.left") { shift(-7) }
@@ -251,18 +252,21 @@ struct Planner: View {
                     ForEach(0..<7, id: \.self) { i in
                         let start = calendar.dateInterval(of: .weekOfYear, for: date)!.start
                         let day = calendar.date(byAdding: .day, value: i, to: start)!
+                        let dayMarkers = markers(day)
                         Button { date = day } label: {
                             VStack {
                                 Text(day, format: .dateTime.weekday(.narrow)).font(.caption.weight(.medium)); Text(day, format: .dateTime.day()).font(.system(.title3, design: .rounded, weight: .bold))
+                                CalendarDayIcons(markers: dayMarkers, showCode: true, selected: calendar.isDate(day, inSameDayAs: date))
                                 Circle().fill(marked(day) ? (calendar.isDate(day, inSameDayAs: date) ? Color.white : StudyDesign.accent) : .clear).frame(width: 5, height: 5)
                             }
                                 .frame(maxWidth: .infinity).padding(.vertical, 8)
                                 .foregroundStyle(calendar.isDate(day, inSameDayAs: date) ? .white : StudyDesign.ink)
-                                .background(calendar.isDate(day, inSameDayAs: date) ? StudyDesign.accent : StudyDesign.canvas, in: RoundedRectangle(cornerRadius: 16))
-                        }.buttonStyle(.plain).accessibilityLabel(Text(day, format: .dateTime.weekday(.wide).day().month()))
+                                .background(calendar.isDate(day, inSameDayAs: date) ? StudyDesign.accent : (dayMarkers.first?.kind.color ?? StudyDesign.canvas).opacity(dayMarkers.isEmpty ? 1 : 0.12), in: RoundedRectangle(cornerRadius: 16))
+                        }.buttonStyle(.plain).accessibilityLabel(day.formatted(date: .complete, time: .omitted) + ", " + dayMarkers.map { $0.kind.rawValue + " " + $0.code }.joined(separator: ", "))
                     }
                 }
             }
+            if !month { CalendarLegend() }
             Section(date.formatted(.dateTime.locale(Locale(identifier: "fr")).weekday(.wide).day().month())) {
                 let day = sessions.filter { calendar.isDate($0.start, inSameDayAs: date) }
                 ForEach(blocks.filter { $0.interval(on: date, calendar: calendar) != nil }) { block in
@@ -273,7 +277,11 @@ struct Planner: View {
                 ForEach(reviews.filter { !$0.done && calendar.isDate($0.due, inSameDayAs: date) }) { review in
                     if let chapter = chapters.first(where: { $0.id == review.chapterID }) { ReviewRow(review: review, chapter: chapter) }
                 }
-                ForEach(subjects.filter { $0.hasExam && calendar.isDate($0.exam, inSameDayAs: date) }) { Label("Examen · " + $0.name, systemImage: "graduationcap") }
+                ForEach(subjects.filter { $0.hasExam && calendar.isDate($0.exam, inSameDayAs: date) }) { subject in
+                    Label("Examen · " + subject.displayCode, systemImage: "graduationcap.fill")
+                        .foregroundStyle(CalendarStudyKind.exam.color)
+                        .listRowBackground(CalendarStudyKind.exam.color.opacity(0.12))
+                }
                 ForEach(deadlines.filter { !$0.done && $0.hasDueDate && (calendar.isDate($0.due, inSameDayAs: date) || calendar.isDate($0.reminderDate, inSameDayAs: date)) }) { item in
                     if calendar.isDate(item.reminderDate, inSameDayAs: date) { Label("Rappel · " + (subjects.first { $0.id == item.subjectID }?.compactTitle(item.title) ?? item.title), systemImage: "bell.badge") }
                     DeadlineRow(item: item)
@@ -283,7 +291,7 @@ struct Planner: View {
                 }
                 if dailyReminder { Label("Rappel quotidien de révision", systemImage: "bell") }
                 if day.isEmpty { Text("Aucune séance prévue.").foregroundStyle(.secondary) }
-                ForEach(day) { SessionRow(session: $0) }
+                ForEach(day) { SessionRow(session: $0).listRowBackground(CalendarStudyKind.revision.color.opacity(0.05)) }
             }
             Button("Replanifier les séances à faire", systemImage: "arrow.clockwise") {
                 do {
@@ -292,6 +300,9 @@ struct Planner: View {
                 } catch { message = error.localizedDescription }
             }
         }.alert("Replanification", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
+    }
+    func markers(_ day: Date) -> [CalendarDayMarker] {
+        CalendarDayPlan.markers(on: day, subjects: subjects, sessions: sessions, deadlines: deadlines, reviews: reviews, chapters: chapters, calendar: calendar)
     }
     func marked(_ day: Date) -> Bool {
         ReminderPlan.make(subjects: subjects, deadlines: deadlines, chapters: chapters, reviews: reviews, now: .distantPast).contains { calendar.isDate($0.date, inSameDayAs: day) } || dailyReminder || subjects.contains { $0.hasExam && calendar.isDate($0.exam, inSameDayAs: day) }

@@ -42,6 +42,7 @@ struct StudySettings: View {
                         }
                     }
                     row("Rappels et notifications","bell") { ReminderSettings() }
+                    row("Calendrier Apple", "calendar.badge.clock") { CalendarSyncSettings() }
                 }
                 Section {
                     row("Abonnement","star.circle") { PremiumOptions().padding(.horizontal) }

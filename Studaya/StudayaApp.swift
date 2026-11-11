@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import EventKit
 
 extension Color {
     static let navy = StudyDesign.ink
@@ -63,6 +64,7 @@ struct Home: View {
     @AppStorage("focusRunID") private var focusRunID = ""
     private var focusRevision: String { "\(focusEnd):\(focusRemaining):\(focusLength):\(focusRest):\(focusRunID)" }
 
+    @AppStorage(AppleCalendarSync.enabledKey) private var calendarSyncEnabled = false
     @AppStorage("eventRemindersEnabled") private var eventRemindersEnabled = false
     var reminderRevision: String {
         String(eventRemindersEnabled) + subjects.map { "\($0.id):\($0.name):\($0.code):\($0.hasExam):\($0.exam)" }.sorted().joined()
@@ -100,11 +102,13 @@ struct Home: View {
                 do { try FocusCompanion.shared.reconcile(db, now: now) } catch { message = error.localizedDescription }
             }
         }
+        .task(id: "\(calendarSyncEnabled):\(dataRevision):" + reminderRevision) { AppleCalendarSync.shared.refresh(db) }
+        .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged).debounce(for: .milliseconds(300), scheduler: RunLoop.main)) { _ in AppleCalendarSync.shared.refresh(db) }
         .task(id: reminderRevision) { await EventReminders.shared.refresh(db) }
         .onChange(of: phase, initial: true) { _, value in
             if value == .active {
                 do { try FocusCompanion.shared.reconcile(db) } catch { message = error.localizedDescription }
-                Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db) }
+                Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db); AppleCalendarSync.shared.refresh(db) }
             }
             if value == .active && sessions.contains(where: { !$0.done && !$0.pinned && $0.start.addingTimeInterval(Double($0.minutes * 60)) <= .now }) {
                 do { try Scheduler.rebuild(db) } catch { message = error.localizedDescription }

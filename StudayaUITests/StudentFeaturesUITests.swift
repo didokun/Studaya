@@ -95,6 +95,53 @@ final class StudentFeaturesUITests: XCTestCase {
         reveal(focus, in: app)
         XCTAssertTrue(focus.exists)
     }
+    @MainActor func testAppleCalendarSyncAndRemovalKeepStudyPlanning() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test", "-AppleLanguages", "(fr)"]
+        app.launch()
+        app.buttons["Commencer"].tap()
+        app.textFields["Formation"].tap(); app.textFields["Formation"].typeText("Licence\n")
+        app.buttons["Continuer"].tap(); app.buttons["Continuer"].tap(); app.buttons["Continuer"].tap()
+        app.buttons["Plus tard"].tap(); app.buttons["Continuer"].tap()
+        app.buttons["Valider mon profil"].tap(); app.buttons["Continuer gratuitement"].tap()
+        app.tabBars.buttons["Matières"].tap(); app.buttons["Ajouter une matière"].tap()
+        app.textFields["Nom de la matière"].tap(); app.textFields["Nom de la matière"].typeText("Analyse numerique\n")
+        app.buttons["Enregistrer"].tap()
+        app.buttons.containing(.staticText, identifier: "Analyse numerique").firstMatch.tap()
+        app.buttons["Ajouter un cours ou un TD"].tap()
+        app.textFields["Nom du cours ou TD"].tap(); app.textFields["Nom du cours ou TD"].typeText("Matrices\n")
+        app.buttons["Enregistrer"].tap()
+        app.tabBars.buttons["Planning"].tap()
+        let week = XCTAttachment(screenshot: app.screenshot()); week.name = "Planning semaine avec matières"; week.lifetime = .keepAlways; add(week)
+        app.buttons["Synchroniser avec Calendrier Apple"].tap()
+        app.buttons["Activer la synchronisation"].tap()
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let allow = springboard.alerts.buttons.matching(NSPredicate(format: "label CONTAINS[cd] %@ OR label == %@", "complet", "Allow Full Access")).firstMatch
+        if allow.waitForExistence(timeout: 4) { allow.tap() }
+        let status = app.staticTexts["calendar.sync.status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 8))
+        XCTAssertTrue(status.label.contains("synchronisé(s)"), status.label)
+        let before = status.label
+        app.buttons["Synchroniser maintenant"].tap()
+        XCTAssertEqual(status.label, before)
+        let remove = app.buttons["Tout supprimer de Calendrier Apple"]
+        reveal(remove, in: app); remove.tap()
+        app.buttons["Supprimer les événements Studaya"].tap()
+        XCTAssertTrue(status.label.contains("supprimé(s)"), status.label)
+        XCTAssertTrue(app.buttons["Activer la synchronisation"].exists)
+        app.navigationBars.buttons["Planning"].tap()
+        app.segmentedControls.buttons["Calendrier"].tap()
+        app.swipeUp()
+        let month = XCTAttachment(screenshot: app.screenshot()); month.name = "Planning mois avec matières"; month.lifetime = .keepAlways; add(month)
+        app.tabBars.buttons["Matières"].tap()
+        let subjectRow = app.buttons.containing(.staticText, identifier: "Analyse numerique").firstMatch
+        if subjectRow.exists { subjectRow.tap() }
+        XCTAssertTrue(app.buttons["Modifier la matière"].waitForExistence(timeout: 5))
+        let course = app.buttons.containing(.staticText, identifier: "Matrices").firstMatch
+        reveal(course, in: app)
+        XCTAssertTrue(course.exists)
+    }
     @MainActor func testTDArchiveAndAvailabilityAndBackupScreens() {
         continueAfterFailure = false
         let app = XCUIApplication()
