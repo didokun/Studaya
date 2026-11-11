@@ -146,9 +146,10 @@ struct RevisionPathBuilder: View {
             }.studyScreen().navigationTitle("Parcours de révision").navigationBarTitleDisplayMode(.inline)
             .toolbar { if step < 6 { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } } }
             .sheet(item: $photoTarget) { target in
-                PremiumAccess(title: "Import photo Premium") {
+                NavigationStack {
                     if target.name.isEmpty {
                         ContentUnavailableView("Nomme d’abord cette matière", systemImage: "books.vertical", description: Text("Reviens au parcours et renseigne le nom de la matière pour analyser sa photo de planning."))
+                            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { photoTarget = nil } } }
                     } else {
                         PhotoPlanningImporter(subject: nil, draftSubjectName: target.name, draftExamDate: target.exam) { rows, replaceExam in
                             guard let position = subjects.firstIndex(where: { $0.id == target.id }) else { throw StudyError.invalid("Cette matière a été retirée du parcours.") }
@@ -218,28 +219,47 @@ struct RevisionPathBuilder: View {
     }
     private func unitEditor(_ binding: Binding<PathUnit>) -> some View {
         let unit = binding.wrappedValue
-        return DisclosureGroup {
-                VStack(alignment: .leading, spacing: 14) {
-                    TextField("Nom du cours ou TD", text: binding.name).textFieldStyle(StudyTextFieldStyle(boxed: true))
-                    Picker("Type", selection: binding.kind) { Text("Cours").tag("Cours"); Text("TD").tag("TD") }.studyMenu("Type", value: unit.kind)
-                    DatePicker("Date de début", selection: binding.start, displayedComponents: .date)
-                    Stepper("Objectif · \(unit.sessions) séances", value: binding.sessions, in: 1...30)
-                    if unit.kind == "TD" { Stepper("\(unit.exercises) exercices", value: binding.exercises, in: 1...100) }
-                    if subjects[index].units.count > 1 { Button("Retirer ce cours ou TD", role: .destructive) { subjects[index].units.removeAll { $0.id == unit.id } } }
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                StudyPill(title: unit.kind, color: unit.kind == "TD" ? StudyDesign.mint : StudyDesign.accent)
+                Spacer()
+                if subjects[index].units.count > 1 {
+                    Button(role: .destructive) {
+                        subjects[index].units.removeAll { $0.id == unit.id }
+                    } label: {
+                        Image(systemName: "trash").foregroundStyle(.red).font(.subheadline)
+                    }
+                    .buttonStyle(.borderless)
                 }
-        } label: {
-            VStack(alignment: .leading) {
-                Text(unit.kind).font(.caption.bold())
-                Text(unit.name.isEmpty ? "Nouveau cours ou TD" : unit.name).font(.headline)
-                Text(unit.start, format: .dateTime.day().month(.wide)).font(.caption)
+            }
+            TextField("Nom du cours ou TD", text: binding.name)
+                .textFieldStyle(StudyTextFieldStyle(boxed: true))
+            Picker("Type", selection: binding.kind) {
+                Text("Cours").tag("Cours")
+                Text("TD").tag("TD")
+            }
+            .pickerStyle(.segmented)
+            DatePicker("Date de début", selection: binding.start, displayedComponents: .date)
+            Stepper("Objectif · \(unit.sessions) séances", value: binding.sessions, in: 1...30)
+            if unit.kind == "TD" {
+                Stepper("\(unit.exercises) exercices", value: binding.exercises, in: 1...100)
             }
         }
+        .padding(.vertical, 4)
     }
     private func photoButton(_ subject: PathSubject) -> some View {
         Button {
             photoTarget = PathPhotoTarget(id: subject.id, name: subject.name.trimmingCharacters(in: .whitespacesAndNewlines), exam: subject.hasExam ? subject.exam : nil)
         } label: {
-            PremiumFeatureLabel(title: "Importer un planning en photo", symbol: "camera.viewfinder")
+            HStack(spacing: 8) {
+                Label("Importer un planning en photo", systemImage: "camera.viewfinder")
+                Spacer()
+                Label("AI", systemImage: "sparkles")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(StudyDesign.mint)
+                    .padding(.horizontal, 6).padding(.vertical, 3)
+                    .background(StudyDesign.mint.opacity(0.12), in: Capsule())
+            }
         }.accessibilityLabel("Importer un planning en photo").buttonStyle(.bordered).frame(minHeight: 52)
     }
     private func events(_ binding: Binding<[PathEvent]>) -> some View {

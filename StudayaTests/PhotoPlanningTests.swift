@@ -26,9 +26,39 @@ import StoreKitTest
         XCTAssertTrue(entries.allSatisfy { !$0.verified })
     }
 
-    func testPremiumRequiredIncludingUnknownStatus() {
-        XCTAssertThrowsError(try PhotoPlanning.requirePremium(nil))
-        XCTAssertThrowsError(try PhotoPlanning.requirePremium(false))
+    func testCourseTableSplitsMultipleTDsIntoSeparateEntries() {
+        let entries = PlanningTable.drafts([
+            ["", "Séance", "Thème", "Cas"],
+            ["TD", "", "TD 1 : Introduction\nTD 2 : Les coûts partiels\nTD 3 : Les budgets", "Série 1"]
+        ])
+        XCTAssertEqual(entries.count, 3)
+        XCTAssertEqual(entries.map(\.kind), [.td, .td, .td])
+        XCTAssertEqual(entries[0].title, "TD 1 : Introduction")
+        XCTAssertEqual(entries[1].title, "TD 2 : Les coûts partiels")
+        XCTAssertEqual(entries[2].title, "TD 3 : Les budgets")
+    }
+
+    func testLocalExtractionFindsTDsAndExamsFromPlainText() {
+        let text = """
+        GESTION DE PROJET
+        TD 1 - Cadrage du projet 15/10/2026
+        TD 2 - Méthodes agiles
+        Contrôle continu 20/11/2026
+        Examen final 15/12/2026
+        """
+        let entries = PhotoPlanning.extractTextEntries(from: text, subject: "Gestion")
+        XCTAssertEqual(entries.count, 4)
+        XCTAssertEqual(entries[0].kind, .td)
+        XCTAssertTrue(entries[0].title.contains("TD 1"))
+        XCTAssertNotNil(entries[0].date)
+        XCTAssertEqual(entries[1].kind, .td)
+        XCTAssertEqual(entries[2].kind, .control)
+        XCTAssertEqual(entries[3].kind, .exam)
+    }
+
+    func testPhotoPlanningIsFreeForEveryone() {
+        XCTAssertNoThrow(try PhotoPlanning.requirePremium(nil))
+        XCTAssertNoThrow(try PhotoPlanning.requirePremium(false))
         XCTAssertNoThrow(try PhotoPlanning.requirePremium(true))
     }
     func testStrictDatesNeverGuessYearOrNormalizeInvalidDates() {
@@ -65,24 +95,17 @@ import StoreKitTest
         XCTAssertTrue(result.text.contains("2026"))
         XCTAssertThrowsError(try PlanningPhotoOCR.read(Data("not an image".utf8)))
     }
-    func testVerifiedStoreKitPremiumImportAndFreeRejection() async throws {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "Studaya", withExtension: "storekit"))
-        let store = try SKTestSession(contentsOf: url)
-        store.disableDialogs = true; store.clearTransactions()
-        defer { store.clearTransactions() }
+    func testFreeUserCanImportAndSavePlanning() async throws {
         let container = try Storage.container(memory: true), db = container.mainContext
         let subject = Subject("Maths", exam: .now); subject.hasExam = false; db.insert(subject); try db.save()
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: .now)!
         let entry = ImportedPlanningEntry(title: "TD intégrales", kind: .td, date: tomorrow, evidence: "TD intégrales", verified: true)
-        do { try await PhotoPlanning.save([entry], subject: subject, replaceExam: false, db: db); XCTFail("Free import must be rejected") } catch {}
-        XCTAssertTrue(try db.fetch(FetchDescriptor<Chapter>()).isEmpty)
-        _ = try await store.buyProduct(identifier: "studaya.premium.lifetime")
         _ = try await PhotoPlanning.save([entry], subject: subject, replaceExam: false, db: db)
         let chapter = try XCTUnwrap(db.fetch(FetchDescriptor<Chapter>()).first)
         XCTAssertEqual(chapter.subjectID, subject.id)
         XCTAssertEqual(chapter.startDate, tomorrow)
         XCTAssertEqual(chapter.kind, "TD")
-        do { try await PhotoPlanning.save([entry], subject: subject, replaceExam: false, db: db); XCTFail("Duplicate must be rejected") } catch {}
+        do { _ = try await PhotoPlanning.save([entry], subject: subject, replaceExam: false, db: db); XCTFail("Duplicate must be rejected") } catch {}
         XCTAssertEqual(try db.fetch(FetchDescriptor<Chapter>()).count, 1)
     }
     func testPhotoImportPopulatesDraftWithoutSavingUntilCreation() throws {

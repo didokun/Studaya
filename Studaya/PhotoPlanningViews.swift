@@ -7,7 +7,9 @@ import ImageIO
 struct PhotoPlanningGate: View {
     let subject: Subject
     var body: some View {
-        PremiumAccess(title: "Import photo Premium") { PhotoPlanningImporter(subject: subject) }
+        NavigationStack {
+            PhotoPlanningImporter(subject: subject)
+        }
     }
 }
 
@@ -41,23 +43,15 @@ struct PhotoPlanningImporter: View {
                 Text("Photographie un planning de cette matière ou sélectionne une image. La photo est analysée sur ton iPhone. Rien n’est ajouté sans ta validation.")
                 PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
                     Label("Choisir une photo du planning", systemImage: "photo")
-                }.disabled(busy || membership.premium != true)
+                }.disabled(busy)
                 Button("Prendre une photo", systemImage: "camera") { takePhoto() }
-                    .disabled(busy || membership.premium != true || !UIImagePickerController.isSourceTypeAvailable(.camera))
+                    .disabled(busy || !UIImagePickerController.isSourceTypeAvailable(.camera))
                 if !UIImagePickerController.isSourceTypeAvailable(.camera) { Text("Appareil photo indisponible ici. Tu peux choisir une image.").font(.footnote).foregroundStyle(.secondary) }
                 if let preview { Image(uiImage: preview).resizable().scaledToFit().frame(maxHeight: 220).accessibilityLabel("Photo du planning sélectionnée") }
             }
             if busy { Section { ProgressView("Lecture et analyse du planning…"); Button("Annuler l’analyse") { operationID = UUID(); work?.cancel(); busy = false; status = "Analyse annulée. Aucun élément ajouté." } } }
-            if !status.isEmpty { Section("Résultat de la lecture") { Text(status) } }
-            if !sourceText.isEmpty || !entries.isEmpty {
-                Section {
-                    DisclosureGroup("Consulter le texte lu sur la photo") { Text(sourceText).font(.callout).textSelection(.enabled) }
-                    Text("Un jour de semaine sans date complète doit être complété manuellement. Vérifie également les éléments qui pourraient manquer.").font(.footnote).foregroundStyle(.secondary)
-                    Button("Ajouter un élément manuellement", systemImage: "plus") { entries.append(ImportedPlanningEntry()) }
-                        .disabled(busy || entries.count >= 50 || membership.premium != true)
-                }
+            if !entries.isEmpty {
                 Section("Prévisualisation · \(selectedCount) sélectionné(s)") {
-                    Text("Compare chaque élément à la photo. Complète les dates manquantes et vérifie l’heure des contrôles, présentations et examens.").font(.footnote)
                     Toggle("Afficher uniquement les TD", isOn: $onlyTD)
                     let visible = entries.filter { !onlyTD || $0.kind == .td }.map(\.id)
                     UnitTimeline(ids: visible) { order in
@@ -69,18 +63,13 @@ struct PhotoPlanningImporter: View {
                         }
                     } card: { id in
                         if let i = entries.firstIndex(where: { $0.id == id }) {
-                            DisclosureGroup {
-                                PhotoPlanningEntryEditor(entry: $entries[i])
-                                Button("Retirer cet élément", role: .destructive) { entries.removeAll { $0.id == id } }
-                            } label: {
-                                VStack(alignment: .leading) {
-                                    Text(entries[i].kind.rawValue).font(.caption.bold())
-                                    Text(entries[i].title.isEmpty ? "Nouvel élément" : entries[i].title).font(.headline)
-                                    Text(entries[i].date?.formatted(date: .abbreviated, time: .omitted) ?? "Date à préciser").font(.caption)
-                                }
+                            PhotoPlanningEntryCard(entry: $entries[i]) {
+                                entries.removeAll { $0.id == id }
                             }
                         }
                     }
+                    Button("Ajouter un élément manuellement", systemImage: "plus") { entries.append(ImportedPlanningEntry()) }
+                        .disabled(busy || entries.count >= 50)
                 }
                 if let existingExam, entries.contains(where: { $0.selected && $0.kind == .exam }) {
                     Section("Examen final existant") {
@@ -90,12 +79,19 @@ struct PhotoPlanningImporter: View {
                 }
                 Section {
                     Button(onDraftImport == nil ? "Ajouter les éléments vérifiés au planning" : "Ajouter au Parcours de révision") { save() }
-                        .disabled(busy || saved || membership.premium != true || (try? PhotoPlanning.validate(entries)) == nil)
+                        .disabled(busy || saved || (try? PhotoPlanning.validate(entries)) == nil)
                     Text("Les cases de vérification sont obligatoires. L’import ne supprime pas les cours ou TD existants.").font(.footnote).foregroundStyle(.secondary)
                 }
             }
         }
         .studyScreen()
+        .navigationTitle("Importer un planning")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Fermer") { dismiss() }
+            }
+        }
         .sheet(isPresented: $camera) {
             PlanningCamera { image in
                 camera = false
@@ -110,7 +106,6 @@ struct PhotoPlanningImporter: View {
             work = Task {
                 defer { if operationID == token { photo = nil } }
                 do {
-                    try PhotoPlanning.requirePremium(membership.premium)
                     busy = true
                     guard let data = try await item.loadTransferable(type: Data.self) else { throw StudyError.invalid("Cette photo n’a pas pu être chargée.") }
                     try Task.checkCancellation()
@@ -129,8 +124,6 @@ struct PhotoPlanningImporter: View {
         work?.cancel()
         work = Task {
             do {
-                await membership.refresh()
-                try PhotoPlanning.requirePremium(membership.premium)
                 let authorization = AVCaptureDevice.authorizationStatus(for: .video)
                 var allowed = authorization == .authorized
                 if authorization == .notDetermined { allowed = await AVCaptureDevice.requestAccess(for: .video) }
@@ -145,7 +138,6 @@ struct PhotoPlanningImporter: View {
         busy = true; saved = false; replaceExam = false
         entries = []; sourceText = ""; status = ""; preview = nil
         do {
-            try PhotoPlanning.requirePremium(membership.premium)
             let task = Task.detached(priority: .userInitiated) {
                 try Task.checkCancellation()
                 let result = try PlanningPhotoOCR.read(data)
@@ -154,7 +146,6 @@ struct PhotoPlanningImporter: View {
             }
             let result = try await withTaskCancellationHandler(operation: { try await task.value }, onCancel: { task.cancel() })
             try Task.checkCancellation()
-            try PhotoPlanning.requirePremium(membership.premium)
             guard operationID == token else { return }
             if let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
                let image = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceThumbnailMaxPixelSize: 900, kCGImageSourceCreateThumbnailWithTransform: true] as CFDictionary) {
@@ -182,9 +173,7 @@ struct PhotoPlanningImporter: View {
         work = Task {
             do {
                 if let onDraftImport {
-                    await membership.refresh()
                     try Task.checkCancellation()
-                    try PhotoPlanning.requirePremium(membership.premium)
                     let rows = try PhotoPlanning.validate(entries)
                     try onDraftImport(rows, replaceExam)
                     saved = true; busy = false
@@ -199,23 +188,51 @@ struct PhotoPlanningImporter: View {
     }
 }
 
-private struct PhotoPlanningEntryEditor: View {
+private struct PhotoPlanningEntryCard: View {
     @Binding var entry: ImportedPlanningEntry
+    let onDelete: () -> Void
     private var revision: String { "\(entry.title)|\(entry.kind)|\(String(describing: entry.date))|\(entry.sessions)|\(entry.exercises)" }
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Toggle("Importer cet élément", isOn: $entry.selected)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                StudyPill(title: entry.kind.rawValue, color: entry.kind == .td ? StudyDesign.mint : StudyDesign.accent)
+                Toggle("Importer", isOn: $entry.selected).labelsHidden()
+                Spacer()
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash").foregroundStyle(.red).font(.subheadline)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Supprimer cet élément")
+            }
             TextField("Titre du cours, TD ou échéance", text: $entry.title)
-            Picker("Type", selection: $entry.kind) { ForEach(ImportedKind.allCases) { Text($0.rawValue).tag($0) } }
-            Toggle("Date complète renseignée", isOn: Binding(get: { entry.date != nil }, set: { entry.date = $0 ? Date() : nil }))
-            if entry.date != nil {
-                DatePicker(entry.kind.isUnit ? "Date de début" : "Date et heure de l’échéance", selection: Binding(get: { entry.date ?? .now }, set: { entry.date = $0 }), displayedComponents: entry.kind.isUnit ? [.date] : [.date, .hourAndMinute])
-            } else { Text("Date manquante ou ambiguë : renseigne-la avant l’import.").font(.footnote).foregroundStyle(.orange) }
-            if entry.kind != .exam { Stepper("Préparation · \(entry.sessions) séances", value: $entry.sessions, in: 1...30) }
-            if entry.kind == .td { Stepper("\(entry.exercises) exercices", value: $entry.exercises, in: 1...100) }
-            if !entry.evidence.isEmpty { Text("Texte source · " + entry.evidence).font(.footnote).foregroundStyle(.secondary) }
-            Toggle("J’ai vérifié cet élément sur la photo", isOn: $entry.verified)
-        }.padding(.vertical, 8)
+                .textFieldStyle(StudyTextFieldStyle(boxed: true))
+            Picker("Type", selection: $entry.kind) {
+                ForEach(ImportedKind.allCases) { Text($0.rawValue).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            HStack(spacing: 12) {
+                Toggle("Date", isOn: Binding(get: { entry.date != nil }, set: { entry.date = $0 ? Date() : nil }))
+                    .fixedSize()
+                if entry.date != nil {
+                    DatePicker("", selection: Binding(get: { entry.date ?? .now }, set: { entry.date = $0 }), displayedComponents: entry.kind.isUnit ? [.date] : [.date, .hourAndMinute])
+                        .labelsHidden()
+                } else {
+                    Text("Date à préciser").font(.caption).foregroundStyle(.orange)
+                }
+            }
+            if entry.kind != .exam {
+                Stepper("Préparation · \(entry.sessions) séances", value: $entry.sessions, in: 1...30)
+                    .font(.subheadline)
+            }
+            if entry.kind == .td {
+                Stepper("\(entry.exercises) exercices", value: $entry.exercises, in: 1...100)
+                    .font(.subheadline)
+            }
+            Toggle("J’ai vérifié cet élément", isOn: $entry.verified)
+                .font(.footnote)
+                .tint(StudyDesign.mint)
+        }
+        .padding(.vertical, 4)
         .onChange(of: revision) { _, _ in entry.verified = false }
     }
 }

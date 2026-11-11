@@ -28,29 +28,74 @@ enum PlanningTable {
     }
 
     static func drafts(_ rows: [[String]]) -> [ImportedPlanningEntry] {
-        let headers = ["theme", "topic", "intitule", "objet", "chapitre", "activite", "contenu", "matiere", "module", "subject"]
+        let headers = ["theme", "topic", "intitule", "objet", "chapitre", "activite", "contenu", "matiere", "module", "subject", "titre", "libelle", "description", "programme"]
         func normalized(_ s: String) -> String {
             s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "fr")).trimmingCharacters(in: .whitespacesAndNewlines)
         }
         guard let header = rows.indices.first(where: { row in rows[row].contains { headers.contains(normalized($0)) } }),
-              let theme = rows[header].firstIndex(where: { headers.contains(normalized($0)) }) else { return [] }
-        return rows.dropFirst(header + 1).compactMap { row in
-            guard row.indices.contains(theme) else { return nil }
-            let lines = row[theme].components(separatedBy: .newlines)
-                .map { $0.trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: "•·"))) }
-                .filter { !$0.isEmpty }
-            let descriptiveLine = lines.first { $0.split(whereSeparator: { $0.isWhitespace }).count >= 3 }
-            guard let title = descriptiveLine ?? lines.first, title.count >= 3, !headers.contains(normalized(title)) else { return nil }
-            let labels = row.enumerated().filter { $0.offset != theme }.map { normalized($0.element) }
-            let kind: ImportedKind
-            if labels.contains(where: { $0.range(of: #"^td\b"#, options: .regularExpression) != nil }) { kind = .td }
-            else if labels.contains("examen final") { kind = .exam }
-            else if labels.contains("controle") { kind = .control }
-            else if labels.contains("presentation") { kind = .presentation }
-            else { kind = .course }
-            let evidence = row.filter { !$0.isEmpty }.joined(separator: " · ")
-            return ImportedPlanningEntry(title: title, kind: kind, date: explicitDate(in: evidence), evidence: evidence)
+              let theme = rows[header].firstIndex(where: { headers.contains(normalized($0)) }) else {
+            return fallbackRows(rows)
         }
+        return rows.dropFirst(header + 1).flatMap { row -> [ImportedPlanningEntry] in
+            guard row.indices.contains(theme) else { return [] }
+            let rawLines = row[theme].components(separatedBy: .newlines)
+                .map { $0.trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: "•·-"))) }
+                .filter { !$0.isEmpty }
+            guard !rawLines.isEmpty else { return [] }
+
+            let labels = row.enumerated().filter { $0.offset != theme }.map { normalized($0.element) }
+            let evidence = row.filter { !$0.isEmpty }.joined(separator: " · ")
+
+            func kindFor(text: String) -> ImportedKind {
+                let norm = normalized(text)
+                if labels.contains(where: { $0.range(of: #"^td\b"#, options: .regularExpression) != nil }) || norm.range(of: #"^td\b"#, options: .regularExpression) != nil { return .td }
+                if labels.contains("examen final") || norm.contains("examen final") { return .exam }
+                if labels.contains("controle") || norm.range(of: #"^contr[oô]le\b"#, options: .regularExpression) != nil { return .control }
+                if labels.contains("presentation") || norm.range(of: #"^pr[eé]sentation\b"#, options: .regularExpression) != nil { return .presentation }
+                return .course
+            }
+
+            // Check if multiple lines represent distinct TDs or sessions (split them so they aren't merged in a single block)
+            let sessionLines = rawLines.filter { line in
+                let norm = normalized(line)
+                return norm.range(of: #"^(?:td|s[eé]ance|cours|cm)\s*\d*\b"#, options: .regularExpression) != nil
+            }
+
+            if sessionLines.count > 1 {
+                return sessionLines.compactMap { line in
+                    guard line.count >= 2, !headers.contains(normalized(line)) else { return nil }
+                    let lineDate = explicitDate(in: line) ?? explicitDate(in: evidence)
+                    return ImportedPlanningEntry(title: line, kind: kindFor(text: line), date: lineDate, evidence: evidence)
+                }
+            }
+
+            let descriptiveLine = rawLines.first { $0.split(whereSeparator: { $0.isWhitespace }).count >= 3 }
+            guard let title = descriptiveLine ?? rawLines.first, title.count >= 3, !headers.contains(normalized(title)) else { return [] }
+            let entryKind = kindFor(text: title)
+            return [ImportedPlanningEntry(title: title, kind: entryKind, date: explicitDate(in: evidence), evidence: evidence)]
+        }
+    }
+
+    private static func fallbackRows(_ rows: [[String]]) -> [ImportedPlanningEntry] {
+        var entries: [ImportedPlanningEntry] = []
+        for row in rows {
+            let fullText = row.joined(separator: " · ")
+            for cell in row {
+                let lines = cell.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+                for line in lines {
+                    let norm = line.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "fr"))
+                    if norm.range(of: #"\b(?:td|s[eé]ance|cours|cm|examen|contr[oô]le)\b"#, options: .regularExpression) != nil && line.count >= 4 {
+                        let kind: ImportedKind
+                        if norm.contains("td") { kind = .td }
+                        else if norm.contains("examen") { kind = .exam }
+                        else if norm.contains("controle") { kind = .control }
+                        else { kind = .course }
+                        entries.append(ImportedPlanningEntry(title: line, kind: kind, date: explicitDate(in: fullText), evidence: fullText))
+                    }
+                }
+            }
+        }
+        return entries
     }
 
     private static func explicitDate(in text: String) -> Date? {

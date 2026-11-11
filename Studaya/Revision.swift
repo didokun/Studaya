@@ -80,9 +80,17 @@ struct SubjectPage: View {
     var units: [Chapter] { all.filter { $0.subjectID == subject.id } }
     var body: some View {
         List {
-            Section("Studaya Premium") {
+            Section {
                 Button { importPhoto = true } label: {
-                    PremiumFeatureLabel(title: "Importer un planning en photo", symbol: "camera.viewfinder")
+                    HStack(spacing: 12) {
+                        Label("Importer un planning en photo", systemImage: "camera.viewfinder")
+                        Spacer(minLength: 8)
+                        Label("AI", systemImage: "sparkles")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(StudyDesign.mint)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(StudyDesign.mint.opacity(0.12), in: Capsule())
+                    }
                 }.accessibilityLabel("Importer un planning en photo")
             }
             Section("Ma progression") { SubjectProgress(subject: subject, chapters: all, sessions: sessions) }
