@@ -58,10 +58,10 @@ struct PremiumOptions: View {
     @State private var catalog: [Product] = []
     @State private var selected = "studaya.premium.monthly"
     @State private var busy = false
-    @State private var message: LocalizedStringKey?
+    @State private var message: String?
     @State private var loaded = false
     @State private var loadingPrices = false
-    @State private var priceMessage: LocalizedStringKey?
+    @State private var priceMessage: String?
     @State private var priceDiagnostics = ""
     private static let logger = Logger(subsystem: "com.talinha.studaya", category: "StoreKit")
     @State private var managing = false
@@ -76,22 +76,22 @@ struct PremiumOptions: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Studaya Premium").font(.largeTitle.bold())
                     VStack(alignment: .leading, spacing: 12) {
-                        perk("Importer un planning depuis une photo", "camera.viewfinder")
-                        perk("Bilan de concentration sur 30 jours", "chart.bar")
-                        perk("Temps étudié par matière", "books.vertical")
+                        perk(String(localized: "Importer un planning depuis une photo"), "camera.viewfinder")
+                        perk(String(localized: "Bilan de concentration sur 30 jours"), "chart.bar")
+                        perk(String(localized: "Temps étudié par matière"), "books.vertical")
                         
-                        perk("Exporter les sessions Focus en CSV", "square.and.arrow.up")
+                        perk(String(localized: "Exporter les sessions Focus en CSV"), "square.and.arrow.up")
                     }.padding().frame(maxWidth: .infinity, alignment: .leading).background(Color.navy.opacity(0.05), in: RoundedRectangle(cornerRadius: 18))
                     if membership.premium == true {
-                        Label("Premium is active", systemImage: "checkmark.seal.fill")
+                        Label(String(localized: "Premium is active"), systemImage: "checkmark.seal.fill")
                         ForEach(membership.activeIDs.sorted(), id: \.self) { id in
-                            LabeledContent("Current plan") {
+                            LabeledContent(String(localized: "Current plan")) {
                                 Text(planTitle(id))
                             }
                         }
                         if membership.activeIDs.contains(where: { !$0.hasSuffix("lifetime") }) {
                             Button { managing = true } label: {
-                                Label("Change or cancel subscription", systemImage: "slider.horizontal.3")
+                                Label(String(localized: "Change or cancel subscription"), systemImage: "slider.horizontal.3")
                             }.buttonStyle(.borderedProminent)
                         }
                     } else {
@@ -100,13 +100,13 @@ struct PremiumOptions: View {
                         }
                         if loaded && catalog.count < Membership.products.count {
                             #if DEBUG
-                            Text("Pour tester des achats fictifs, utilise le schéma Studaya dans Xcode.").font(.footnote)
+                            Text(String(localized: "Pour tester des achats fictifs, utilise le schéma Studaya dans Xcode.")).font(.footnote)
                             #endif
                             if let priceMessage { Text(priceMessage).font(.footnote).foregroundStyle(.secondary) }
-                            Button(loadingPrices ? "Loading…" : "Reload prices") { Task { await load() } }
+                            Button(loadingPrices ? "Loading…" : String(localized: "Reload prices")) { Task { await load() } }
                                 .disabled(loadingPrices || busy)
                             if !priceDiagnostics.isEmpty {
-                                DisclosureGroup("Purchase support details") {
+                                DisclosureGroup(String(localized: "Purchase support details")) {
                                     Text(verbatim: priceDiagnostics).font(.caption.monospaced())
                                         .textSelection(.enabled)
                                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -114,26 +114,26 @@ struct PremiumOptions: View {
                             }
                         }
                         if offersTrial, let product {
-                            Text(selected.hasSuffix("monthly") ? "7 days free, then \(product.displayPrice) per month." : "7 days free, then \(product.displayPrice) per year.")
+                            Text(selected.hasSuffix("monthly") ? String(localized: "7 days free, then \(product.displayPrice) per month.") : String(localized: "7 days free, then \(product.displayPrice) per year."))
                                 .font(.headline)
                         }
-                        Text(selected.hasSuffix("lifetime") ? "One payment for lifetime access." : "Renews automatically until canceled.")
+                        Text(selected.hasSuffix("lifetime") ? String(localized: "One payment for lifetime access.") : String(localized: "Renews automatically until canceled."))
                             .font(.footnote).foregroundStyle(.secondary)
-                        Button("Restore purchases") { Task { await restore() } }.disabled(busy)
+                        Button(String(localized: "Restore purchases")) { Task { await restore() } }.disabled(busy)
                     }
                     if let message { Text(message).font(.footnote) }
-                    Link("Apple Standard EULA", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                    Link(String(localized: "Apple Standard EULA"), destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
                         .font(.footnote)
                 }.padding(.vertical, 12).frame(maxWidth: .infinity, alignment: .leading)
             }
             VStack(spacing: 3) {
                 if membership.premium != true {
-                    Button( selected.hasSuffix("lifetime") ? "Get lifetime access" : offersTrial ? "Start my 7-day free trial" : "Subscribe to Premium") {
+                    Button( selected.hasSuffix("lifetime") ? String(localized: "Get lifetime access") : offersTrial ? String(localized: "Start my 7-day free trial") : String(localized: "Subscribe to Premium")) {
                         Task { await buy() }
                     }.buttonStyle(Primary()).disabled(product == nil || busy).opacity(product == nil || busy ? 0.6 : 1)
                 }
                 if let onContinue {
-                    Button(membership.premium == true ? "Done" : "Continuer gratuitement", action: onContinue)
+                    Button(membership.premium == true ? String(localized: "Done") : String(localized: "Continuer gratuitement"), action: onContinue)
                         .font(.subheadline).frame(minHeight: 44).disabled(busy)
                 }
             }.padding(.vertical, 6)
@@ -145,14 +145,14 @@ struct PremiumOptions: View {
         }
     }
 
-    private func perk(_ title: LocalizedStringKey, _ icon: String) -> some View {
+    private func perk(_ title: String, _ icon: String) -> some View {
         Label(title, systemImage: icon).font(.subheadline.weight(.semibold))
     }
 
-    private func planTitle(_ id: String) -> LocalizedStringKey {
-        if id.hasSuffix("monthly") { return "Monthly" }
-        if id.hasSuffix("yearly") { return "Annual" }
-        return "Lifetime"
+    private func planTitle(_ id: String) -> String {
+        if id.hasSuffix("monthly") { return String(localized: "Monthly") }
+        if id.hasSuffix("yearly") { return String(localized: "Annual") }
+        return String(localized: "Lifetime")
     }
 
     private func planRow(_ id: String) -> some View {
@@ -167,7 +167,7 @@ struct PremiumOptions: View {
                 Text(title).font(.headline)
                 Spacer()
                 if let item { Text(item.displayPrice).font(.title3.bold()) }
-                else { Text(loaded ? "Unavailable" : "Loading…").font(.caption) }
+                else { Text(loaded ? String(localized: "Unavailable") : "Loading…").font(.caption) }
             }.padding(16).frame(maxWidth: .infinity)
             .background(selected == id ? Color.mintBrand.opacity(0.12) : Color.clear, in: RoundedRectangle(cornerRadius: 18))
             .overlay { RoundedRectangle(cornerRadius: 18).stroke(Color.mintBrand.opacity(selected == id ? 1 : 0.25)) }
@@ -186,7 +186,7 @@ struct PremiumOptions: View {
         let bundle = Bundle.main.bundleIdentifier ?? "unknown"
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
-        let context = "App: \(bundle)\nVersion: \(version) (\(build))\nStorefront: \(storefront?.countryCode ?? "unknown")"
+        let context = String(localized: "App: \(bundle)\nVersion: \(version) (\(build))\nStorefront: \(storefront?.countryCode ?? "unknown")")
         do {
             // Only replace a previously loaded catalog after a successful response.
             catalog = try await Product.products(for: Membership.products)
@@ -194,17 +194,17 @@ struct PremiumOptions: View {
             let missing = Membership.products.filter { !returned.contains($0) }
             if !missing.isEmpty {
                 priceMessage = catalog.isEmpty
-                    ? "The App Store returned no Premium offers. You can continue for free and try again later."
-                    : "Some Premium offers are currently unavailable. You can choose an available offer or retry later."
-                priceDiagnostics = context + "\nResult: \(catalog.count)/\(Membership.products.count) products\nMissing: " + missing.joined(separator: ", ")
+                    ? String(localized: "The App Store returned no Premium offers. You can continue for free and try again later.")
+                    : String(localized: "Some Premium offers are currently unavailable. You can choose an available offer or retry later.")
+                priceDiagnostics = context + String(localized: "\nResult: \(catalog.count)/\(Membership.products.count) products\nMissing: ") + missing.joined(separator: ", ")
                 Self.logger.notice("Incomplete product catalog: \(priceDiagnostics, privacy: .public)")
             }
         } catch {
-            priceMessage = "Couldn’t load prices from the App Store. Check your connection and try again."
+            priceMessage = String(localized: "Couldn’t load prices from the App Store. Check your connection and try again.")
             let failure = error as NSError
-            priceDiagnostics = context + "\nError: \(failure.domain) (\(failure.code))"
+            priceDiagnostics = context + String(localized: "\nError: \(failure.domain) (\(failure.code))")
             if let underlying = failure.userInfo[NSUnderlyingErrorKey] as? NSError {
-                priceDiagnostics += "\nUnderlying: \(underlying.domain) (\(underlying.code))"
+                priceDiagnostics += String(localized: "\nUnderlying: \(underlying.domain) (\(underlying.code))")
             }
             Self.logger.error("Product request failed: \(priceDiagnostics, privacy: .public)")
         }
@@ -234,10 +234,10 @@ struct PremiumOptions: View {
                 await membership.refresh()
                 if membership.premium == true { onContinue?() }
             case .userCancelled: break
-            case .pending: message = "Purchase pending approval."
-            default: message = "Purchase could not be verified."
+            case .pending: message = String(localized: "Purchase pending approval.")
+            default: message = String(localized: "Purchase could not be verified.")
             }
-        } catch { message = "Purchase could not be completed." }
+        } catch { message = String(localized: "Purchase could not be completed.") }
     }
 
     private func restore() async {
@@ -247,7 +247,7 @@ struct PremiumOptions: View {
         do {
             try await AppStore.sync()
             await membership.refresh()
-            if membership.premium != true { message = "No active purchase found." }
-        } catch { message = "Couldn’t restore purchases." }
+            if membership.premium != true { message = String(localized: "No active purchase found.") }
+        } catch { message = String(localized: "Couldn’t restore purchases.") }
     }
 }

@@ -10,7 +10,7 @@ extension RevisionPath {
         for row in rows.sorted(by: { $0.kind.isUnit && !$1.kind.isUnit }) {
             let name = row.kind.isUnit ? row.title.trimmingCharacters(in: .whitespacesAndNewlines) : draft.units.first { $0.id == row.unitID }?.name ?? draft.name
             if row.kind.isUnit {
-                guard !draft.units.contains(where: { $0.kind == row.kind.rawValue && $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.start == nil && row.date == nil) || ($0.start != nil && row.date != nil && Calendar.current.isDate($0.start!, inSameDayAs: row.date!))) }) else { throw StudyError.invalid("Ce cours ou TD existe déjà dans le parcours : \(name).") }
+                guard !draft.units.contains(where: { $0.kind == row.kind.rawValue && $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.start == nil && row.date == nil) || ($0.start != nil && row.date != nil && Calendar.current.isDate($0.start!, inSameDayAs: row.date!))) }) else { throw StudyError.invalid(String(localized: "Ce cours ou TD existe déjà dans le parcours : \(name).")) }
                 var unit = PathUnit()
                 unit.id = row.id
                 unit.name = name; unit.kind = row.kind.rawValue; unit.start = row.date
@@ -19,16 +19,16 @@ extension RevisionPath {
                 draft.units.append(unit)
             } else if row.kind == .exam {
                 guard let date = row.date else {
-                    guard draft.undatedExam == nil else { throw StudyError.invalid("Un examen sans date figure déjà dans le parcours.") }
+                    guard draft.undatedExam == nil else { throw StudyError.invalid(String(localized: "Un examen sans date figure déjà dans le parcours.")) }
                     draft.undatedExam = PathEvent(title: name, due: nil, preparation: row.sessions)
                     continue
                 }
-                guard !draft.hasExam || replaceExam else { throw StudyError.invalid("Confirme le remplacement de l’examen déjà renseigné dans le parcours.") }
+                guard !draft.hasExam || replaceExam else { throw StudyError.invalid(String(localized: "Confirme le remplacement de l’examen déjà renseigné dans le parcours.")) }
                 draft.hasExam = true; draft.exam = date; draft.undatedExam = nil
             } else {
-                guard row.unitID == nil || draft.units.contains(where: { $0.id == row.unitID }) else { throw StudyError.invalid("Le cours ou TD lié n’est plus disponible dans ce parcours.") }
+                guard row.unitID == nil || draft.units.contains(where: { $0.id == row.unitID }) else { throw StudyError.invalid(String(localized: "Le cours ou TD lié n’est plus disponible dans ce parcours.")) }
                 let existing = row.kind == .presentation ? draft.presentations : draft.controls
-                guard !existing.contains(where: { $0.title.localizedCaseInsensitiveCompare(name) == .orderedSame && $0.due == row.date }) else { throw StudyError.invalid("Cette échéance existe déjà dans le parcours : \(name).") }
+                guard !existing.contains(where: { $0.title.localizedCaseInsensitiveCompare(name) == .orderedSame && $0.due == row.date }) else { throw StudyError.invalid(String(localized: "Cette échéance existe déjà dans le parcours : \(name).")) }
                 let event = PathEvent(title: name, due: row.date, preparation: row.sessions, unitID: row.unitID)
                 switch row.kind {
                 case .presentation: draft.presentations.append(event)
@@ -38,7 +38,7 @@ extension RevisionPath {
             }
         }
         if draft.hasExam {
-            guard draft.units.filter({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }).compactMap(\.start).allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: draft.exam) }) else { throw StudyError.invalid("L’examen doit avoir lieu après le début des cours et TD du parcours.") }
+            guard draft.units.filter({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }).compactMap(\.start).allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: draft.exam) }) else { throw StudyError.invalid(String(localized: "L’examen doit avoir lieu après le début des cours et TD du parcours.")) }
         }
         return draft
     }

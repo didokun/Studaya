@@ -34,19 +34,19 @@ struct PathSubject: Identifiable {
 
 @MainActor enum RevisionPath {
     static func validate(_ drafts: [PathSubject], usesSemesters: Bool = true) throws {
-        guard !drafts.isEmpty else { throw StudyError.invalid("Ajoute au moins une matière.") }
+        guard !drafts.isEmpty else { throw StudyError.invalid(String(localized: "Ajoute au moins une matière.")) }
         var keys = Set<String>()
         for subject in drafts {
             let name = subject.name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty, (1...8).contains(subject.year), (!usesSemesters || (1...2).contains(subject.semester)), keys.insert("\(name.lowercased()):\(subject.year):\(usesSemesters ? subject.semester : 0)").inserted else {
-                throw StudyError.invalid(usesSemesters ? "Chaque matière doit avoir un nom et ne figurer qu’une fois dans le même semestre." : "Chaque matière doit avoir un nom et ne figurer qu’une fois dans la même année.")
+                throw StudyError.invalid(usesSemesters ? String(localized: "Chaque matière doit avoir un nom et ne figurer qu’une fois dans le même semestre.") : String(localized: "Chaque matière doit avoir un nom et ne figurer qu’une fois dans la même année."))
             }
             guard !subject.units.isEmpty, subject.units.allSatisfy({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && ["Cours", "TD"].contains($0.kind) && (1...30).contains($0.sessions) && ($0.kind != "TD" || (1...100).contains($0.exercises)) }) else {
-                throw StudyError.invalid("Ajoute et nomme les cours ou TD de \(name).")
+                throw StudyError.invalid(String(localized: "Ajoute et nomme les cours ou TD de \(name)."))
             }
-            guard (subject.presentations + subject.controls).allSatisfy({ event in (1...30).contains(event.preparation) && (event.unitID == nil || subject.units.contains { $0.id == event.unitID }) }) else { throw StudyError.invalid("Choisis un cours ou TD existant pour les événements liés de \(name).") }
+            guard (subject.presentations + subject.controls).allSatisfy({ event in (1...30).contains(event.preparation) && (event.unitID == nil || subject.units.contains { $0.id == event.unitID }) }) else { throw StudyError.invalid(String(localized: "Choisis un cours ou TD existant pour les événements liés de \(name).")) }
             if subject.hasExam, let latest = subject.units.compactMap(\.start).max(), Calendar.current.startOfDay(for: subject.exam) <= Calendar.current.startOfDay(for: latest) {
-                throw StudyError.invalid("L’examen de \(name) doit avoir lieu après le début de tous ses cours et TD.")
+                throw StudyError.invalid(String(localized: "L’examen de \(name) doit avoir lieu après le début de tous ses cours et TD."))
             }
         }
     }
@@ -114,7 +114,7 @@ struct RevisionPathBuilder: View {
     @State private var error: String?
     @State private var creating = false
     @State private var photoTarget: PathPhotoTarget?
-    private let titles = ["Tes matières", "Cours et TD", "Présentations", "Contrôles", "Examen final", "Ton parcours est prêt", "Création de ton parcours…", "À toi de jouer !"]
+    private let titles = [String(localized: "Tes matières"), String(localized: "Cours et TD"), String(localized: "Présentations"), String(localized: "Contrôles"), "Examen final", String(localized: "Ton parcours est prêt"), String(localized: "Création de ton parcours…"), String(localized: "À toi de jouer !")]
     private var currentValid: Bool {
         if step == 0 { return subjects.allSatisfy { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } }
         if step == 1 { return subjects[index].units.allSatisfy { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } }
@@ -134,11 +134,11 @@ struct RevisionPathBuilder: View {
                 } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        StudyPill(title: step == 0 ? "TON CAMPUS" : "TON PARCOURS", symbol: "sparkles")
-                        Text(titles[step]).font(.system(.largeTitle, design: .rounded, weight: .bold))
+                        StudyPill(title: step == 0 ? String(localized: "TON CAMPUS") : String(localized: "TON PARCOURS"), symbol: "sparkles")
+                        Text(L10n.key(titles[step])).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         if (1...4).contains(step) {
                             Text(subjects[index].displayCode).font(.title2.weight(.semibold))
-                            Text("Matière \(index + 1) sur \(subjects.count)").foregroundStyle(.secondary)
+                            Text(String(localized: "Matière \(index + 1) sur \(subjects.count)")).foregroundStyle(.secondary)
                         }
                         content
                     }.padding(24).frame(maxWidth: 600, alignment: .leading).frame(maxWidth: .infinity)
@@ -146,22 +146,22 @@ struct RevisionPathBuilder: View {
                 }
                 if step < 6 {
                     HStack {
-                        if step > 0 { Button("Retour") { back() }.frame(minHeight: 44) }
-                        Button(step == 5 ? "Créer mon planning" : "Continuer") { next() }.buttonStyle(Primary()).disabled(!currentValid)
+                        if step > 0 { Button(String(localized: "Retour")) { back() }.frame(minHeight: 44) }
+                        Button(step == 5 ? String(localized: "Créer mon planning") : String(localized: "Continuer")) { next() }.buttonStyle(Primary()).disabled(!currentValid)
                     }.padding()
                 } else if step == 7 {
-                    Button("Découvrir mon planning") { onCreated(); dismiss() }.buttonStyle(Primary()).padding()
+                    Button(String(localized: "Découvrir mon planning")) { onCreated(); dismiss() }.buttonStyle(Primary()).padding()
                 }
-            }.studyScreen().navigationTitle("Parcours de révision").navigationBarTitleDisplayMode(.inline)
-            .toolbar { if step < 6 { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() } } } }
+            }.studyScreen().navigationTitle(String(localized: "Parcours de révision")).navigationBarTitleDisplayMode(.inline)
+            .toolbar { if step < 6 { ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Fermer")) { dismiss() } } } }
             .sheet(item: $photoTarget) { target in
                 NavigationStack {
                     if target.name.isEmpty {
-                        ContentUnavailableView("Nomme d’abord cette matière", systemImage: "books.vertical", description: Text("Reviens au parcours et renseigne le nom de la matière pour analyser sa photo de planning."))
-                            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { photoTarget = nil } } }
+                        ContentUnavailableView(String(localized: "Nomme d’abord cette matière"), systemImage: "books.vertical", description: Text(String(localized: "Reviens au parcours et renseigne le nom de la matière pour analyser sa photo de planning.")))
+                            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Fermer")) { photoTarget = nil } } }
                     } else {
                         PhotoPlanningImporter(subject: nil, draftSubjectName: target.name, draftExamDate: target.exam, draftUnits: subjects.first { $0.id == target.id }?.units.filter { !$0.name.isEmpty }.map { PlanningUnitOption(id: $0.id, name: $0.name, kind: $0.kind) } ?? []) { rows, replaceExam in
-                            guard let position = subjects.firstIndex(where: { $0.id == target.id }) else { throw StudyError.invalid("Cette matière a été retirée du parcours.") }
+                            guard let position = subjects.firstIndex(where: { $0.id == target.id }) else { throw StudyError.invalid(String(localized: "Cette matière a été retirée du parcours.")) }
                             subjects[position] = try RevisionPath.mergingPhoto(rows, into: subjects[position], replaceExam: replaceExam)
                         }
                     }
@@ -169,29 +169,29 @@ struct RevisionPathBuilder: View {
             }
             .interactiveDismissDisabled(creating)
             .task(id: step) { if step == 6 { await generate() } }
-            .alert("Parcours", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
+            .alert(String(localized: "Parcours"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
         }
     }
     @ViewBuilder private var content: some View {
         switch step {
         case 0:
-            Text("Ajoute tes matières. Pour chacune, on préparera les cours et TD, puis les présentations, contrôles et l’examen final.")
+            Text(String(localized: "Ajoute tes matières. Pour chacune, on préparera les cours et TD, puis les présentations, contrôles et l’examen final."))
             ForEach($subjects) { $subject in
                 VStack(alignment: .leading, spacing: 14) {
-                    TextField("Nom de la matière", text: $subject.name).textFieldStyle(StudyTextFieldStyle(boxed: true))
+                    TextField(String(localized: "Nom de la matière"), text: $subject.name).textFieldStyle(StudyTextFieldStyle(boxed: true))
                     SubjectCodeField(name: subject.name, code: $subject.code)
                     photoButton(subject)
-                    Stepper("Année \(subject.year)", value: $subject.year, in: 1...max(1, profiles.first?.years ?? 8))
+                    Stepper(String(localized: "Année \(subject.year)"), value: $subject.year, in: 1...max(1, profiles.first?.years ?? 8))
                     if profiles.first?.usesSemesters ?? true {
-                        Picker("Semestre", selection: $subject.semester) { Text("S1").tag(1); Text("S2").tag(2) }.studyMenu("Semestre", value: "S\(subject.semester)")
+                        Picker(String(localized: "Semestre"), selection: $subject.semester) { Text("S1").tag(1); Text("S2").tag(2) }.studyMenu(String(localized: "Semestre"), value: "S\(subject.semester)")
                     }
-                    if subjects.count > 1 { Button("Retirer la matière", role: .destructive) { subjects.removeAll { $0.id == subject.id } } }
+                    if subjects.count > 1 { Button(String(localized: "Retirer la matière"), role: .destructive) { subjects.removeAll { $0.id == subject.id } } }
                 }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))
             }
-            Button("Ajouter une autre matière", systemImage: "plus") { subjects.append(PathSubject()) }.buttonStyle(.bordered)
+            Button(String(localized: "Ajouter une autre matière"), systemImage: "plus") { subjects.append(PathSubject()) }.buttonStyle(.bordered)
         case 1:
             photoButton(subjects[index])
-            Text("À quelle date commence chaque cours ou TD ? Les révisions ne démarreront pas avant cette date.")
+            Text(String(localized: "À quelle date commence chaque cours ou TD ? Les révisions ne démarreront pas avant cette date."))
             UnitTimeline(ids: subjects[index].units.map(\.id)) { order in
                 let units = subjects[index].units
                 subjects[index].units = order.compactMap { id in units.first { $0.id == id } }
@@ -200,36 +200,36 @@ struct RevisionPathBuilder: View {
                     unitEditor($subjects[index].units[i])
                 }
             }
-            Button("Ajouter un cours ou TD", systemImage: "plus") { subjects[index].units.append(PathUnit()) }.buttonStyle(.bordered)
+            Button(String(localized: "Ajouter un cours ou TD"), systemImage: "plus") { subjects[index].units.append(PathUnit()) }.buttonStyle(.bordered)
         case 2:
-            Text("Des présentations à préparer ? Ajoute leur titre et leur date limite, ou continue si tu n’en as pas.")
+            Text(String(localized: "Des présentations à préparer ? Ajoute leur titre et leur date limite, ou continue si tu n’en as pas."))
             events($subjects[index].presentations)
-            Button("Ajouter une présentation", systemImage: "plus") { subjects[index].presentations.append(PathEvent()) }.buttonStyle(.bordered)
+            Button(String(localized: "Ajouter une présentation"), systemImage: "plus") { subjects[index].presentations.append(PathEvent()) }.buttonStyle(.bordered)
         case 3:
-            Text("Des contrôles sont déjà prévus ? Ils sont distincts de l’examen final. Tu peux aussi les ajouter plus tard.")
+            Text(String(localized: "Des contrôles sont déjà prévus ? Ils sont distincts de l’examen final. Tu peux aussi les ajouter plus tard."))
             events($subjects[index].controls)
-            Button("Ajouter un contrôle", systemImage: "plus") { subjects[index].controls.append(PathEvent()) }.buttonStyle(.bordered)
+            Button(String(localized: "Ajouter un contrôle"), systemImage: "plus") { subjects[index].controls.append(PathEvent()) }.buttonStyle(.bordered)
         case 4:
-            Toggle("Date de l’examen final connue", isOn: $subjects[index].hasExam)
+            Toggle(String(localized: "Date de l’examen final connue"), isOn: $subjects[index].hasExam)
             if subjects[index].hasExam { DatePicker("Examen final", selection: $subjects[index].exam, displayedComponents: .date) }
-            else { Text("Tu pourras renseigner la date dans la matière dès qu’elle sera annoncée.").foregroundStyle(.secondary) }
+            else { Text(String(localized: "Tu pourras renseigner la date dans la matière dès qu’elle sera annoncée.")).foregroundStyle(.secondary) }
         case 5:
             ForEach(subjects) { subject in
                 VStack(alignment: .leading, spacing: 8) {
                     Text(subject.displayCode).font(.title3.bold())
                     Text(subject.name).font(.caption).foregroundStyle(.secondary)
-                    ForEach(subject.units) { unit in Text("\(unit.kind) · \(unit.name) · début \(unit.start?.formatted(date: .abbreviated, time: .omitted) ?? "à préciser")") }
-                    Text("\(subject.presentations.count) présentations · \(subject.controls.count) contrôles")
+                    ForEach(subject.units) { unit in Text(String(localized: "\(L10n.key(unit.kind)) · \(unit.name) · début \(unit.start?.formatted(date: .abbreviated, time: .omitted) ?? String(localized: "à préciser"))")) }
+                    Text(String(localized: "\(subject.presentations.count) présentations · \(subject.controls.count) contrôles"))
                     ForEach(subject.presentations) { event in
-                        Text("Présentation · " + (subject.units.first { $0.id == event.unitID }?.name ?? subject.displayCode))
+                        Text(String(localized: "Présentation · ") + (subject.units.first { $0.id == event.unitID }?.name ?? subject.displayCode))
                     }
                     ForEach(subject.controls) { event in
-                        Text("Contrôle · " + (subject.units.first { $0.id == event.unitID }?.name ?? subject.displayCode))
+                        Text(String(localized: "Contrôle · ") + (subject.units.first { $0.id == event.unitID }?.name ?? subject.displayCode))
                     }
-                    Text(subject.hasExam ? "Examen final · " + subject.exam.formatted(date: .abbreviated, time: .omitted) : "Examen final à préciser")
+                    Text(subject.hasExam ? String(localized: "Examen final · ") + subject.exam.formatted(date: .abbreviated, time: .omitted) : String(localized: "Examen final à préciser"))
                 }.padding().frame(maxWidth: .infinity, alignment: .leading).background(.white, in: RoundedRectangle(cornerRadius: 24))
             }
-            Text("Le planning tiendra compte de tes disponibilités et des échéances les plus proches. Rien n’est enregistré avant la création.")
+            Text(String(localized: "Le planning tiendra compte de tes disponibilités et des échéances les plus proches. Rien n’est enregistré avant la création."))
         default:
             EmptyView()
         }
@@ -238,7 +238,7 @@ struct RevisionPathBuilder: View {
         let unit = binding.wrappedValue
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                StudyPill(title: unit.kind, color: unit.kind == "TD" ? StudyDesign.mint : StudyDesign.accent)
+                StudyPill(title: L10n.key(unit.kind), color: unit.kind == "TD" ? StudyDesign.mint : StudyDesign.accent)
                 Spacer()
                 if subjects[index].units.count > 1 {
                     Button(role: .destructive) {
@@ -251,20 +251,20 @@ struct RevisionPathBuilder: View {
                     .buttonStyle(.borderless)
                 }
             }
-            TextField("Nom du cours ou TD", text: binding.name)
+            TextField(String(localized: "Nom du cours ou TD"), text: binding.name)
                 .textFieldStyle(StudyTextFieldStyle(boxed: true))
-            Picker("Type", selection: binding.kind) {
+            Picker(String(localized: "Type"), selection: binding.kind) {
                 Text("Cours").tag("Cours")
                 Text("TD").tag("TD")
             }
             .pickerStyle(.segmented)
-            Toggle("Date de début connue", isOn: Binding(get: { binding.wrappedValue.start != nil }, set: { binding.wrappedValue.start = $0 ? Date() : nil }))
+            Toggle(String(localized: "Date de début connue"), isOn: Binding(get: { binding.wrappedValue.start != nil }, set: { binding.wrappedValue.start = $0 ? Date() : nil }))
             if unit.start != nil {
-                DatePicker("Date de début", selection: Binding(get: { binding.wrappedValue.start ?? .now }, set: { binding.wrappedValue.start = $0 }), displayedComponents: .date)
+                DatePicker(String(localized: "Date de début"), selection: Binding(get: { binding.wrappedValue.start ?? .now }, set: { binding.wrappedValue.start = $0 }), displayedComponents: .date)
             }
-            Stepper("Objectif · \(unit.sessions) séances", value: binding.sessions, in: 1...30)
+            Stepper(String(localized: "Objectif · \(unit.sessions) séances"), value: binding.sessions, in: 1...30)
             if unit.kind == "TD" {
-                Stepper("\(unit.exercises) exercices", value: binding.exercises, in: 1...100)
+                Stepper(String(localized: "\(unit.exercises) exercices"), value: binding.exercises, in: 1...100)
             }
         }
         .padding(.vertical, 4)
@@ -274,7 +274,7 @@ struct RevisionPathBuilder: View {
             photoTarget = PathPhotoTarget(id: subject.id, name: subject.name.trimmingCharacters(in: .whitespacesAndNewlines), exam: subject.hasExam ? subject.exam : nil)
         } label: {
             HStack(spacing: 8) {
-                Label("Importer une photo", systemImage: "camera.viewfinder")
+                Label(String(localized: "Importer une photo"), systemImage: "camera.viewfinder")
                     .font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.85)
                 Spacer()
                 Label("AI", systemImage: "sparkles")
@@ -283,21 +283,21 @@ struct RevisionPathBuilder: View {
                     .padding(.horizontal, 6).padding(.vertical, 3)
                     .background(StudyDesign.mint.opacity(0.12), in: Capsule())
             }
-        }.accessibilityLabel("Importer un planning en photo").buttonStyle(.bordered).frame(minHeight: 52)
+        }.accessibilityLabel(String(localized: "Importer un planning en photo")).buttonStyle(.bordered).frame(minHeight: 52)
     }
     private func events(_ binding: Binding<[PathEvent]>) -> some View {
         ForEach(binding) { $event in
             VStack(alignment: .leading, spacing: 14) {
-                Picker("Cours ou TD lié", selection: $event.unitID) {
-                    Text("Toute la matière").tag(nil as UUID?)
+                Picker(String(localized: "Cours ou TD lié"), selection: $event.unitID) {
+                    Text(String(localized: "Toute la matière")).tag(nil as UUID?)
                     ForEach(subjects[index].units.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) { unit in
-                        Text(unit.kind + " · " + unit.name).tag(Optional(unit.id))
+                        Text(L10n.key(unit.kind) + " · " + unit.name).tag(Optional(unit.id))
                     }
                 }.pickerStyle(.menu).accessibilityIdentifier("event.unit")
-                Toggle("Date connue", isOn: Binding(get: { event.due != nil }, set: { event.due = $0 ? Date() : nil }))
-                if event.due != nil { DatePicker("Date limite", selection: Binding(get: { event.due ?? .now }, set: { event.due = $0 })) }
-                Stepper("Préparation · \(event.preparation) séances", value: $event.preparation, in: 1...30)
-                Button("Retirer", role: .destructive) { binding.wrappedValue.removeAll { $0.id == event.id } }
+                Toggle(String(localized: "Date connue"), isOn: Binding(get: { event.due != nil }, set: { event.due = $0 ? Date() : nil }))
+                if event.due != nil { DatePicker(String(localized: "Date limite"), selection: Binding(get: { event.due ?? .now }, set: { event.due = $0 })) }
+                Stepper(String(localized: "Préparation · \(event.preparation) séances"), value: $event.preparation, in: 1...30)
+                Button(String(localized: "Retirer"), role: .destructive) { binding.wrappedValue.removeAll { $0.id == event.id } }
             }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))
         }
     }

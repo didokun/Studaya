@@ -35,8 +35,8 @@ extension Color {
                 .controlSize(.large)
                 .textFieldStyle(StudyTextFieldStyle())
                 .environment(\.defaultMinListRowHeight, 56)
-                .defaultAppStorage(preferences).modelContainer(container).environment(\.locale, Locale(identifier: "fr_FR"))
-            case .failure(let error): ContentUnavailableView("Stockage indisponible", systemImage: "externaldrive.badge.exclamationmark", description: Text(error.localizedDescription))
+                .defaultAppStorage(preferences).modelContainer(container)
+            case .failure(let error): ContentUnavailableView(String(localized: "Stockage indisponible"), systemImage: "externaldrive.badge.exclamationmark", description: Text(error.localizedDescription))
             }
         }
     }
@@ -76,11 +76,11 @@ struct Home: View {
     }
     var body: some View {
         TabView(selection: $tab) {
-            page("Accueil", "sun.max.fill", 0) { Today(tab: $tab) }
-            page("Planning", "calendar", 1) { Planner() }
+            page(String(localized: "Accueil"), "sun.max.fill", 0) { Today(tab: $tab) }
+            page(String(localized: "Planning"), "calendar", 1) { Planner() }
             page("Focus", "headphones", 2) { Focus() }
-            page("Matières", "books.vertical.fill", 3) { Library(onPathCreated: { tab = 1 }) }
-            page("Progrès", "chart.bar.xaxis", 4) { Stats() }
+            page(String(localized: "Matières"), "books.vertical.fill", 3) { Library(onPathCreated: { tab = 1 }) }
+            page(String(localized: "Progrès"), "chart.bar.xaxis", 4) { Stats() }
         }
         .id(dataRevision)
         .onChange(of: dataRevision) { _, _ in
@@ -114,11 +114,11 @@ struct Home: View {
                 do { try Scheduler.rebuild(db) } catch { message = error.localizedDescription }
             }
         }
-        .alert("Planning", isPresented: Binding(get: { message != nil && !settings }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
+        .alert(String(localized: "Planning"), isPresented: Binding(get: { message != nil && !settings }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
     }
     func page<V: View>(_ name: String, _ icon: String, _ index: Int, @ViewBuilder content: () -> V) -> some View {
         NavigationStack {
-            content().studyScreen().navigationTitle(name).navigationBarTitleDisplayMode(.inline).toolbar {
+            content().studyScreen().navigationTitle(L10n.key(name)).navigationBarTitleDisplayMode(.inline).toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Image("Logo")
                         .resizable()
@@ -128,9 +128,9 @@ struct Home: View {
                         .frame(width: 44, height: 44, alignment: .center)
                         .accessibilityHidden(true)
                 }
-                ToolbarItem(placement: .topBarTrailing) { Button("Réglages", systemImage: "slider.horizontal.3") { settings = true } }
+                ToolbarItem(placement: .topBarTrailing) { Button(String(localized: "Réglages"), systemImage: "slider.horizontal.3") { settings = true } }
             }
-        }.tabItem { Label(name, systemImage: icon) }.tag(index)
+        }.tabItem { Label(L10n.key(name), systemImage: icon) }.tag(index)
     }
 }
 

@@ -43,24 +43,24 @@ struct TimeBlockEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Cours, travail, vacances…", text: $title)
-                Toggle("Chaque semaine", isOn: $weekly)
+                TextField(String(localized: "Cours, travail, vacances…"), text: $title)
+                Toggle(String(localized: "Chaque semaine"), isOn: $weekly)
                 if weekly {
-                    Picker("Jour", selection: $weekday) {
+                    Picker(String(localized: "Jour"), selection: $weekday) {
                         ForEach(1...7, id: \.self) { Text(Calendar.current.weekdaySymbols[$0 - 1]).tag($0) }
                     }
                 }
-                DatePicker("Début", selection: $start)
-                DatePicker("Fin", selection: $end)
-                if weekly { DatePicker("Répéter jusqu’au", selection: $until, displayedComponents: .date) }
-                Text("Aucune révision automatique ne sera placée sur cette période. Pour des vacances, choisis une période sans répétition.").font(.footnote)
-            }.studyScreen().navigationTitle("Indisponibilité").toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(saved || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || end <= start || (weekly && (end.timeIntervalSince(start) > 86400 || until < start))) }
+                DatePicker(String(localized: "Début"), selection: $start)
+                DatePicker(String(localized: "Fin"), selection: $end)
+                if weekly { DatePicker(String(localized: "Répéter jusqu’au"), selection: $until, displayedComponents: .date) }
+                Text(String(localized: "Aucune révision automatique ne sera placée sur cette période. Pour des vacances, choisis une période sans répétition.")).font(.footnote)
+            }.studyScreen().navigationTitle(String(localized: "Indisponibilité")).toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Annuler")) { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(String(localized: "Enregistrer")) { save() }.disabled(saved || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || end <= start || (weekly && (end.timeIntervalSince(start) > 86400 || until < start))) }
             }
         }.onAppear {
             if let existing { title = existing.title; start = existing.start; end = existing.end; weekday = max(1, existing.weekday); weekly = existing.weekday != 0; until = existing.until }
-        }.alert("Planning", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") { if saved { dismiss() } } } message: { Text(message ?? "") }
+        }.alert(String(localized: "Planning"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") { if saved { dismiss() } } } message: { Text(message ?? "") }
     }
     private func save() {
         let block = existing ?? TimeBlock()
@@ -70,10 +70,10 @@ struct TimeBlockEditor: View {
         do {
             let sessions = try db.fetch(FetchDescriptor<Session>())
             guard !sessions.contains(where: { !$0.done && $0.pinned && block.conflicts(start: $0.start, minutes: $0.minutes) }) else {
-                db.rollback(); message = "Une séance reportée occupe cette période. Déplace-la avant de bloquer ce créneau."; return
+                db.rollback(); message = String(localized: "Une séance reportée occupe cette période. Déplace-la avant de bloquer ce créneau."); return
             }
             let missing = try Scheduler.rebuild(db); saved = true
-            if missing > 0 { message = "\(missing) séances sans créneau après prise en compte de tes indisponibilités." } else { dismiss() }
+            if missing > 0 { message = String(localized: "\(missing) séances sans créneau après prise en compte de tes indisponibilités.") } else { dismiss() }
         } catch { db.rollback(); message = error.localizedDescription }
     }
 }
@@ -86,22 +86,22 @@ struct UnavailabilitySettings: View {
     @State private var message: String?
     var body: some View {
         List {
-            Text("Bloque tes cours, ton travail ou tes vacances pour garder un planning réaliste.")
+            Text(String(localized: "Bloque tes cours, ton travail ou tes vacances pour garder un planning réaliste."))
             ForEach(blocks) { block in
                 Button { edit = block } label: {
                     VStack(alignment: .leading) {
                         Text(block.title).font(.headline)
-                        Text(block.weekday == 0 ? block.start.formatted() + " – " + block.end.formatted() : "Chaque " + Calendar.current.weekdaySymbols[block.weekday - 1] + " · " + block.start.formatted(date: .omitted, time: .shortened) + " – " + block.end.formatted(date: .omitted, time: .shortened)).font(.caption)
+                        Text(block.weekday == 0 ? block.start.formatted() + " – " + block.end.formatted() : String(localized: "Chaque ") + Calendar.current.weekdaySymbols[block.weekday - 1] + " · " + block.start.formatted(date: .omitted, time: .shortened) + " – " + block.end.formatted(date: .omitted, time: .shortened)).font(.caption)
                     }
                 }
             }.onDelete { offsets in
                 for i in offsets { db.delete(blocks[i]) }
                 do { try Scheduler.rebuild(db) } catch { db.rollback(); message = error.localizedDescription }
             }
-            Button("Ajouter une indisponibilité", systemImage: "plus") { add = true }
+            Button(String(localized: "Ajouter une indisponibilité"), systemImage: "plus") { add = true }
         }.sheet(isPresented: $add) { TimeBlockEditor() }
         .sheet(item: $edit) { TimeBlockEditor(existing: $0) }
-        .alert("Planning", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
+        .alert(String(localized: "Planning"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
     }
 }
 
@@ -117,14 +117,14 @@ struct SessionReschedule: View {
         NavigationStack {
             Form {
                 Text(StudyLabels.session(session, subjects: subjects, chapters: chapters))
-                DatePicker("Nouveau créneau", selection: $date, in: Date.now...)
-                Text("Ce créneau sera conservé lors des recalculs du planning.").font(.footnote)
-                Button("Reporter la séance") {
+                DatePicker(String(localized: "Nouveau créneau"), selection: $date, in: Date.now...)
+                Text(String(localized: "Ce créneau sera conservé lors des recalculs du planning.")).font(.footnote)
+                Button(String(localized: "Reporter la séance")) {
                     do { try StudyActions.reschedule(session, to: date, db: db); dismiss() }
                     catch { self.error = error.localizedDescription }
                 }
-            }.studyScreen().navigationTitle("Reporter").toolbar { Button("Fermer") { dismiss() } }
+            }.studyScreen().navigationTitle(String(localized: "Reporter")).toolbar { Button(String(localized: "Fermer")) { dismiss() } }
         }.onAppear { date = max(session.start, Date.now.addingTimeInterval(3600)) }
-        .alert("Créneau indisponible", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
+        .alert(String(localized: "Créneau indisponible"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
 }

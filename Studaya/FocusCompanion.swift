@@ -17,10 +17,10 @@ struct FocusTimerSnapshot: Equatable {
     func notifications(now: Date = .now) -> [StudyReminder] {
         guard length > 0, end > now.timeIntervalSince1970 else { return [] }
         let finish = Date(timeIntervalSince1970: end)
-        if resting { return [StudyReminder(id: "restEnd", title: "Ta pause est terminée", body: "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux.", date: finish, tab: 2)] }
+        if resting { return [StudyReminder(id: "restEnd", title: String(localized: "Ta pause est terminée"), body: String(localized: "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux."), date: finish, tab: 2)] }
         return [
-            StudyReminder(id: "workEnd", title: "Focus terminé · place au repos 🌿", body: "Bravo pour ce temps de révision. Ta pause de \(breakSeconds / 60) min commence maintenant.", date: finish, tab: 2),
-            StudyReminder(id: "restEnd", title: "Ta pause est terminée", body: "Tu peux repartir sur une séance ou t’arrêter ici. Ton effort compte déjà.", date: finish.addingTimeInterval(Double(breakSeconds)), tab: 2)
+            StudyReminder(id: "workEnd", title: String(localized: "Focus terminé · place au repos 🌿"), body: String(localized: "Bravo pour ce temps de révision. Ta pause de \(breakSeconds / 60) min commence maintenant."), date: finish, tab: 2),
+            StudyReminder(id: "restEnd", title: String(localized: "Ta pause est terminée"), body: String(localized: "Tu peux repartir sur une séance ou t’arrêter ici. Ton effort compte déjà."), date: finish.addingTimeInterval(Double(breakSeconds)), tab: 2)
         ]
     }
 }
@@ -87,8 +87,8 @@ struct FocusTimerSnapshot: Equatable {
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, notice.date.timeIntervalSinceNow), repeats: false)
                 try await center.add(UNNotificationRequest(identifier: "studaya.focus." + notice.id, content: content, trigger: trigger))
             }
-            status = options.focus && settings.authorizationStatus == .denied ? "Autorise les notifications dans les réglages iOS pour entendre la fin du minuteur." : ""
-        } catch { status = "Notifications Focus : " + error.localizedDescription }
+            status = options.focus && settings.authorizationStatus == .denied ? String(localized: "Autorise les notifications dans les réglages iOS pour entendre la fin du minuteur.") : ""
+        } catch { status = String(localized: "Notifications Focus : ") + error.localizedDescription }
         guard revision == generation else { return }
         let activities = Activity<FocusActivityAttributes>.activities
         guard timer.length > 0 else {
@@ -99,7 +99,7 @@ struct FocusTimerSnapshot: Equatable {
         let chapters = (try? db.fetch(FetchDescriptor<Chapter>())) ?? []
         let subject = subjects.first { $0.id.uuidString == p.string(forKey: "focusSubject") }
         let chapter = chapters.first { $0.id.uuidString == p.string(forKey: "focusChapter") }
-        let title = (subject?.displayCode ?? "Focus libre") + (chapter.map { " · " + $0.name } ?? "")
+        let title = (subject?.displayCode ?? String(localized: "Focus libre")) + (chapter.map { " · " + $0.name } ?? "")
         let end = Date(timeIntervalSince1970: timer.end)
         let restEnd = timer.resting ? end : end.addingTimeInterval(Double(timer.breakSeconds))
         let state = FocusActivityAttributes.ContentState(title: title, resting: timer.resting, end: end, restEnd: restEnd, pausedSeconds: timer.remaining, paused: timer.end == 0)
@@ -110,7 +110,7 @@ struct FocusTimerSnapshot: Equatable {
         if let matching { await matching.update(content) }
         else if ActivityAuthorizationInfo().areActivitiesEnabled && UIApplication.shared.applicationState == .active {
             do { _ = try Activity.request(attributes: FocusActivityAttributes(runID: timer.runID), content: content, pushType: nil) }
-            catch { status = "Écran verrouillé : " + error.localizedDescription }
-        } else if !ActivityAuthorizationInfo().areActivitiesEnabled { status = "Active les activités en direct dans les réglages iOS de Studaya pour voir le minuteur verrouillé." }
+            catch { status = String(localized: "Écran verrouillé : ") + error.localizedDescription }
+        } else if !ActivityAuthorizationInfo().areActivitiesEnabled { status = String(localized: "Active les activités en direct dans les réglages iOS de Studaya pour voir le minuteur verrouillé.") }
     }
 }

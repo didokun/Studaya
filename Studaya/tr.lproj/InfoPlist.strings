@@ -1,0 +1,3 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"NSCalendarsFullAccessUsageDescription" = "Studaya, incelemeleriniz ve son teslim tarihleriniz için özel bir takvim oluşturur. Tam erişim, yalnızca Studaya tarafından dışa aktarılan etkinlikleri bulmanıza, güncellemenize ve silmenize olanak tanır.";
+"NSCameraUsageDescription" = "Studaya, bir konuya aktarmak istediğiniz programı okumak için kamerayı kullanır.";

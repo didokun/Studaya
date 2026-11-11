@@ -1,0 +1,3 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"NSCalendarsFullAccessUsageDescription" = "Sudaya では、レビューと期限用に専用のカレンダーを作成します。フルアクセスでは、Sudaya によってエクスポートされたイベントのみを検索、更新、削除できます。";
+"NSCameraUsageDescription" = "Sudaya はカメラを使用して、主題にインポートしたいスケジュールを読み取ります。";

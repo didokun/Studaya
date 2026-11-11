@@ -1,0 +1,3 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"NSCalendarsFullAccessUsageDescription" = "स्टडीया आपकी समीक्षाओं और समय-सीमाओं के लिए एक समर्पित कैलेंडर बनाता है। पूर्ण पहुंच आपको केवल स्टडीया द्वारा निर्यात की गई घटनाओं को ढूंढने, अपडेट करने और हटाने की अनुमति देती है।";
+"NSCameraUsageDescription" = "जिस शेड्यूल को आप किसी विषय में आयात करना चाहते हैं उसे पढ़ने के लिए स्टडीया कैमरे का उपयोग करता है।";

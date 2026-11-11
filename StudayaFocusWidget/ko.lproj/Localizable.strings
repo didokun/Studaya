@@ -1,0 +1,11 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"En pause" = "일시중지 중";
+"Focus en pause" = "초점이 일시중지되었습니다.";
+"Ouvre Studaya pour reprendre" = "Studaya를 열어 재개하세요.";
+"Ouvre Studaya pour retrouver ta séance" = "Studaya를 열어 세션을 찾으세요.";
+"Ouvre l’app pour reprendre" = "재개하려면 앱을 여세요.";
+"Puis ta pause" = "그럼 당신의 휴식";
+"Repos" = "휴식";
+"Révision" = "연구";
+"Studaya" = "Studaya";
+"Studaya · Focus et repos" = "스투다야 · 집중과 휴식";

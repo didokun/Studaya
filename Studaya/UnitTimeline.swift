@@ -74,7 +74,7 @@ struct UnitTimeline<Card: View>: View {
                     .foregroundStyle(target == id ? Color.mintBrand : .secondary)
                     .frame(width: 36, height: 44)
                     .contentShape(Rectangle())
-                    .accessibilityLabel("Déplacer l’élément \(index + 1)")
+                    .accessibilityLabel(String(localized: "Déplacer l’élément \(index + 1)"))
             }
             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
             .padding(12)
@@ -118,24 +118,24 @@ struct UnitTimeline<Card: View>: View {
                 Button {
                     shift(id, to: ids[index - 1])
                 } label: {
-                    Label("Monter d’une place", systemImage: "arrow.up")
+                    Label(String(localized: "Monter d’une place"), systemImage: "arrow.up")
                 }
                 Button {
                     shift(id, to: ids[0])
                 } label: {
-                    Label("Placer en premier", systemImage: "arrow.up.to.line")
+                    Label(String(localized: "Placer en premier"), systemImage: "arrow.up.to.line")
                 }
             }
             if index + 1 < ids.count {
                 Button {
                     shift(id, to: ids[index + 1])
                 } label: {
-                    Label("Descendre d’une place", systemImage: "arrow.down")
+                    Label(String(localized: "Descendre d’une place"), systemImage: "arrow.down")
                 }
                 Button {
                     shift(id, to: ids[ids.count - 1])
                 } label: {
-                    Label("Placer en dernier", systemImage: "arrow.down.to.line")
+                    Label(String(localized: "Placer en dernier"), systemImage: "arrow.down.to.line")
                 }
             }
         }

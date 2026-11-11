@@ -42,20 +42,20 @@ struct PhotoPlanningImporter: View {
     var body: some View {
         Form {
             Section(subjectName) {
-                Text("Photographie un planning de cette matière ou sélectionne une image. La photo est analysée sur ton iPhone. Rien n’est ajouté sans ta validation.")
+                Text(String(localized: "Photographie un planning de cette matière ou sélectionne une image. La photo est analysée sur ton iPhone. Rien n’est ajouté sans ta validation."))
                 PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
-                    Label("Galerie", systemImage: "photo")
+                    Label(String(localized: "Galerie"), systemImage: "photo")
                 }.disabled(busy)
-                Button("Prendre une photo", systemImage: "camera") { takePhoto() }
+                Button(String(localized: "Prendre une photo"), systemImage: "camera") { takePhoto() }
                     .disabled(busy || !UIImagePickerController.isSourceTypeAvailable(.camera))
-                if !UIImagePickerController.isSourceTypeAvailable(.camera) { Text("Appareil photo indisponible ici. Tu peux choisir une image.").font(.footnote).foregroundStyle(.secondary) }
-                if let preview { Image(uiImage: preview).resizable().scaledToFit().frame(maxHeight: 220).accessibilityLabel("Photo du planning sélectionnée") }
+                if !UIImagePickerController.isSourceTypeAvailable(.camera) { Text(String(localized: "Appareil photo indisponible ici. Tu peux choisir une image.")).font(.footnote).foregroundStyle(.secondary) }
+                if let preview { Image(uiImage: preview).resizable().scaledToFit().frame(maxHeight: 220).accessibilityLabel(String(localized: "Photo du planning sélectionnée")) }
             }
             if !status.isEmpty { Section { Text(status).font(.footnote).foregroundStyle(.secondary) } }
-            if busy { Section { ProgressView("Lecture et analyse du planning…"); Button("Annuler l’analyse") { operationID = UUID(); work?.cancel(); busy = false; status = "Analyse annulée. Aucun élément ajouté." } } }
+            if busy { Section { ProgressView(String(localized: "Lecture et analyse du planning…")); Button(String(localized: "Annuler l’analyse")) { operationID = UUID(); work?.cancel(); busy = false; status = String(localized: "Analyse annulée. Aucun élément ajouté.") } } }
             if !entries.isEmpty {
-                Section("Prévisualisation · \(selectedCount) sélectionné(s)") {
-                    Toggle("Afficher uniquement les TD", isOn: $onlyTD)
+                Section(String(localized: "Prévisualisation · \(selectedCount) sélectionné(s)")) {
+                    Toggle(String(localized: "Afficher uniquement les TD"), isOn: $onlyTD)
                     let visible = entries.filter { !onlyTD || $0.kind == .td }.map(\.id)
                     UnitTimeline(ids: visible) { order in
                         let lookup = Dictionary(uniqueKeysWithValues: entries.map { ($0.id, $0) })
@@ -75,13 +75,13 @@ struct PhotoPlanningImporter: View {
                             }
                         }
                     }
-                    Button("Ajouter un élément manuellement", systemImage: "plus") { entries.append(ImportedPlanningEntry()) }
+                    Button(String(localized: "Ajouter un élément manuellement"), systemImage: "plus") { entries.append(ImportedPlanningEntry()) }
                         .disabled(busy || entries.count >= 50)
                 }
                 if let existingExam, entries.contains(where: { $0.selected && $0.kind == .exam && $0.date != nil }) {
-                    Section("Examen final existant") {
+                    Section(String(localized: "Examen final existant")) {
                         Text(existingExam, format: .dateTime.day().month().year())
-                        Toggle("Remplacer cette date par celle de la photo", isOn: $replaceExam)
+                        Toggle(String(localized: "Remplacer cette date par celle de la photo"), isOn: $replaceExam)
                     }
                 }
 
@@ -90,21 +90,21 @@ struct PhotoPlanningImporter: View {
         .safeAreaInset(edge: .bottom) {
             if !entries.isEmpty {
                 VStack(spacing: 6) {
-                    Button(onDraftImport == nil ? "Ajouter à la matière" : "Ajouter au parcours") { save() }
+                    Button(onDraftImport == nil ? String(localized: "Ajouter à la matière") : String(localized: "Ajouter au parcours")) { save() }
                         .buttonStyle(Primary())
                         .disabled(busy || saved || selectedCount == 0)
-                    Text("\(selectedCount) élément(s) sélectionné(s) · dates facultatives")
+                    Text(String(localized: "\(selectedCount) élément(s) sélectionné(s) · dates facultatives"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .padding().background(.regularMaterial)
             }
         }
         .studyScreen()
-        .navigationTitle("Importer un planning")
+        .navigationTitle(String(localized: "Importer un planning"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Fermer") { dismiss() }
+                Button(String(localized: "Fermer")) { dismiss() }
             }
         }
         .sheet(isPresented: $camera) {
@@ -122,7 +122,7 @@ struct PhotoPlanningImporter: View {
                 defer { if operationID == token { photo = nil } }
                 do {
                     busy = true
-                    guard let data = try await item.loadTransferable(type: Data.self) else { throw StudyError.invalid("Cette photo n’a pas pu être chargée.") }
+                    guard let data = try await item.loadTransferable(type: Data.self) else { throw StudyError.invalid(String(localized: "Cette photo n’a pas pu être chargée.")) }
                     try Task.checkCancellation()
                     await process(data, token: token)
                 } catch is CancellationError { if operationID == token { busy = false } }
@@ -130,9 +130,9 @@ struct PhotoPlanningImporter: View {
             }
         }
         .onDisappear { work?.cancel() }
-        .alert(saved ? "Import terminé" : "Import photo", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
-            Button(saved ? (onDraftImport == nil ? "Voir la matière" : "Retour au parcours") : "OK") { if saved { dismiss() } }
-            if !saved { Link("Réglages iOS", destination: URL(string: UIApplication.openSettingsURLString)!) }
+        .alert(saved ? String(localized: "Import terminé") : String(localized: "Import photo"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+            Button(saved ? (onDraftImport == nil ? String(localized: "Voir la matière") : String(localized: "Retour au parcours")) : "OK") { if saved { dismiss() } }
+            if !saved { Link(String(localized: "Réglages iOS"), destination: URL(string: UIApplication.openSettingsURLString)!) }
         } message: { Text(message ?? "") }
     }
     private func takePhoto() {
@@ -142,7 +142,7 @@ struct PhotoPlanningImporter: View {
                 let authorization = AVCaptureDevice.authorizationStatus(for: .video)
                 var allowed = authorization == .authorized
                 if authorization == .notDetermined { allowed = await AVCaptureDevice.requestAccess(for: .video) }
-                guard allowed else { throw StudyError.invalid("Autorise l’appareil photo dans les réglages iOS de Studaya, ou choisis une photo existante.") }
+                guard allowed else { throw StudyError.invalid(String(localized: "Autorise l’appareil photo dans les réglages iOS de Studaya, ou choisis une photo existante.")) }
                 try Task.checkCancellation(); camera = true
             } catch is CancellationError {} catch { message = error.localizedDescription }
         }
@@ -173,14 +173,14 @@ struct PhotoPlanningImporter: View {
             if tableEntries.isEmpty {
                 analysis = try await PhotoPlanning.analyze(result.text, layout: result.layoutText, subject: subjectName)
             } else {
-                analysis = (tableEntries, "\(tableEntries.count) séances proposées pour \(subjectName) à partir des lignes du tableau. Vérifie les matières, les dates et les extraits avant l’import.")
+                analysis = (tableEntries, String(localized: "\(tableEntries.count) séances proposées pour \(subjectName) à partir des lignes du tableau. Vérifie les matières, les dates et les extraits avant l’import."))
             }
             try Task.checkCancellation()
             guard operationID == token else { return }
             entries = analysis.entries
-            status = (result.lowConfidence ? "Certains mots sont peu lisibles. " : "") + analysis.message
+            status = (result.lowConfidence ? String(localized: "Certains mots sont peu lisibles. ") : "") + analysis.message
             busy = false
-        } catch is CancellationError { if operationID == token { busy = false; status = "Analyse annulée. Aucun élément ajouté." } }
+        } catch is CancellationError { if operationID == token { busy = false; status = String(localized: "Analyse annulée. Aucun élément ajouté.") } }
         catch { if operationID == token { busy = false; message = error.localizedDescription } }
     }
     private func save() {
@@ -192,12 +192,12 @@ struct PhotoPlanningImporter: View {
                     let rows = try PhotoPlanning.validate(entries)
                     try onDraftImport(rows, replaceExam)
                     saved = true; busy = false
-                    message = "\(rows.count) élément(s) ajoutés au brouillon. Ils seront enregistrés lorsque tu créeras le planning."
+                    message = String(localized: "\(rows.count) élément(s) ajoutés au brouillon. Ils seront enregistrés lorsque tu créeras le planning.")
                 } else if let subject {
                     let missing = try await PhotoPlanning.save(entries, subject: subject, replaceExam: replaceExam, db: db)
                     saved = true; busy = false
-                    message = "\(selectedCount) élément(s) ajouté(s)." + (missing > 0 ? " \(missing) séance(s) n’ont pas de créneau avant leur échéance. Ajuste tes disponibilités." : "")
-                } else { throw StudyError.invalid("Choisis une matière pour cet import.") }
+                    message = String(localized: "\(selectedCount) élément(s) ajouté(s).") + (missing > 0 ? String(localized: " \(missing) séance(s) n’ont pas de créneau avant leur échéance. Ajuste tes disponibilités.") : "")
+                } else { throw StudyError.invalid(String(localized: "Choisis une matière pour cet import.")) }
             } catch { busy = false; message = error.localizedDescription }
         }
     }
@@ -210,44 +210,44 @@ private struct PhotoPlanningEntryCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                StudyPill(title: entry.kind.rawValue, color: entry.kind == .td ? StudyDesign.mint : StudyDesign.accent)
-                Toggle("Importer", isOn: $entry.selected).labelsHidden()
+                StudyPill(title: L10n.key(entry.kind.rawValue), color: entry.kind == .td ? StudyDesign.mint : StudyDesign.accent)
+                Toggle(String(localized: "Importer"), isOn: $entry.selected).labelsHidden()
                 Spacer()
                 Button(role: .destructive, action: onDelete) {
                     Image(systemName: "trash").foregroundStyle(.red).font(.subheadline)
                 }
                 .buttonStyle(.borderless)
-                .accessibilityLabel("Supprimer cet élément")
+                .accessibilityLabel(String(localized: "Supprimer cet élément"))
             }
             if entry.kind.isUnit {
-                TextField("Titre du cours ou TD", text: $entry.title)
+                TextField(String(localized: "Titre du cours ou TD"), text: $entry.title)
                     .textFieldStyle(StudyTextFieldStyle(boxed: true))
             } else if entry.kind == .presentation || entry.kind == .control {
-                Picker("Cours ou TD lié", selection: $entry.unitID) {
-                    Text("Toute la matière").tag(nil as UUID?)
-                    ForEach(units) { unit in Text(unit.kind + " · " + unit.name).tag(Optional(unit.id)) }
+                Picker(String(localized: "Cours ou TD lié"), selection: $entry.unitID) {
+                    Text(String(localized: "Toute la matière")).tag(nil as UUID?)
+                    ForEach(units) { unit in Text(L10n.key(unit.kind) + " · " + unit.name).tag(Optional(unit.id)) }
                 }
-            } else { Text("Examen final de la matière").font(.subheadline) }
-            Picker("Type", selection: $entry.kind) {
-                ForEach(ImportedKind.allCases) { Text($0.rawValue).tag($0) }
+            } else { Text(String(localized: "Examen final de la matière")).font(.subheadline) }
+            Picker(String(localized: "Type"), selection: $entry.kind) {
+                ForEach(ImportedKind.allCases) { Text(L10n.key($0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
             HStack(spacing: 12) {
-                Toggle("Date", isOn: Binding(get: { entry.date != nil }, set: { entry.date = $0 ? Date() : nil }))
+                Toggle(String(localized: "Date"), isOn: Binding(get: { entry.date != nil }, set: { entry.date = $0 ? Date() : nil }))
                     .fixedSize()
                 if entry.date != nil {
                     DatePicker("", selection: Binding(get: { entry.date ?? .now }, set: { entry.date = $0 }), displayedComponents: entry.kind.isUnit ? [.date] : [.date, .hourAndMinute])
                         .labelsHidden()
                 } else {
-                    Text("Sans date").font(.caption).foregroundStyle(.secondary)
+                    Text(String(localized: "Sans date")).font(.caption).foregroundStyle(.secondary)
                 }
             }
             if entry.kind != .exam {
-                Stepper("Préparation · \(entry.sessions) séances", value: $entry.sessions, in: 1...30)
+                Stepper(String(localized: "Préparation · \(entry.sessions) séances"), value: $entry.sessions, in: 1...30)
                     .font(.subheadline)
             }
             if entry.kind == .td {
-                Stepper("\(entry.exercises) exercices", value: $entry.exercises, in: 1...100)
+                Stepper(String(localized: "\(entry.exercises) exercices"), value: $entry.exercises, in: 1...100)
                     .font(.subheadline)
             }
 

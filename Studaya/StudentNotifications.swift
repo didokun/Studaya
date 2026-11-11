@@ -39,10 +39,10 @@ struct StudentNotificationOptions: Codable, Equatable {
             let tomorrowMorning = (0...1).map { moment($0, hour: options.morningHour) }.first { $0 > now }!
             let tonight = (0...1).map { moment($0, hour: options.eveningHour) }.first { $0 > now }!
             if options.morning && (!options.quiet || (8..<22).contains(options.morningHour)) {
-                result.append(StudyReminder(id: "morning.daily", title: "Ta journée, à ton rythme ☀️", body: "Ouvre ton planning, choisis ta première étape et commence par un petit exercice.", date: tomorrowMorning, tab: 1, repeatsDaily: true))
+                result.append(StudyReminder(id: "morning.daily", title: String(localized: "Ta journée, à ton rythme ☀️"), body: String(localized: "Ouvre ton planning, choisis ta première étape et commence par un petit exercice."), date: tomorrowMorning, tab: 1, repeatsDaily: true))
             }
             if options.evening && (!options.quiet || (8..<22).contains(options.eveningHour)) {
-                result.append(StudyReminder(id: "evening.daily", title: "On fait le point ?", body: "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte.", date: tonight, tab: 0, repeatsDaily: true))
+                result.append(StudyReminder(id: "evening.daily", title: String(localized: "On fait le point ?"), body: String(localized: "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte."), date: tonight, tab: 0, repeatsDaily: true))
             }
         }
 
@@ -50,7 +50,7 @@ struct StudentNotificationOptions: Codable, Equatable {
             let horizon = calendar.date(byAdding: .day, value: 14, to: now)!
             for session in sessions where !session.done && session.start > now && session.start < horizon {
                 // A revision time explicitly chosen by the student may fall outside coaching quiet hours.
-                result.append(StudyReminder(id: "session.\(session.id)", title: "C’est ton moment de révision", body: StudyLabels.session(session, subjects: subjects, chapters: chapters) + " · \(session.minutes) min. Un premier exercice suffit pour te lancer.", date: session.start, tab: 1))
+                result.append(StudyReminder(id: "session.\(session.id)", title: String(localized: "C’est ton moment de révision"), body: StudyLabels.session(session, subjects: subjects, chapters: chapters) + String(localized: " · \(session.minutes) min. Un premier exercice suffit pour te lancer."), date: session.start, tab: 1))
             }
         }
         if options.coaching {
@@ -61,26 +61,26 @@ struct StudentNotificationOptions: Codable, Equatable {
                 let target = calendar.date(byAdding: .day, value: day, to: base)!
                 let date = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: target)!
                 if subjects.isEmpty {
-                    append("coach.subject.\(day)", "Ton parcours commence par une matière", "Ajoute ta première matière. Tu peux importer une photo du planning pour gagner du temps.", date, tab: 3)
+                    append("coach.subject.\(day)", String(localized: "Ton parcours commence par une matière"), String(localized: "Ajoute ta première matière. Tu peux importer une photo du planning pour gagner du temps."), date, tab: 3)
                 } else if chapters.isEmpty {
-                    append("coach.course.\(day)", "Tes matières attendent leur première étape", "Ajoute un cours ou un TD : on pourra ensuite construire tes séances de révision.", date, tab: 3)
+                    append("coach.course.\(day)", String(localized: "Tes matières attendent leur première étape"), String(localized: "Ajoute un cours ou un TD : on pourra ensuite construire tes séances de révision."), date, tab: 3)
                 } else {
-                    append("coach.return.\(day)", "On reprend doucement ?", "Pas besoin de rattraper tout d’un coup. Ouvre un TD et accorde-toi 10 minutes aujourd’hui.", date, tab: 2)
+                    append("coach.return.\(day)", String(localized: "On reprend doucement ?"), String(localized: "Pas besoin de rattraper tout d’un coup. Ouvre un TD et accorde-toi 10 minutes aujourd’hui."), date, tab: 2)
                 }
             }
             if !subjects.isEmpty && !subjects.contains(where: \.hasExam) {
                 let date = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: 4, to: anchor)!)!
-                append("coach.exam", "Une date d’examen annoncée ?", "Ajoute-la à ta matière pour répartir les révisions. Si elle est encore inconnue, tu peux continuer sans date.", date, tab: 3)
+                append("coach.exam", String(localized: "Une date d’examen annoncée ?"), String(localized: "Ajoute-la à ta matière pour répartir les révisions. Si elle est encore inconnue, tu peux continuer sans date."), date, tab: 3)
             }
             let weekStart = calendar.date(byAdding: .day, value: -6, to: calendar.startOfDay(for: now))!
             let minutes = logs.filter { $0.date >= weekStart && $0.date <= now }.reduce(0) { $0 + $1.minutes }
             if minutes > 0 {
                 let sunday = (0..<7).map { moment($0, hour: 16) }.first { calendar.component(.weekday, from: $0) == 1 && $0 > now }
-                if let sunday { append("coach.weekly", "Regarde le chemin parcouru", "Tu as déjà étudié \(minutes) min ces derniers jours. Fais ton bilan et choisis ta priorité pour la suite.", sunday, tab: 4) }
+                if let sunday { append("coach.weekly", String(localized: "Regarde le chemin parcouru"), String(localized: "Tu as déjà étudié \(minutes) min ces derniers jours. Fais ton bilan et choisis ta priorité pour la suite."), sunday, tab: 4) }
             }
             // One actionable suggestion for today's fragile or completed TD, never an extra daily series.
             if let td = chapters.first(where: { $0.kind == "TD" && !$0.completed && $0.exercisesDone >= $0.exerciseCount }) {
-                append("coach.synthesis.\(td.id)", "Tu as fait tous les exercices 👏", "\(td.name) : refais un exercice de synthèse sans correction, puis classe ce TD comme terminé.", moment(0, hour: 18), tab: 3)
+                append("coach.synthesis.\(td.id)", String(localized: "Tu as fait tous les exercices 👏"), String(localized: "\(td.name) : refais un exercice de synthèse sans correction, puis classe ce TD comme terminé."), moment(0, hour: 18), tab: 3)
             }
         }
         return result.sorted { ($0.date, $0.id) < ($1.date, $1.id) }

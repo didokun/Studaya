@@ -82,10 +82,10 @@ struct SubjectCodeField: View {
     @Binding var code: String
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            TextField("Code (facultatif)", text: $code, prompt: Text(SubjectCode.initials(name)))
+            TextField(String(localized: "Code (facultatif)"), text: $code, prompt: Text(SubjectCode.initials(name)))
                 .textInputAutocapitalization(.characters).autocorrectionDisabled()
                 .accessibilityIdentifier("subject.code")
-            Text("Code utilisé : " + SubjectCode.resolve(code, name: name) + " · initiales automatiques si vide")
+            Text(String(localized: "Code utilisé : ") + SubjectCode.resolve(code, name: name) + String(localized: " · initiales automatiques si vide"))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

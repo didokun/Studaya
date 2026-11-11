@@ -14,34 +14,34 @@ struct PremiumAccess<Content: View>: View {
     var body: some View {
         NavigationStack {
             Group {
-                if !checked { ProgressView("Vérification de Premium…") }
+                if !checked { ProgressView(String(localized: "Vérification de Premium…")) }
                 else if membership.premium == true { content() }
                 else if offers && membership.premium == false { PremiumOptions().padding(.horizontal) }
                 else {
                     VStack(spacing: 16) {
                         Image(systemName: "person.crop.circle.badge.checkmark").font(.largeTitle)
-                        Text("Accès Studaya Premium").font(.title2.bold())
-                        Text("Déjà abonné ? Restaure tes achats avec le compte Apple utilisé pour Studaya.").multilineTextAlignment(.center)
-                        Button(restoring ? "Restauration…" : "Restaurer mes achats") {
+                        Text(String(localized: "Accès Studaya Premium")).font(.title2.bold())
+                        Text(String(localized: "Déjà abonné ? Restaure tes achats avec le compte Apple utilisé pour Studaya.")).multilineTextAlignment(.center)
+                        Button(restoring ? "Restauration…" : String(localized: "Restaurer mes achats")) {
                             restoring = true
                             Task {
                                 defer { restoring = false }
                                 do {
                                     try await AppStore.sync()
                                     await membership.refresh()
-                                    if membership.premium == nil { status = "Apple n’a pas pu vérifier ton achat. Réessaie plus tard." }
-                                    else if membership.premium == false { status = "Aucun achat Studaya actif retrouvé pour ce compte dans cette boutique." }
+                                    if membership.premium == nil { status = String(localized: "Apple n’a pas pu vérifier ton achat. Réessaie plus tard.") }
+                                    else if membership.premium == false { status = String(localized: "Aucun achat Studaya actif retrouvé pour ce compte dans cette boutique.") }
                                 } catch { status = error.localizedDescription }
                             }
                         }.buttonStyle(Primary()).disabled(restoring)
                         if let status { Text(status).font(.footnote) }
                         if membership.premium == false {
-                            Button("Voir les offres") { offers = true }.disabled(restoring)
+                            Button(String(localized: "Voir les offres")) { offers = true }.disabled(restoring)
                         }
                     }.padding()
                 }
             }.studyScreen().navigationTitle(title).navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { dismiss() }.accessibilityIdentifier("premium.close") } }
+                .toolbar { ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Fermer")) { dismiss() }.accessibilityIdentifier("premium.close") } }
         }.task { await membership.refresh(); checked = true }
     }
 }

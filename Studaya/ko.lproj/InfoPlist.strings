@@ -1,0 +1,3 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"NSCalendarsFullAccessUsageDescription" = "Studaya는 귀하의 리뷰와 마감일을 위한 전용 달력을 만듭니다. 전체 액세스를 통해 Studaya에서 내보낸 이벤트만 검색, 업데이트 및 삭제할 수 있습니다.";
+"NSCameraUsageDescription" = "Studaya는 카메라를 사용하여 피사체로 가져오려는 일정을 읽습니다.";

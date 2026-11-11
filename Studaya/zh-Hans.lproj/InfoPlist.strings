@@ -1,0 +1,3 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"NSCalendarsFullAccessUsageDescription" = "Studaya 为您的审核和截止日期创建了专用日历。完全访问权限允许您仅查找、更新和删除 Studaya 导出的事件。";
+"NSCameraUsageDescription" = "Studaya 使用相机读取您想要导入到主题中的时间表。";

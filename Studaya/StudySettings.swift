@@ -17,50 +17,50 @@ struct StudySettings: View {
         NavigationStack {
             List {
                 Section {
-                    row("Profil étudiant","person.crop.circle") {
-                        Form { TextField("Prénom", text: $name); Stepper("Objectif · \(goal) h par semaine", value: $goal, in: 1...60) }
+                    row(String(localized: "Profil étudiant"),"person.crop.circle") {
+                        Form { TextField(String(localized: "Prénom"), text: $name); Stepper(String(localized: "Objectif · \(goal) h par semaine"), value: $goal, in: 1...60) }
                     }
-                    row("Études et calendrier","graduationcap") {
+                    row(String(localized: "Études et calendrier"),"graduationcap") {
                         Form {
                             if let p = profiles.first {
-                                LabeledContent("Formation", value: p.program)
-                                LabeledContent("Niveau", value: p.level)
-                                if !p.institution.isEmpty { LabeledContent("Établissement", value: p.institution) }
-                                LabeledContent("Durée", value: "\(p.years) année(s)")
-                                LabeledContent("Matières", value: p.courses.joined(separator: ", "))
+                                LabeledContent(String(localized: "Formation"), value: p.program)
+                                LabeledContent(String(localized: "Niveau"), value: p.level)
+                                if !p.institution.isEmpty { LabeledContent(String(localized: "Établissement"), value: p.institution) }
+                                LabeledContent(String(localized: "Durée"), value: String(localized: "\(p.years) année(s)"))
+                                LabeledContent(String(localized: "Matières"), value: p.courses.joined(separator: ", "))
                             }
-                            Button("Revoir ma configuration") { edit = true }
+                            Button(String(localized: "Revoir ma configuration")) { edit = true }
                         }
                     }
-                    row("Emploi du temps et indisponibilités", "calendar.badge.minus") { UnavailabilitySettings() }
-                    row("Sauvegarde et restauration", "externaldrive") { BackupSettings() }
-                    row("Rythme de révision","calendar") { RhythmSettings() }
-                    row("Concentration","timer") {
+                    row(String(localized: "Emploi du temps et indisponibilités"), "calendar.badge.minus") { UnavailabilitySettings() }
+                    row(String(localized: "Sauvegarde et restauration"), "externaldrive") { BackupSettings() }
+                    row(String(localized: "Rythme de révision"),"calendar") { RhythmSettings() }
+                    row(String(localized: "Concentration"),"timer") {
                         Form {
-                            Stepper("Focus · \(focus) min", value: $focus, in: 5...90, step: 5)
-                            Stepper("Pause · \(rest) min", value: $rest, in: 1...30)
+                            Stepper(String(localized: "Focus · \(focus) min"), value: $focus, in: 5...90, step: 5)
+                            Stepper(String(localized: "Pause · \(rest) min"), value: $rest, in: 1...30)
                         }
                     }
-                    row("Rappels et notifications","bell") { ReminderSettings() }
-                    row("Calendrier Apple", "calendar.badge.clock") { CalendarSyncSettings() }
+                    row(String(localized: "Rappels et notifications"),"bell") { ReminderSettings() }
+                    row(String(localized: "Calendrier Apple"), "calendar.badge.clock") { CalendarSyncSettings() }
                 }
                 Section {
-                    row("Abonnement","star.circle") { PremiumOptions().padding(.horizontal) }
-                    row("Données et confidentialité","hand.raised") {
+                    row(String(localized: "Abonnement"),"star.circle") { PremiumOptions().padding(.horizontal) }
+                    row(String(localized: "Données et confidentialité"),"hand.raised") {
                         Form {
-                            Text("Ton profil et tes révisions sont conservés sur cet appareil. Les achats sont gérés par Apple.")
-                            Link("Conditions d’utilisation Apple", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                            Button("Effacer les données de Studaya", role: .destructive) { confirm = true }
+                            Text(String(localized: "Ton profil et tes révisions sont conservés sur cet appareil. Les achats sont gérés par Apple."))
+                            Link(String(localized: "Conditions d’utilisation Apple"), destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                            Button(String(localized: "Effacer les données de Studaya"), role: .destructive) { confirm = true }
                         }
                     }
                 }
-            }.studyScreen().navigationTitle("Réglages").toolbar { Button("Terminé") { dismiss() } }
+            }.studyScreen().navigationTitle(String(localized: "Réglages")).toolbar { Button(String(localized: "Terminé")) { dismiss() } }
         }.sheet(isPresented: $edit) { if let p = profiles.first { AcademicSetup(profile: p) { edit = false } } }
-        .alert("Effacer le profil et toutes les révisions ?", isPresented: $confirm) {
-            Button("Annuler", role: .cancel) {}
-            Button("Effacer et recommencer", role: .destructive) { reset() }
-        } message: { Text("Cette action est définitive. Ton abonnement reste géré par Apple.") }
-        .alert("Erreur", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
+        .alert(String(localized: "Effacer le profil et toutes les révisions ?"), isPresented: $confirm) {
+            Button(String(localized: "Annuler"), role: .cancel) {}
+            Button(String(localized: "Effacer et recommencer"), role: .destructive) { reset() }
+        } message: { Text(String(localized: "Cette action est définitive. Ton abonnement reste géré par Apple.")) }
+        .alert(String(localized: "Erreur"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
     private func row<V: View>(_ title: String, _ symbol: String, @ViewBuilder content: @escaping () -> V) -> some View {
         NavigationLink { content().studyScreen().navigationTitle(title).navigationBarTitleDisplayMode(.inline) } label: {
@@ -91,11 +91,11 @@ struct RhythmSettings: View {
     var body: some View {
         Form {
             RhythmFields(rhythm: $rhythm)
-            Button("Enregistrer et replanifier") {
+            Button(String(localized: "Enregistrer et replanifier")) {
                 do {
                     let missing = try Scheduler.rebuild(db, availability: rhythm)
                     rhythm.persist()
-                    status = missing == 0 ? "Planning mis à jour." : "\(missing) séances d’examen sans créneau."
+                    status = missing == 0 ? String(localized: "Planning mis à jour.") : String(localized: "\(missing) séances d’examen sans créneau.")
                 } catch { db.rollback(); status = error.localizedDescription }
             }.disabled(rhythm.weekdays.isEmpty)
             if !status.isEmpty { Text(status) }
@@ -105,6 +105,6 @@ struct RhythmSettings: View {
 
 struct ReminderSettings: View {
     var body: some View {
-        Form { EventReminderSettings() }.studyScreen().navigationTitle("Rappels et notifications")
+        Form { EventReminderSettings() }.studyScreen().navigationTitle(String(localized: "Rappels et notifications"))
     }
 }

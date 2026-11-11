@@ -19,18 +19,18 @@ enum ReminderPlan {
             let morning = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: subject.exam)!
             for days in [7, 1, 0] {
                 let date = calendar.date(byAdding: .day, value: -days, to: morning)!
-                items.append(StudyReminder(id: "exam.\(subject.id).\(days)", title: "Examen · " + subject.displayCode, body: days == 0 ? "Ton examen est prévu aujourd’hui. Consulte ta préparation." : "Plus que \(days) jour(s) pour préparer cet examen.", date: date))
+                items.append(StudyReminder(id: "exam.\(subject.id).\(days)", title: String(localized: "Examen · ") + subject.displayCode, body: days == 0 ? String(localized: "Ton examen est prévu aujourd’hui. Consulte ta préparation.") : String(localized: "Plus que \(days) jour(s) pour préparer cet examen."), date: date))
             }
         }
         for deadline in deadlines where !deadline.done && deadline.hasDueDate {
             let name = subjects.first { $0.id == deadline.subjectID }?.displayCode ?? ""
             let body = name + " · " + deadline.due.formatted(date: .abbreviated, time: .shortened)
             items.append(StudyReminder(id: "deadline.\(deadline.id).reminder", title: StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), body: body, date: deadline.reminderDate))
-            if deadline.reminderDays != 0 { items.append(StudyReminder(id: "deadline.\(deadline.id).due", title: "Échéance · " + StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), body: body, date: deadline.due)) }
+            if deadline.reminderDays != 0 { items.append(StudyReminder(id: "deadline.\(deadline.id).due", title: String(localized: "Échéance · ") + StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), body: body, date: deadline.due)) }
         }
         for review in reviews where !review.done {
             guard let chapter = chapters.first(where: { $0.id == review.chapterID && $0.completed }) else { continue }
-            items.append(StudyReminder(id: "review.\(review.id)", title: "Rappel espacé · " + (subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name, body: "Teste-toi sans correction. Ce rappel ne remet pas ton travail parmi les cours ou TD en cours.", date: review.due))
+            items.append(StudyReminder(id: "review.\(review.id)", title: String(localized: "Rappel espacé · ") + (subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name, body: String(localized: "Teste-toi sans correction. Ce rappel ne remet pas ton travail parmi les cours ou TD en cours."), date: review.due))
         }
         return items.filter { $0.date > now }.sorted { ($0.date, $0.id) < ($1.date, $1.id) }
     }
@@ -48,13 +48,13 @@ enum ReminderPlan {
         guard revision == generation else { return }
         let own = pending.filter { $0.identifier.hasPrefix("studaya.event.") }.map(\.identifier)
         guard StudyPreferences.current.bool(forKey: "eventRemindersEnabled") || StudyPreferences.current.bool(forKey: "reminderEnabled") else {
-            center.removePendingNotificationRequests(withIdentifiers: own); status = "Rappels de planning désactivés."; return
+            center.removePendingNotificationRequests(withIdentifiers: own); status = String(localized: "Rappels de planning désactivés."); return
         }
         let settings = await center.notificationSettings()
         guard revision == generation else { return }
         guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else {
             center.removePendingNotificationRequests(withIdentifiers: own)
-            status = "Autorise les notifications de Studaya dans les réglages iOS."; return
+            status = String(localized: "Autorise les notifications de Studaya dans les réglages iOS."); return
         }
         do {
             let preferences = StudyPreferences.current
@@ -78,13 +78,13 @@ enum ReminderPlan {
                 let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: item.date)
                 try await center.add(UNNotificationRequest(identifier: "studaya.event." + item.id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: item.repeatsDaily ? Calendar.current.dateComponents([.hour, .minute], from: item.date) : components, repeats: item.repeatsDaily)))
             }
-            status = "\(scheduled.count) rappel(s) programmé(s)." + (plan.count > scheduled.count ? " Les suivants seront programmés à la prochaine ouverture de l’app." : "")
-        } catch { status = "Impossible de programmer les rappels : " + error.localizedDescription }
+            status = String(localized: "\(scheduled.count) rappel(s) programmé(s).") + (plan.count > scheduled.count ? String(localized: " Les suivants seront programmés à la prochaine ouverture de l’app.") : "")
+        } catch { status = String(localized: "Impossible de programmer les rappels : ") + error.localizedDescription }
     }
     func enable(_ db: ModelContext) async {
         do {
             guard try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) else {
-                status = "Autorise les notifications de Studaya dans les réglages iOS."; return
+                status = String(localized: "Autorise les notifications de Studaya dans les réglages iOS."); return
             }
             StudyPreferences.current.set(true, forKey: "eventRemindersEnabled")
             StudyPreferences.current.set(false, forKey: "reminderEnabled")
@@ -102,35 +102,35 @@ struct EventReminderSettings: View {
     @State private var options = StudentNotificationOptions.load()
     @State private var busy = false
     var body: some View {
-        Section("Un compagnon pour tes révisions") {
-            Text("Des invitations concrètes à avancer, sans culpabiliser. Le bilan du soir t’invite à cocher ce qui est fait et à ajuster la suite.").font(.footnote)
-            Button(enabled ? "Vérifier et actualiser les notifications" : "Activer les notifications") {
+        Section(String(localized: "Un compagnon pour tes révisions")) {
+            Text(String(localized: "Des invitations concrètes à avancer, sans culpabiliser. Le bilan du soir t’invite à cocher ce qui est fait et à ajuster la suite.")).font(.footnote)
+            Button(enabled ? String(localized: "Vérifier et actualiser les notifications") : String(localized: "Activer les notifications")) {
                 busy = true
                 Task { await reminders.enable(db); busy = false }
             }.disabled(busy)
             if enabled {
-                Button("Désactiver les rappels de planning") {
+                Button(String(localized: "Désactiver les rappels de planning")) {
                     enabled = false; StudyPreferences.current.set(false, forKey: "reminderEnabled")
                     Task { await DailyReminder.sync(); await reminders.refresh(db) }
                 }
             }
             if !reminders.status.isEmpty { Text(reminders.status).font(.footnote) }
-            Link("Autorisations dans les réglages iOS", destination: URL(string: UIApplication.openSettingsURLString)!)
+            Link(String(localized: "Autorisations dans les réglages iOS"), destination: URL(string: UIApplication.openSettingsURLString)!)
         }
-        Section("Ton rythme") {
-            Toggle("Planning du matin", isOn: $options.morning)
-            if options.morning { Stepper("Matin · \(options.morningHour) h", value: $options.morningHour, in: 0...23) }
-            Toggle("Bilan du soir", isOn: $options.evening)
-            if options.evening { Stepper("Soir · \(options.eveningHour) h", value: $options.eveningHour, in: 0...23) }
-            Toggle("À l’heure des séances", isOn: $options.sessions)
-            Toggle("Contrôles, présentations, examens et rappels espacés", isOn: $options.academic)
-            Toggle("Petits coups de pouce et reprise après une pause", isOn: $options.coaching)
-            Toggle("Messages d’accompagnement entre 8 h et 22 h", isOn: $options.quiet)
-            Text("Les horaires explicites de tes séances, échéances et minuteurs restent prioritaires. Les prochains rappels sont renouvelés à chaque ouverture.").font(.footnote).foregroundStyle(.secondary)
+        Section(String(localized: "Ton rythme")) {
+            Toggle(String(localized: "Planning du matin"), isOn: $options.morning)
+            if options.morning { Stepper(String(localized: "Matin · \(options.morningHour) h"), value: $options.morningHour, in: 0...23) }
+            Toggle(String(localized: "Bilan du soir"), isOn: $options.evening)
+            if options.evening { Stepper(String(localized: "Soir · \(options.eveningHour) h"), value: $options.eveningHour, in: 0...23) }
+            Toggle(String(localized: "À l’heure des séances"), isOn: $options.sessions)
+            Toggle(String(localized: "Contrôles, présentations, examens et rappels espacés"), isOn: $options.academic)
+            Toggle(String(localized: "Petits coups de pouce et reprise après une pause"), isOn: $options.coaching)
+            Toggle(String(localized: "Messages d’accompagnement entre 8 h et 22 h"), isOn: $options.quiet)
+            Text(String(localized: "Les horaires explicites de tes séances, échéances et minuteurs restent prioritaires. Les prochains rappels sont renouvelés à chaque ouverture.")).font(.footnote).foregroundStyle(.secondary)
         }
-        Section("Focus et repos") {
-            Toggle("Fin de Focus, début et fin du repos", isOn: $options.focus)
-            Text("Le repos démarre automatiquement à la fin du Focus. Le minuteur reste visible sur l’écran verrouillé si les activités en direct sont autorisées.").font(.footnote)
+        Section(String(localized: "Focus et repos")) {
+            Toggle(String(localized: "Fin de Focus, début et fin du repos"), isOn: $options.focus)
+            Text(String(localized: "Le repos démarre automatiquement à la fin du Focus. Le minuteur reste visible sur l’écran verrouillé si les activités en direct sont autorisées.")).font(.footnote)
             if !focus.status.isEmpty { Text(focus.status).font(.footnote) }
         }
         .onChange(of: options) { _, value in
@@ -160,15 +160,15 @@ struct NotificationInvitation: View {
     @State private var busy = false
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Ton planning le matin, un point le soir, tes séances et échéances au bon moment. Choisis les rappels qui t’aident à avancer.")
-            Button("Activer les notifications", systemImage: "bell.badge") {
+            Text(String(localized: "Ton planning le matin, un point le soir, tes séances et échéances au bon moment. Choisis les rappels qui t’aident à avancer."))
+            Button(String(localized: "Activer les notifications"), systemImage: "bell.badge") {
                 busy = true
                 Task { await reminders.enable(db); seen = true; busy = false }
             }.buttonStyle(Primary()).disabled(busy)
             if !reminders.status.isEmpty { Text(reminders.status).font(.callout) }
-            Link("Ouvrir les réglages iOS", destination: URL(string: UIApplication.openSettingsURLString)!)
-            Button("Plus tard") { seen = true }.frame(minHeight: 44)
-            Text("Tu peux modifier ce choix dans Réglages → Rappels et notifications.").font(.footnote).foregroundStyle(.secondary)
+            Link(String(localized: "Ouvrir les réglages iOS"), destination: URL(string: UIApplication.openSettingsURLString)!)
+            Button(String(localized: "Plus tard")) { seen = true }.frame(minHeight: 44)
+            Text(String(localized: "Tu peux modifier ce choix dans Réglages → Rappels et notifications.")).font(.footnote).foregroundStyle(.secondary)
         }
     }
 }

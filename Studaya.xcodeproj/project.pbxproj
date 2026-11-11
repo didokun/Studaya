@@ -219,10 +219,25 @@
 			};
 			buildConfigurationList = 461AEB05D48546659AB3A93E /* Build configuration list for PBXProject "Studaya" */;
 			compatibilityVersion = "Xcode 16.0";
-			developmentRegion = fr;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				en,
 				fr,
+				es,
+				"pt-BR",
+				de,
+				it,
+				nl,
+				pl,
+				ru,
+				uk,
+				tr,
+				ar,
+				hi,
+				"zh-Hans",
+				ja,
+				ko,
 				Base,
 			);
 			mainGroup = 624E701A87AC4B5DA326E560;

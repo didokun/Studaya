@@ -1,0 +1,3 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"NSCalendarsFullAccessUsageDescription" = "Studaya crea un calendario dedicato per le tue revisioni e scadenze. L'accesso completo ti consente di trovare, aggiornare ed eliminare solo gli eventi esportati da Studaya.";
+"NSCameraUsageDescription" = "Studaya utilizza la fotocamera per leggere il programma che desideri importare in un argomento.";

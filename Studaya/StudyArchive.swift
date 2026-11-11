@@ -10,18 +10,18 @@ struct ReviewRow: View {
     @State private var error: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name + " · J+\(review.intervalDays)", systemImage: "brain.head.profile").font(.headline)
+            Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name + String(localized: " · J+\(review.intervalDays)"), systemImage: "brain.head.profile").font(.headline)
             Text(review.due, format: .dateTime.day().month().hour().minute()).font(.caption)
-            Text("Rappel d’un travail terminé · teste-toi sans correction").font(.caption).foregroundStyle(.secondary)
+            Text(String(localized: "Rappel d’un travail terminé · teste-toi sans correction")).font(.caption).foregroundStyle(.secondary)
             HStack {
-                Button("Démarrer ce rappel") { focus = true }
-                Button("Rappel effectué") {
+                Button(String(localized: "Démarrer ce rappel")) { focus = true }
+                Button(String(localized: "Rappel effectué")) {
                     review.done = true
                     do { try db.save() } catch { db.rollback(); self.error = error.localizedDescription }
                 }
             }.buttonStyle(.borderless)
-        }.sheet(isPresented: $focus) { NavigationStack { Focus(initialChapterID: chapter.id, initialReviewID: review.id).toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { focus = false } } } } }
-        .alert("Rappel", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
+        }.sheet(isPresented: $focus) { NavigationStack { Focus(initialChapterID: chapter.id, initialReviewID: review.id).toolbar { ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Fermer")) { focus = false } } } } }
+        .alert(String(localized: "Rappel"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
 }
 
@@ -35,29 +35,29 @@ struct StudyArchive: View {
     func matches(_ text: String) -> Bool { search.isEmpty || text.localizedCaseInsensitiveContains(search) }
     var body: some View {
         List {
-            Section("Cours et TD terminés") {
+            Section(String(localized: "Cours et TD terminés")) {
                 ForEach(chapters.filter { chapter in chapter.completed && matches(chapter.name + " " + (subjects.first(where: { $0.id == chapter.subjectID })?.name ?? "")) }) { chapter in
-                    NavigationLink { ChapterPage(chapter: chapter) } label: { Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.kind + " · " + chapter.name, systemImage: "checkmark.circle") }
+                    NavigationLink { ChapterPage(chapter: chapter) } label: { Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + L10n.key(chapter.kind) + " · " + chapter.name, systemImage: "checkmark.circle") }
                 }
             }
-            Section("Échéances terminées") {
+            Section(String(localized: "Échéances terminées")) {
                 ForEach(deadlines.filter { $0.done && matches($0.title) }) { item in
-                    VStack(alignment: .leading) { DeadlineRow(item: item); Button("Modifier l’échéance") { editing = item } }
+                    VStack(alignment: .leading) { DeadlineRow(item: item); Button(String(localized: "Modifier l’échéance")) { editing = item } }
                 }
             }
-            Section("Rappels espacés à venir ou à rattraper") {
+            Section(String(localized: "Rappels espacés à venir ou à rattraper")) {
                 ForEach(reviews.filter { !$0.done }) { review in
                     if let chapter = chapters.first(where: { $0.id == review.chapterID }), matches(chapter.name) { ReviewRow(review: review, chapter: chapter) }
                 }
             }
-            Section("Historique des rappels") {
+            Section(String(localized: "Historique des rappels")) {
                 ForEach(reviews.filter(\.done)) { review in
                     if let chapter = chapters.first(where: { $0.id == review.chapterID }), matches(chapter.name) {
-                        Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name + " · J+\(review.intervalDays)", systemImage: "checkmark.circle.fill")
+                        Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name + String(localized: " · J+\(review.intervalDays)"), systemImage: "checkmark.circle.fill")
                     }
                 }
             }
-        }.navigationTitle("Archives").searchable(text: $search, prompt: "Rechercher un travail terminé")
+        }.navigationTitle(String(localized: "Archives")).searchable(text: $search, prompt: String(localized: "Rechercher un travail terminé"))
         .sheet(item: $editing) { item in if let subject = subjects.first(where: { $0.id == item.subjectID }) { DeadlineEditor(subject: subject, existing: item) } }
     }
 }

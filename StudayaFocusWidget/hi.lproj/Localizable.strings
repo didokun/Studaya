@@ -1,0 +1,11 @@
+// Generated from Localization/*.json; see scripts/localize-resources.py.
+"En pause" = "विराम पर";
+"Focus en pause" = "फोकस रुक गया";
+"Ouvre Studaya pour reprendre" = "फिर से शुरू करने के लिए स्टडीया खोलें";
+"Ouvre Studaya pour retrouver ta séance" = "अपना सत्र खोजने के लिए स्टडीया खोलें";
+"Ouvre l’app pour reprendre" = "फिर से शुरू करने के लिए ऐप खोलें";
+"Puis ta pause" = "फिर आपका ब्रेक";
+"Repos" = "आराम करो";
+"Révision" = "अध्ययन";
+"Studaya" = "Studaya";
+"Studaya · Focus et repos" = "अध्ययन · ध्यान केंद्रित करें और आराम करें";

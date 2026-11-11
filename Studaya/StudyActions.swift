@@ -18,7 +18,7 @@ enum StudyError: LocalizedError {
 @MainActor enum StudyActions {
     static func complete(_ chapter: Chapter, db: ModelContext, now: Date = .now, calendar: Calendar = .current) throws {
         if !chapter.completed && chapter.kind == "TD" && (chapter.exercisesDone < chapter.exerciseCount || !chapter.synthesisDone) {
-            throw StudyError.invalid("Termine les exercices et valide la synthèse avant de classer ce TD.")
+            throw StudyError.invalid(String(localized: "Termine les exercices et valide la synthèse avant de classer ce TD."))
         }
         let reviews = try db.fetch(FetchDescriptor<SpacedReview>()).filter { $0.chapterID == chapter.id && !$0.done }
         for review in reviews { db.delete(review) }
@@ -33,23 +33,23 @@ enum StudyError: LocalizedError {
         try Scheduler.rebuild(db)
     }
     static func reschedule(_ session: Session, to date: Date, db: ModelContext, now: Date = .now) throws {
-        guard !session.done, date >= now else { throw StudyError.invalid("Choisis un créneau futur pour une séance à faire.") }
+        guard !session.done, date >= now else { throw StudyError.invalid(String(localized: "Choisis un créneau futur pour une séance à faire.")) }
         let limit = date.addingTimeInterval(Double(session.minutes * 60))
         let others = try db.fetch(FetchDescriptor<Session>())
         let blocks = try db.fetch(FetchDescriptor<TimeBlock>())
         guard !others.contains(where: { $0.id != session.id && $0.start < limit && $0.start.addingTimeInterval(Double($0.minutes * 60)) > date }),
               !blocks.contains(where: { $0.conflicts(start: date, minutes: session.minutes) }) else {
-            throw StudyError.invalid("Ce créneau chevauche une séance ou une indisponibilité.")
+            throw StudyError.invalid(String(localized: "Ce créneau chevauche une séance ou une indisponibilité."))
         }
         let subjects = try db.fetch(FetchDescriptor<Subject>())
         let chapters = try db.fetch(FetchDescriptor<Chapter>())
         if let start = chapters.first(where: { $0.id == session.chapterID })?.startDate,
-           date < Calendar.current.startOfDay(for: start) { throw StudyError.invalid("La séance doit avoir lieu après la date de début du cours ou TD.") }
+           date < Calendar.current.startOfDay(for: start) { throw StudyError.invalid(String(localized: "La séance doit avoir lieu après la date de début du cours ou TD.")) }
         let subjectID = session.subjectID ?? chapters.first(where: { $0.id == session.chapterID })?.subjectID
         var due: Date?
         if let deadlineID = session.deadlineID { due = try db.fetch(FetchDescriptor<StudyDeadline>()).first { $0.id == deadlineID && $0.hasDueDate }?.due }
         else if let subject = subjects.first(where: { $0.id == subjectID }), subject.hasExam { due = subject.exam }
-        if let due, limit > due { throw StudyError.invalid("La séance doit se terminer avant son échéance.") }
+        if let due, limit > due { throw StudyError.invalid(String(localized: "La séance doit se terminer avant son échéance.")) }
         session.start = date; session.pinned = true
         try Scheduler.rebuild(db)
     }

@@ -112,9 +112,9 @@ extension Subject {
 
 enum StudyLabels {
     static func deadline(_ item: StudyDeadline, subjects: [Subject], chapters: [Chapter]) -> String {
-        guard let subject = subjects.first(where: { $0.id == item.subjectID }) else { return item.kind + " · " + item.title }
+        guard let subject = subjects.first(where: { $0.id == item.subjectID }) else { return L10n.key(item.kind) + " · " + item.title }
         let target = chapters.first { $0.id == item.chapterID }?.name ?? subject.compactTitle(item.title)
-        return item.kind + " · " + subject.displayCode + (target == subject.displayCode ? "" : " · " + target)
+        return L10n.key(item.kind) + " · " + subject.displayCode + (target == subject.displayCode ? "" : " · " + target)
     }
 
     static func session(_ session: Session, subjects: [Subject], chapters: [Chapter] = []) -> String {

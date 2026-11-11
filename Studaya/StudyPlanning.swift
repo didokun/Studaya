@@ -34,12 +34,12 @@ enum StudyCoach {
         return units.reduce(0) { $0 + progress($1, sessions: sessions) } / Double(units.count)
     }
     static func advice(_ chapter: Chapter, sessions: [Session]) -> String {
-        if chapter.completed { return "Terminé et conservé dans ton historique. Priorité aux autres cours et TD." }
+        if chapter.completed { return String(localized: "Terminé et conservé dans ton historique. Priorité aux autres cours et TD.") }
         if chapter.kind == "TD", progress(chapter, sessions: sessions) >= 1 {
-            return "Refais un exercice de synthèse de bout en bout, sans correction, puis valide le TD."
+            return String(localized: "Refais un exercice de synthèse de bout en bout, sans correction, puis valide le TD.")
         }
-        if chapter.confidence == 1 { return "Reprends les points fragiles, puis teste-toi sans tes notes." }
-        return chapter.kind == "TD" ? "Avance exercice par exercice et note tes erreurs avant de regarder la correction." : "Explique ce cours de mémoire, puis vérifie les points oubliés."
+        if chapter.confidence == 1 { return String(localized: "Reprends les points fragiles, puis teste-toi sans tes notes.") }
+        return chapter.kind == "TD" ? String(localized: "Avance exercice par exercice et note tes erreurs avant de regarder la correction.") : String(localized: "Explique ce cours de mémoire, puis vérifie les points oubliés.")
     }
 }
 
@@ -55,18 +55,18 @@ struct DeadlineRow: View {
                 item.done.toggle()
                 do { try Scheduler.rebuild(db) } catch { db.rollback(); self.error = error.localizedDescription }
             } label: { Image(systemName: item.done ? "checkmark.circle.fill" : "circle") }
-                .buttonStyle(.borderless).accessibilityLabel(item.done ? "Remettre à faire" : "Marquer comme terminé")
+                .buttonStyle(.borderless).accessibilityLabel(item.done ? String(localized: "Remettre à faire") : String(localized: "Marquer comme terminé"))
             VStack(alignment: .leading, spacing: 5) {
                 Text(StudyLabels.deadline(item, subjects: subjects, chapters: chapters)).font(.headline)
                 if item.hasDueDate {
                     Text(item.due, format: .dateTime.day().month().hour().minute()).font(.caption)
-                } else { Text("Date à préciser").font(.caption).foregroundStyle(.secondary) }
+                } else { Text(String(localized: "Date à préciser")).font(.caption).foregroundStyle(.secondary) }
                 if !item.done && item.hasDueDate {
-                    Text(item.due < .now ? "En retard" : "Rappel " + item.reminderDate.formatted(date: .abbreviated, time: .shortened))
+                    Text(item.due < .now ? String(localized: "En retard") : String(localized: "Rappel ") + item.reminderDate.formatted(date: .abbreviated, time: .shortened))
                         .font(.caption).foregroundStyle(item.due < .now ? .red : .secondary)
                 }
             }
-        }.alert("Planning", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
+        }.alert(String(localized: "Planning"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button("OK") {} } message: { Text(error ?? "") }
     }
 }
 
@@ -89,36 +89,36 @@ struct DeadlineEditor: View {
         NavigationStack {
             Form {
                 Section(subject.displayCode) {
-                    Picker("Type", selection: $kind) {
-                        ForEach(["Examen", "Examen final", "Contrôle", "Présentation", "Rendu"], id: \.self) { Text($0) }
+                    Picker(String(localized: "Type"), selection: $kind) {
+                        ForEach(["Examen", "Examen final", "Contrôle", "Présentation", "Rendu"], id: \.self) { Text(L10n.key($0)) }
                     }
                     if kind == "Présentation" || kind == "Contrôle" {
-                        Picker("Cours ou TD lié", selection: $chapterID) {
-                            Text("Toute la matière").tag(nil as UUID?)
+                        Picker(String(localized: "Cours ou TD lié"), selection: $chapterID) {
+                            Text(String(localized: "Toute la matière")).tag(nil as UUID?)
                             ForEach(chapters.filter { $0.subjectID == subject.id }) { chapter in
-                                Text(chapter.kind + " · " + chapter.name).tag(Optional(chapter.id))
+                                Text(L10n.key(chapter.kind) + " · " + chapter.name).tag(Optional(chapter.id))
                             }
                         }
                     } else { Label(subject.displayCode, systemImage: "books.vertical") }
-                    Toggle("Date connue", isOn: $hasDueDate)
-                    if hasDueDate { DatePicker("Date limite", selection: $due) }
-                    Stepper("Préparation · \(sessions) séances", value: $sessions, in: 1...30)
-                    Stepper("Rappel · \(days) jour(s) avant", value: $days, in: 0...30)
-                    Text("Le rappel apparaît dans l’accueil et le calendrier. Active les notifications d’échéance dans Réglages pour le recevoir même lorsque l’app est fermée.").font(.footnote)
+                    Toggle(String(localized: "Date connue"), isOn: $hasDueDate)
+                    if hasDueDate { DatePicker(String(localized: "Date limite"), selection: $due) }
+                    Stepper(String(localized: "Préparation · \(sessions) séances"), value: $sessions, in: 1...30)
+                    Stepper(String(localized: "Rappel · \(days) jour(s) avant"), value: $days, in: 0...30)
+                    Text(String(localized: "Le rappel apparaît dans l’accueil et le calendrier. Active les notifications d’échéance dans Réglages pour le recevoir même lorsque l’app est fermée.")).font(.footnote)
                 }
-                if existing != nil { Button("Supprimer l’échéance", role: .destructive) { confirmDelete = true } }
-            }.studyScreen().navigationTitle("Échéance").toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(saved) }
+                if existing != nil { Button(String(localized: "Supprimer l’échéance"), role: .destructive) { confirmDelete = true } }
+            }.studyScreen().navigationTitle(String(localized: "Échéance")).toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Annuler")) { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(String(localized: "Enregistrer")) { save() }.disabled(saved) }
             }
-        }.confirmationDialog("Supprimer cette échéance et ses séances de préparation ?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Supprimer", role: .destructive) {
+        }.confirmationDialog(String(localized: "Supprimer cette échéance et ses séances de préparation ?"), isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button(String(localized: "Supprimer"), role: .destructive) {
                 guard let existing else { return }
                 do { try StudyActions.deleteDeadline(existing, db: db); try Scheduler.rebuild(db); dismiss() } catch { db.rollback(); message = error.localizedDescription }
             }
         }.onAppear {
             if let existing { chapterID = existing.chapterID; kind = existing.kind; due = existing.due; hasDueDate = existing.hasDueDate; sessions = existing.preparationSessions; days = existing.reminderDays }
-        }.alert("Planning", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+        }.alert(String(localized: "Planning"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
             Button("OK") { if saved { dismiss() } }
         } message: { Text(message ?? "") }
     }
@@ -133,7 +133,7 @@ struct DeadlineEditor: View {
         do {
             let missing = try Scheduler.rebuild(db)
             saved = true
-            if missing > 0 { message = "\(missing) séance(s) sans créneau. Élargis tes disponibilités." } else { dismiss() }
+            if missing > 0 { message = String(localized: "\(missing) séance(s) sans créneau. Élargis tes disponibilités.") } else { dismiss() }
         } catch { db.rollback(); message = error.localizedDescription }
     }
 }
@@ -146,7 +146,7 @@ struct SubjectProgress: View {
         let progress = StudyCoach.progress(subject: subject, chapters: chapters, sessions: sessions)
         VStack(alignment: .leading, spacing: 6) {
             ProgressView(value: progress)
-            Text("\(Int(progress * 100)) % du travail suivi · ajoute tes cours et TD pour affiner ce suivi")
+            Text(String(localized: "\(Int(progress * 100)) % du travail suivi · ajoute tes cours et TD pour affiner ce suivi"))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -163,15 +163,15 @@ struct StudyMonth: View {
         let count = calendar.range(of: .day, in: .month, for: selection)!.count
         VStack(spacing: 12) {
             HStack {
-                Button("Mois précédent", systemImage: "chevron.left") { move(-1) }.labelStyle(.iconOnly)
+                Button(String(localized: "Mois précédent"), systemImage: "chevron.backward") { move(-1) }.labelStyle(.iconOnly)
                 Spacer()
                 Text(selection, format: .dateTime.month(.wide).year()).font(.headline)
                 Spacer()
-                Button("Mois suivant", systemImage: "chevron.right") { move(1) }.labelStyle(.iconOnly).accessibilityLabel("Mois suivant").accessibilityIdentifier("calendar.nextMonth")
+                Button(String(localized: "Mois suivant"), systemImage: "chevron.forward") { move(1) }.labelStyle(.iconOnly).accessibilityLabel(String(localized: "Mois suivant")).accessibilityIdentifier("calendar.nextMonth")
             }.buttonStyle(StudyIconButtonStyle())
             HStack {
                 ForEach(0..<7, id: \.self) { i in
-                    Text(["L", "M", "M", "J", "V", "S", "D"][i]).font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                    Text(calendar.veryShortStandaloneWeekdaySymbols[(i + 1) % 7]).font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                 }
             }
             VStack(spacing: 4) {
@@ -194,7 +194,7 @@ struct StudyMonth: View {
                                         .background((dayMarkers.first?.kind.color ?? Color.clear).opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
                                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(calendar.isDate(day, inSameDayAs: selection) ? StudyDesign.accent : .clear, lineWidth: 2))
                                 }.buttonStyle(.plain)
-                                    .accessibilityLabel(day.formatted(date: .complete, time: .omitted) + ", " + dayMarkers.map { $0.kind.rawValue + " " + $0.code }.joined(separator: ", ") + (hasReminder ? ", rappel ou échéance" : ""))
+                                    .accessibilityLabel(day.formatted(date: .complete, time: .omitted) + ", " + dayMarkers.map { L10n.key($0.kind.rawValue) + " " + $0.code }.joined(separator: ", ") + (hasReminder ? String(localized: ", rappel ou échéance") : ""))
                                     .accessibilityAddTraits(calendar.isDate(day, inSameDayAs: selection) ? .isSelected : [])
                             }
                         }
@@ -202,7 +202,7 @@ struct StudyMonth: View {
                 }
             }
             CalendarLegend()
-            Text("Icônes et codes : matières prévues · point violet : rappel ou échéance").font(.caption2).foregroundStyle(.secondary)
+            Text(String(localized: "Icônes et codes : matières prévues · point violet : rappel ou échéance")).font(.caption2).foregroundStyle(.secondary)
         }
     }
     func move(_ months: Int) { selection = calendar.date(byAdding: .month, value: months, to: selection)! }

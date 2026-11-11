@@ -8,7 +8,7 @@ import ActivityKit
         ActivityConfiguration(for: FocusActivityAttributes.self) { context in
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Label(context.state.paused ? "Focus en pause" : "Studaya · Focus et repos", systemImage: context.state.resting ? "leaf.fill" : "headphones")
+                    Label(context.state.paused ? String(localized: "Focus en pause") : String(localized: "Studaya · Focus et repos"), systemImage: context.state.resting ? "leaf.fill" : "headphones")
                         .font(.headline)
                     Spacer()
                     Image(systemName: "graduationcap.fill").foregroundStyle(violet)
@@ -18,12 +18,12 @@ import ActivityKit
                     Text(String(format: "%02d:%02d", context.state.pausedSeconds / 60, context.state.pausedSeconds % 60))
                         .font(.system(size: 32, weight: .bold, design: .rounded)).monospacedDigit()
                 } else if context.state.resting {
-                    HStack { Text("Repos"); Spacer(); countdown(context.state.end, start: .distantPast) }
+                    HStack { Text(String(localized: "Repos")); Spacer(); countdown(context.state.end, start: .distantPast) }
                 } else {
-                    HStack { Text("Révision"); Spacer(); countdown(context.state.end, start: .distantPast) }
-                    HStack { Text("Puis ta pause").font(.caption); Spacer(); countdown(context.state.restEnd, start: context.state.end).font(.subheadline) }
+                    HStack { Text(String(localized: "Révision")); Spacer(); countdown(context.state.end, start: .distantPast) }
+                    HStack { Text(String(localized: "Puis ta pause")).font(.caption); Spacer(); countdown(context.state.restEnd, start: context.state.end).font(.subheadline) }
                 }
-                Text(context.state.paused ? "Ouvre Studaya pour reprendre" : "Ouvre Studaya pour retrouver ta séance")
+                Text(context.state.paused ? String(localized: "Ouvre Studaya pour reprendre") : String(localized: "Ouvre Studaya pour retrouver ta séance"))
                     .font(.caption).foregroundStyle(.secondary)
             }.padding(18)
             .activityBackgroundTint(Color(red: 0.96, green: 0.95, blue: 1))
@@ -32,11 +32,11 @@ import ActivityKit
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) { Label("Studaya", systemImage: "graduationcap.fill").foregroundStyle(violet) }
-                DynamicIslandExpandedRegion(.trailing) { Text(context.state.paused ? "En pause" : context.state.resting ? "Repos" : "Focus") }
+                DynamicIslandExpandedRegion(.trailing) { Text(context.state.paused ? String(localized: "En pause") : context.state.resting ? String(localized: "Repos") : "Focus") }
                 DynamicIslandExpandedRegion(.bottom) {
                     VStack(spacing: 8) {
                         Text(context.state.title).font(.caption).lineLimit(1)
-                        if context.state.paused { Text("Ouvre l’app pour reprendre") }
+                        if context.state.paused { Text(String(localized: "Ouvre l’app pour reprendre")) }
                         else {
                             countdown(context.state.resting || context.isStale ? context.state.restEnd : context.state.end, start: .distantPast)
                                 .font(.system(size: 30, weight: .bold, design: .rounded))

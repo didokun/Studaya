@@ -76,14 +76,14 @@ struct CalendarDayIcons: View {
             } else if markers.count > 2 { Text("+\(markers.count - 2)").font(.system(size: 9)) }
         }.frame(minHeight: showCode ? 29 : 18)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(markers.map { $0.kind.rawValue + " " + $0.code }.joined(separator: ", "))
+            .accessibilityLabel(markers.map { L10n.key($0.kind.rawValue) + " " + $0.code }.joined(separator: ", "))
     }
 }
 struct CalendarLegend: View {
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), alignment: .leading)], alignment: .leading, spacing: 8) {
             ForEach([CalendarStudyKind.exam, .control, .presentation, .revision], id: \.self) { kind in
-                Label(kind.rawValue, systemImage: kind.symbol).foregroundStyle(kind.color).lineLimit(1)
+                Label(L10n.key(kind.rawValue), systemImage: kind.symbol).foregroundStyle(kind.color).lineLimit(1)
             }
         }.font(.caption)
     }

@@ -14,19 +14,19 @@ struct CalendarExportItem: Identifiable, Equatable {
     static func make(subjects: [Subject], sessions: [Session], deadlines: [StudyDeadline], chapters: [Chapter], reviews: [SpacedReview], calendar: Calendar = .current) -> [CalendarExportItem] {
         var items: [CalendarExportItem] = []
         for session in sessions {
-            items.append(CalendarExportItem(id: "session.\(session.id)", title: (session.done ? "✓ " : "") + StudyLabels.session(session, subjects: subjects, chapters: chapters), start: session.start, end: session.start.addingTimeInterval(Double(session.minutes * 60)), allDay: false, notes: "Studaya · " + session.activity))
+            items.append(CalendarExportItem(id: "session.\(session.id)", title: (session.done ? "✓ " : "") + StudyLabels.session(session, subjects: subjects, chapters: chapters), start: session.start, end: session.start.addingTimeInterval(Double(session.minutes * 60)), allDay: false, notes: String(localized: "Studaya · ") + session.activity))
         }
         for subject in subjects where subject.hasExam {
             let start = calendar.startOfDay(for: subject.exam)
-            items.append(CalendarExportItem(id: "exam.\(subject.id)", title: "Examen · " + subject.displayCode, start: start, end: calendar.date(byAdding: .day, value: 1, to: start)!, allDay: true, notes: subject.name + "\nDate d’examen ; horaire non renseigné dans Studaya."))
+            items.append(CalendarExportItem(id: "exam.\(subject.id)", title: String(localized: "Examen · ") + subject.displayCode, start: start, end: calendar.date(byAdding: .day, value: 1, to: start)!, allDay: true, notes: subject.name + String(localized: "\nDate d’examen ; horaire non renseigné dans Studaya.")))
         }
         for deadline in deadlines where deadline.hasDueDate {
-            items.append(CalendarExportItem(id: "deadline.\(deadline.id)", title: (deadline.done ? "✓ " : "") + StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), start: deadline.due, end: deadline.due.addingTimeInterval(15 * 60), allDay: false, notes: "Studaya · Repère d’échéance de 15 min, pas la durée réelle de l’épreuve."))
+            items.append(CalendarExportItem(id: "deadline.\(deadline.id)", title: (deadline.done ? "✓ " : "") + StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), start: deadline.due, end: deadline.due.addingTimeInterval(15 * 60), allDay: false, notes: String(localized: "Studaya · Repère d’échéance de 15 min, pas la durée réelle de l’épreuve.")))
         }
         for review in reviews where !sessions.contains(where: { $0.reviewID == review.id }) {
             guard let chapter = chapters.first(where: { $0.id == review.chapterID }) else { continue }
             let code = subjects.first { $0.id == chapter.subjectID }?.displayCode ?? ""
-            items.append(CalendarExportItem(id: "review.\(review.id)", title: (review.done ? "✓ " : "") + "Rappel · " + code + " · " + chapter.name, start: review.due, end: review.due.addingTimeInterval(15 * 60), allDay: false, notes: "Studaya · Rappel espacé, durée indicative de 15 min."))
+            items.append(CalendarExportItem(id: "review.\(review.id)", title: (review.done ? "✓ " : "") + String(localized: "Rappel · ") + code + " · " + chapter.name, start: review.due, end: review.due.addingTimeInterval(15 * 60), allDay: false, notes: String(localized: "Studaya · Rappel espacé, durée indicative de 15 min.")))
         }
         return items.sorted { ($0.start, $0.id) < ($1.start, $1.id) }
     }
@@ -68,7 +68,7 @@ struct CalendarExportOwnership {
         guard !busy else { return }
         busy = true; defer { busy = false }
         do {
-            guard try await store.requestFullAccessToEvents() else { throw StudyError.invalid("Autorise l’accès complet à Calendrier dans les réglages iOS pour synchroniser et supprimer les événements Studaya.") }
+            guard try await store.requestFullAccessToEvents() else { throw StudyError.invalid(String(localized: "Autorise l’accès complet à Calendrier dans les réglages iOS pour synchroniser et supprimer les événements Studaya.")) }
             p.set(true, forKey: Self.enabledKey)
             try reconcile(db)
         } catch { store.reset(); status = error.localizedDescription }
@@ -76,14 +76,14 @@ struct CalendarExportOwnership {
     func refresh(_ db: ModelContext) {
         guard p.bool(forKey: Self.enabledKey), !busy else { return }
         guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else {
-            status = "Synchronisation suspendue : autorise l’accès complet à Calendrier dans les réglages iOS."; return
+            status = String(localized: "Synchronisation suspendue : autorise l’accès complet à Calendrier dans les réglages iOS."); return
         }
         busy = true; defer { busy = false }
-        do { try reconcile(db) } catch { store.reset(); status = "Synchronisation interrompue : " + error.localizedDescription }
+        do { try reconcile(db) } catch { store.reset(); status = String(localized: "Synchronisation interrompue : ") + error.localizedDescription }
     }
     private func exportCalendar() throws -> EKCalendar {
         if let id = p.string(forKey: "appleCalendarID"), let calendar = store.calendar(withIdentifier: id) {
-            guard calendar.allowsContentModifications else { throw StudyError.invalid("Le calendrier Studaya est en lecture seule.") }
+            guard calendar.allowsContentModifications else { throw StudyError.invalid(String(localized: "Le calendrier Studaya est en lecture seule.")) }
             return calendar
         }
         let sources = store.sources
@@ -101,7 +101,7 @@ struct CalendarExportOwnership {
                 return calendar
             } catch { failure = error }
         }
-        throw failure ?? StudyError.invalid("Aucun compte calendrier ne permet de créer le calendrier Studaya. Active un calendrier local ou iCloud dans iOS.")
+        throw failure ?? StudyError.invalid(String(localized: "Aucun compte calendrier ne permet de créer le calendrier Studaya. Active un calendrier local ou iCloud dans iOS."))
     }
     private func ownedEvents(in calendar: EKCalendar?, items: [CalendarExportItem]) -> [EKEvent] {
         var byID: [String: EKEvent] = [:]
@@ -151,15 +151,15 @@ struct CalendarExportOwnership {
         })
         if let min = items.map(\.start).min() { p.set(min, forKey: "appleCalendarRangeStart") }
         if let max = items.map(\.end).max() { p.set(max, forKey: "appleCalendarRangeEnd") }
-        status = "\(items.count) événement(s) synchronisé(s) dans le calendrier Studaya."
+        status = String(localized: "\(items.count) événement(s) synchronisé(s) dans le calendrier Studaya.")
     }
-    func stop() { p.set(false, forKey: Self.enabledKey); status = "Synchronisation arrêtée. Les événements exportés restent dans Calendrier Apple." }
+    func stop() { p.set(false, forKey: Self.enabledKey); status = String(localized: "Synchronisation arrêtée. Les événements exportés restent dans Calendrier Apple.") }
     func deleteExported() {
         guard !busy else { return }
         // Disable first: a model refresh must never recreate events during deletion.
         p.set(false, forKey: Self.enabledKey)
         guard EKEventStore.authorizationStatus(for: .event) == .fullAccess else {
-            status = "Autorise l’accès complet dans les réglages iOS pour supprimer les événements exportés. La synchronisation est arrêtée."; return
+            status = String(localized: "Autorise l’accès complet dans les réglages iOS pour supprimer les événements exportés. La synchronisation est arrêtée."); return
         }
         busy = true; defer { busy = false }
         do {
@@ -169,8 +169,8 @@ struct CalendarExportOwnership {
             if !events.isEmpty { try store.commit() }
             mapping = [:]
             p.removeObject(forKey: "appleCalendarRangeStart"); p.removeObject(forKey: "appleCalendarRangeEnd")
-            status = "\(events.count) événement(s) Studaya supprimé(s) de Calendrier Apple. Synchronisation désactivée."
-        } catch { store.reset(); status = "Suppression incomplète, réessaie : " + error.localizedDescription }
+            status = String(localized: "\(events.count) événement(s) Studaya supprimé(s) de Calendrier Apple. Synchronisation désactivée.")
+        } catch { store.reset(); status = String(localized: "Suppression incomplète, réessaie : ") + error.localizedDescription }
     }
 }
 
@@ -181,26 +181,26 @@ struct CalendarSyncSettings: View {
     @State private var confirmDelete = false
     var body: some View {
         Form {
-            Section("Studaya → Calendrier Apple") {
-                Text("Retrouve tes séances, examens, contrôles, présentations et rappels espacés dans un calendrier dédié Studaya.")
-                Text("Les modifications se font dans Studaya puis sont répercutées à l’ouverture de l’app. Les changements faits dans Calendrier Apple ne sont pas importés.").font(.footnote).foregroundStyle(.secondary)
-                Button(enabled ? "Synchroniser maintenant" : "Activer la synchronisation", systemImage: "calendar.badge.plus") { Task { await sync.connect(db) } }.disabled(sync.busy)
-                if enabled { Button("Arrêter la synchronisation") { sync.stop() }.disabled(sync.busy) }
+            Section(String(localized: "Studaya → Calendrier Apple")) {
+                Text(String(localized: "Retrouve tes séances, examens, contrôles, présentations et rappels espacés dans un calendrier dédié Studaya."))
+                Text(String(localized: "Les modifications se font dans Studaya puis sont répercutées à l’ouverture de l’app. Les changements faits dans Calendrier Apple ne sont pas importés.")).font(.footnote).foregroundStyle(.secondary)
+                Button(enabled ? String(localized: "Synchroniser maintenant") : String(localized: "Activer la synchronisation"), systemImage: "calendar.badge.plus") { Task { await sync.connect(db) } }.disabled(sync.busy)
+                if enabled { Button(String(localized: "Arrêter la synchronisation")) { sync.stop() }.disabled(sync.busy) }
                 if sync.busy { ProgressView("Synchronisation…") }
                 if !sync.status.isEmpty { Text(sync.status).font(.footnote).accessibilityIdentifier("calendar.sync.status") }
             }
-            Section("Supprimer les événements exportés") {
-                Button("Tout supprimer de Calendrier Apple", role: .destructive) { confirmDelete = true }.disabled(sync.busy)
-                Text("Retire les événements exportés par cette installation de Studaya et arrête la synchronisation. Le planning dans Studaya reste disponible.").font(.footnote).foregroundStyle(.secondary)
+            Section(String(localized: "Supprimer les événements exportés")) {
+                Button(String(localized: "Tout supprimer de Calendrier Apple"), role: .destructive) { confirmDelete = true }.disabled(sync.busy)
+                Text(String(localized: "Retire les événements exportés par cette installation de Studaya et arrête la synchronisation. Le planning dans Studaya reste disponible.")).font(.footnote).foregroundStyle(.secondary)
             }
-            Section("À savoir") {
-                Text("iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés.")
-                Text("Les examens sans horaire occupent la journée. Les contrôles, présentations et rappels sont des repères de 15 minutes, pas leur durée réelle. Les séances conservent leur durée prévue.").font(.footnote)
-                Link("Autorisations Calendrier dans les réglages iOS", destination: URL(string: UIApplication.openSettingsURLString)!)
+            Section(String(localized: "À savoir")) {
+                Text(String(localized: "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés."))
+                Text(String(localized: "Les examens sans horaire occupent la journée. Les contrôles, présentations et rappels sont des repères de 15 minutes, pas leur durée réelle. Les séances conservent leur durée prévue.")).font(.footnote)
+                Link(String(localized: "Autorisations Calendrier dans les réglages iOS"), destination: URL(string: UIApplication.openSettingsURLString)!)
             }
-        }.studyScreen().navigationTitle("Calendrier Apple").navigationBarTitleDisplayMode(.inline)
-            .confirmationDialog("Supprimer tous les événements exportés par Studaya ?", isPresented: $confirmDelete, titleVisibility: .visible) {
-                Button("Supprimer les événements Studaya", role: .destructive) { sync.deleteExported() }
-            } message: { Text("Cette action retire les événements exportés depuis cet appareil et désactive la synchronisation.") }
+        }.studyScreen().navigationTitle(String(localized: "Calendrier Apple")).navigationBarTitleDisplayMode(.inline)
+            .confirmationDialog(String(localized: "Supprimer tous les événements exportés par Studaya ?"), isPresented: $confirmDelete, titleVisibility: .visible) {
+                Button(String(localized: "Supprimer les événements Studaya"), role: .destructive) { sync.deleteExported() }
+            } message: { Text(String(localized: "Cette action retire les événements exportés depuis cet appareil et désactive la synchronisation.")) }
     }
 }

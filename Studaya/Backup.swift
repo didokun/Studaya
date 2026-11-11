@@ -381,7 +381,7 @@ struct StudyBackup: Codable {
         for item in reviews { item.insert(into: db) }
     }
     func validate() throws {
-        func require(_ condition: Bool) throws { if !condition { throw StudyError.invalid("Sauvegarde Studaya invalide ou incompatible. Aucune donnée n’a été remplacée.") } }
+        func require(_ condition: Bool) throws { if !condition { throw StudyError.invalid(String(localized: "Sauvegarde Studaya invalide ou incompatible. Aucune donnée n’a été remplacée.")) } }
         try require(format == "Studaya" && version == 1 && profiles.count <= 1)
         try require(subjects.count + chapters.count + cards.count + sessions.count + logs.count + deadlines.count + blocks.count + reviews.count < 50000)
         try require(Set(subjects.map(\.id)).count == subjects.count)
@@ -410,7 +410,7 @@ struct StudyBackup: Codable {
         try require((1...60).contains(p.weeklyHours) && (5...90).contains(p.focusMinutes) && (1...30).contains(p.breakMinutes) && p.weekdays.allSatisfy { (1...7).contains($0) } && (0...22).contains(p.startHour) && p.endHour > p.startHour && p.endHour <= 23 && (5...60).contains(p.sessionMinutes) && (0...23).contains(p.reminderHour))
     }
     static func decode(_ data: Data) throws -> Self {
-        guard data.count <= 20 * 1024 * 1024 else { throw StudyError.invalid("Le fichier dépasse 20 Mo.") }
+        guard data.count <= 20 * 1024 * 1024 else { throw StudyError.invalid(String(localized: "Le fichier dépasse 20 Mo.")) }
         let backup = try JSONDecoder().decode(Self.self, from: data)
         try backup.validate()
         return backup
@@ -425,7 +425,7 @@ struct StudyBackup: Codable {
             insert(into: db)
             try db.save()
             preferences.apply()
-            StudyPreferences.current.set("Parcours restauré.", forKey: "dataChangeReason")
+            StudyPreferences.current.set(String(localized: "Parcours restauré. Vérifie les autorisations de notifications sur cet appareil."), forKey: "dataChangeReason")
             StudyPreferences.current.set(UUID().uuidString, forKey: "dataRevision")
         } catch { db.rollback(); throw error }
     }
@@ -447,7 +447,7 @@ struct BackupDocument: FileDocument {
     var data: Data
     init(data: Data) { self.data = data }
     init(configuration: ReadConfiguration) throws {
-        guard let data = configuration.file.regularFileContents else { throw StudyError.invalid("Fichier illisible.") }
+        guard let data = configuration.file.regularFileContents else { throw StudyError.invalid(String(localized: "Fichier illisible.")) }
         self.data = data
     }
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
@@ -463,8 +463,8 @@ struct BackupSettings: View {
     @State private var message: String?
     var body: some View {
         Form {
-            Text("Sauvegarde le parcours complet : matières, cours, TD, flashcards, échéances, séances, Focus, indisponibilités, rappels espacés et préférences. Le fichier reste sous ton contrôle dans Fichiers ou iCloud Drive.")
-            Button("Exporter une sauvegarde complète", systemImage: "square.and.arrow.up") {
+            Text(String(localized: "Sauvegarde le parcours complet : matières, cours, TD, flashcards, échéances, séances, Focus, indisponibilités, rappels espacés et préférences. Le fichier reste sous ton contrôle dans Fichiers ou iCloud Drive."))
+            Button(String(localized: "Exporter une sauvegarde complète"), systemImage: "square.and.arrow.up") {
                 do {
                     try db.save()
                     let backup = try StudyBackup(db: db)
@@ -473,35 +473,35 @@ struct BackupSettings: View {
                     document = BackupDocument(data: try encoder.encode(backup)); exporting = true
                 } catch { message = error.localizedDescription }
             }
-            Button("Restaurer une sauvegarde", systemImage: "square.and.arrow.down") { importing = true }
-            Text("La restauration remplace les données locales. Exporte d’abord ton état actuel pour le conserver. Les achats Premium restent gérés par Apple ; aucune séance Focus en cours n’est restaurée.").font(.footnote)
+            Button(String(localized: "Restaurer une sauvegarde"), systemImage: "square.and.arrow.down") { importing = true }
+            Text(String(localized: "La restauration remplace les données locales. Exporte d’abord ton état actuel pour le conserver. Les achats Premium restent gérés par Apple ; aucune séance Focus en cours n’est restaurée.")).font(.footnote)
         }
-        .fileExporter(isPresented: $exporting, document: document, contentType: .json, defaultFilename: "Studaya-sauvegarde") { result in
-            switch result { case .success: message = "Sauvegarde exportée."; case .failure(let error): message = error.localizedDescription }
+        .fileExporter(isPresented: $exporting, document: document, contentType: .json, defaultFilename: "Studaya-backup") { result in
+            switch result { case .success: message = String(localized: "Sauvegarde exportée."); case .failure(let error): message = error.localizedDescription }
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
             do {
                 let url = try result.get()
                 let access = url.startAccessingSecurityScopedResource(); defer { if access { url.stopAccessingSecurityScopedResource() } }
                 let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-                guard size <= 20 * 1024 * 1024 else { throw StudyError.invalid("Le fichier dépasse 20 Mo.") }
+                guard size <= 20 * 1024 * 1024 else { throw StudyError.invalid(String(localized: "Le fichier dépasse 20 Mo.")) }
                 pending = try StudyBackup.decode(Data(contentsOf: url)); confirm = true
             } catch { pending = nil; message = error.localizedDescription }
         }
-        .confirmationDialog("Remplacer les données par cette sauvegarde ?", isPresented: $confirm, titleVisibility: .visible) {
-            Button("Remplacer et restaurer", role: .destructive) {
+        .confirmationDialog(String(localized: "Remplacer les données par cette sauvegarde ?"), isPresented: $confirm, titleVisibility: .visible) {
+            Button(String(localized: "Remplacer et restaurer"), role: .destructive) {
                 guard let pending else { return }
                 do {
                     try pending.restore(into: db)
                     self.pending = nil
                     Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db) }
-                    message = "Parcours restauré. Vérifie les autorisations de notifications sur cet appareil."
+                    message = String(localized: "Parcours restauré. Vérifie les autorisations de notifications sur cet appareil.")
                 } catch { message = error.localizedDescription }
             }
-            Button("Annuler", role: .cancel) { pending = nil }
+            Button(String(localized: "Annuler"), role: .cancel) { pending = nil }
         } message: {
-            if let pending { Text("\(pending.subjects.count) matières · \(pending.chapters.count) cours/TD · \(pending.sessions.count) séances. Sauvegarde du \(pending.createdAt.formatted(date: .abbreviated, time: .shortened)).") }
+            if let pending { Text(String(localized: "\(pending.subjects.count) matières · \(pending.chapters.count) cours/TD · \(pending.sessions.count) séances. Sauvegarde du \(pending.createdAt.formatted(date: .abbreviated, time: .shortened)).")) }
         }
-        .alert("Sauvegarde", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
+        .alert(String(localized: "Sauvegarde"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
     }
 }

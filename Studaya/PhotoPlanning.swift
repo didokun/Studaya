@@ -37,7 +37,7 @@ enum PlanningPhotoOCR {
                 kCGImageSourceCreateThumbnailFromImageAlways: true,
                 kCGImageSourceThumbnailMaxPixelSize: 2600,
                 kCGImageSourceCreateThumbnailWithTransform: true
-              ] as CFDictionary) else { throw StudyError.invalid("Photo illisible ou trop volumineuse (30 Mo maximum).") }
+              ] as CFDictionary) else { throw StudyError.invalid(String(localized: "Photo illisible ou trop volumineuse (30 Mo maximum).")) }
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.recognitionLanguages = ["fr-FR", "en-US"]
@@ -54,7 +54,7 @@ enum PlanningPhotoOCR {
             let box = observation.boundingBox
             return (best.string, "[x=\(Int(box.minX * 1000)), y=\(Int((1 - box.midY) * 1000))] \(best.string)", best.confidence)
         }
-        guard !lines.isEmpty else { throw StudyError.invalid("Aucun texte lisible. Essaie une photo nette, bien éclairée et cadrée sur le planning.") }
+        guard !lines.isEmpty else { throw StudyError.invalid(String(localized: "Aucun texte lisible. Essaie une photo nette, bien éclairée et cadrée sur le planning.")) }
         return PlanningPhotoText(text: lines.map(\.0).joined(separator: "\n"), layoutText: lines.map(\.1).joined(separator: "\n"), lowConfidence: lines.contains { $0.2 < 0.65 })
     }
 }
@@ -105,7 +105,7 @@ enum PlanningPhotoOCR {
                           !evidence.isEmpty, text.contains(evidence) else { return nil }
                     return ImportedPlanningEntry(title: entry.title, kind: kind, date: entry.dateISO.flatMap { text.contains(String($0.prefix(4))) ? parseDate($0) : nil }, evidence: evidence)
                 }
-                if !rows.isEmpty { return (rows, "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter." + ((layout ?? text).count > 9000 ? " Le document est long : une partie seulement a été analysée. Complète les éléments manquants à partir du texte intégral." : "")) }
+                if !rows.isEmpty { return (rows, String(localized: "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.") + ((layout ?? text).count > 9000 ? String(localized: " Le document est long : une partie seulement a été analysée. Complète les éléments manquants à partir du texte intégral.") : "")) }
             } catch is CancellationError { throw CancellationError() }
             catch { /* Fallback to free local smart extraction */ }
         }
@@ -113,9 +113,9 @@ enum PlanningPhotoOCR {
 
         let local = extractTextEntries(from: text, layout: layout, subject: subject)
         if !local.isEmpty {
-            return (local, "\(local.count) séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.")
+            return (local, String(localized: "\(local.count) séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import."))
         }
-        return ([], "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.")
+        return ([], String(localized: "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu."))
     }
 
     static func extractTextEntries(from text: String, layout: String? = nil, subject: String) -> [ImportedPlanningEntry] {
@@ -181,23 +181,23 @@ enum PlanningPhotoOCR {
     }
     static func validate(_ entries: [ImportedPlanningEntry]) throws -> [ImportedPlanningEntry] {
         let selected = entries.filter(\.selected)
-        guard !selected.isEmpty, selected.count <= 50 else { throw StudyError.invalid("Sélectionne entre 1 et 50 éléments à importer.") }
+        guard !selected.isEmpty, selected.count <= 50 else { throw StudyError.invalid(String(localized: "Sélectionne entre 1 et 50 éléments à importer.")) }
         guard selected.allSatisfy({ (!$0.kind.isUnit || !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) && ($0.date?.timeIntervalSince1970.isFinite ?? true) && (1...30).contains($0.sessions) && ($0.kind != .td || (1...100).contains($0.exercises)) }) else {
-            throw StudyError.invalid("Nomme chaque cours ou TD sélectionné et vérifie les nombres de séances et d’exercices. Les dates sont facultatives.")
+            throw StudyError.invalid(String(localized: "Nomme chaque cours ou TD sélectionné et vérifie les nombres de séances et d’exercices. Les dates sont facultatives."))
         }
-        guard selected.filter({ $0.kind == .exam }).count <= 1 else { throw StudyError.invalid("Ne sélectionne qu’un examen final pour cette matière.") }
+        guard selected.filter({ $0.kind == .exam }).count <= 1 else { throw StudyError.invalid(String(localized: "Ne sélectionne qu’un examen final pour cette matière.")) }
         let keys = selected.map { entry in
             let date = entry.date.map { entry.kind.isUnit ? Calendar.current.startOfDay(for: $0) : $0 }
             return "\(entry.kind.rawValue):\(entry.unitID?.uuidString ?? "matiere"):\(entry.kind.isUnit ? entry.title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() : ""):\(date?.timeIntervalSince1970.description ?? "sans-date")"
         }
-        guard Set(keys).count == keys.count else { throw StudyError.invalid("Le brouillon contient des doublons. Décoche les éléments répétés.") }
+        guard Set(keys).count == keys.count else { throw StudyError.invalid(String(localized: "Le brouillon contient des doublons. Décoche les éléments répétés.")) }
         return selected
     }
     static func save(_ entries: [ImportedPlanningEntry], subject: Subject, replaceExam: Bool, db: ModelContext) async throws -> Int {
         try Task.checkCancellation()
         let rows = try validate(entries)
         let subjects = try db.fetch(FetchDescriptor<Subject>())
-        guard subjects.contains(where: { $0.id == subject.id }) else { throw StudyError.invalid("Cette matière n’existe plus.") }
+        guard subjects.contains(where: { $0.id == subject.id }) else { throw StudyError.invalid(String(localized: "Cette matière n’existe plus.")) }
         let chapters = try db.fetch(FetchDescriptor<Chapter>()).filter { $0.subjectID == subject.id }
         let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>()).filter { $0.subjectID == subject.id }
         let importedUnits = rows.filter { $0.kind.isUnit }
@@ -211,20 +211,20 @@ enum PlanningPhotoOCR {
         }
         for row in rows {
             if (row.kind == .presentation || row.kind == .control), row.unitID != nil, linkedName(row) == nil {
-                throw StudyError.invalid("Choisis un cours ou TD de cette matière, ou sélectionne Toute la matière.")
+                throw StudyError.invalid(String(localized: "Choisis un cours ou TD de cette matière, ou sélectionne Toute la matière."))
             }
             let name = name(row)
             if row.kind.isUnit, chapters.contains(where: { $0.kind == row.kind.rawValue && $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.startDate == nil && row.date == nil) || ($0.startDate != nil && row.date != nil && Calendar.current.isDate($0.startDate!, inSameDayAs: row.date!))) }) {
-                throw StudyError.invalid("\(name) existe déjà à cette date dans la matière.")
+                throw StudyError.invalid(String(localized: "\(name) existe déjà à cette date dans la matière."))
             }
-            if !row.kind.isUnit && (row.kind != .exam || row.date == nil), deadlines.contains(where: { $0.kind == row.kind.rawValue && $0.title.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.hasDueDate && row.date != nil && $0.due == row.date!) || (!$0.hasDueDate && row.date == nil)) }) { throw StudyError.invalid("Cette échéance existe déjà : \(name).") }
+            if !row.kind.isUnit && (row.kind != .exam || row.date == nil), deadlines.contains(where: { $0.kind == row.kind.rawValue && $0.title.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.hasDueDate && row.date != nil && $0.due == row.date!) || (!$0.hasDueDate && row.date == nil)) }) { throw StudyError.invalid(String(localized: "Cette échéance existe déjà : \(name).")) }
         }
         if let exam = rows.first(where: { $0.kind == .exam }), let examDate = exam.date {
-            guard !subject.hasExam || replaceExam else { throw StudyError.invalid("Confirme le remplacement de la date d’examen existante.") }
+            guard !subject.hasExam || replaceExam else { throw StudyError.invalid(String(localized: "Confirme le remplacement de la date d’examen existante.")) }
             let starts = chapters.compactMap(\.startDate) + rows.filter { $0.kind.isUnit }.compactMap(\.date)
-            guard starts.allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: examDate) }) else { throw StudyError.invalid("L’examen final doit avoir lieu après le début des cours et TD.") }
+            guard starts.allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: examDate) }) else { throw StudyError.invalid(String(localized: "L’examen final doit avoir lieu après le début des cours et TD.")) }
         } else if subject.hasExam {
-            guard rows.filter({ $0.kind.isUnit }).compactMap(\.date).allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: subject.exam) }) else { throw StudyError.invalid("Un cours ou TD commence après l’examen final existant. Corrige la date avant l’import.") }
+            guard rows.filter({ $0.kind.isUnit }).compactMap(\.date).allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: subject.exam) }) else { throw StudyError.invalid(String(localized: "Un cours ou TD commence après l’examen final existant. Corrige la date avant l’import.")) }
         }
         do {
             let previous = TimelineOrder.chapters(chapters)

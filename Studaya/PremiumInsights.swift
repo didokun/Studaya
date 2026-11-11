@@ -16,8 +16,8 @@ struct PremiumInsights: View {
         Section("Studaya Premium") {
             ForEach(PremiumInsight.allCases) { feature in
                 Button { onSelect(feature) } label: {
-                    PremiumFeatureLabel(title: feature.rawValue, symbol: feature.symbol)
-                }.accessibilityLabel(feature.rawValue)
+                    PremiumFeatureLabel(title: L10n.key(feature.rawValue), symbol: feature.symbol)
+                }.accessibilityLabel(L10n.key(feature.rawValue))
             }
         }
     }
@@ -35,31 +35,31 @@ struct PremiumInsightDetail: View {
         List {
             switch feature {
             case .history:
-                Section("30 derniers jours") {
-                    LabeledContent("Temps de concentration", value: "\(recent.reduce(0) { $0 + $1.minutes }) min")
-                    LabeledContent("Séances Focus", value: "\(recent.count)")
+                Section(String(localized: "30 derniers jours")) {
+                    LabeledContent(String(localized: "Temps de concentration"), value: String(localized: "\(recent.reduce(0) { $0 + $1.minutes }) min"))
+                    LabeledContent(String(localized: "Séances Focus"), value: "\(recent.count)")
                 }
             case .subjects:
-                Section("Temps étudié · 30 derniers jours") {
-                    if subjects.isEmpty { Text("Ajoute une matière pour suivre ton temps de travail.") }
+                Section(String(localized: "Temps étudié · 30 derniers jours")) {
+                    if subjects.isEmpty { Text(String(localized: "Ajoute une matière pour suivre ton temps de travail.")) }
                     ForEach(subjects) { subject in
-                        LabeledContent(subject.displayCode, value: "\(recent.filter { $0.subjectID == subject.id }.reduce(0) { $0 + $1.minutes }) min")
+                        LabeledContent(subject.displayCode, value: String(localized: "\(recent.filter { $0.subjectID == subject.id }.reduce(0) { $0 + $1.minutes }) min"))
                     }
                 }
             case .export:
-                Section("Export Focus") {
-                    Text("Exporte tes sessions de concentration avec la date, la matière et la durée.")
-                    ShareLink(item: csvFile, preview: SharePreview("Sessions Focus")) {
-                        Label("Exporter les sessions Focus en CSV", systemImage: "square.and.arrow.up")
+                Section(String(localized: "Export Focus")) {
+                    Text(String(localized: "Exporte tes sessions de concentration avec la date, la matière et la durée."))
+                    ShareLink(item: csvFile, preview: SharePreview(String(localized: "Sessions Focus"))) {
+                        Label(String(localized: "Exporter les sessions Focus en CSV"), systemImage: "square.and.arrow.up")
                     }
                 }
             }
         }
     }
     private var csvFile: FocusExport {
-        var rows = ["Date,Matière,Minutes"]
+        var rows = [[String(localized: "Date"), String(localized: "Matière"), String(localized: "Minutes")].map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }.joined(separator: ",")]
         for log in logs.sorted(by: { $0.date < $1.date }) {
-            let title = subjects.first { $0.id == log.subjectID }?.displayCode ?? "Focus libre"
+            let title = subjects.first { $0.id == log.subjectID }?.displayCode ?? String(localized: "Focus libre")
             let safe = title.replacingOccurrences(of: "\"", with: "\"\"")
             rows.append("\(log.date.ISO8601Format()),\"\(safe)\",\(log.minutes)")
         }
