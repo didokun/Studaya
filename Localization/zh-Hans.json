@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld 通过免费本地分析检测到的会话和 TD。导入前检查日期和详细信息。",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "未检测到结构化会话。尝试从正面拍摄的原始照片，其中列标题可见。您还可以从读取的文本中添加元素。",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "本地人工智能提案。添加之前检查每个项目的类型、标题、日期和时间。",
-  "Révision de cours": "课程回顾"
+  "Révision de cours": "课程回顾",
+  "notification.exam.title": "考试 · %1$@",
+  "notification.control.title": "测验 · %1$@",
+  "notification.presentation.title": "课堂展示 · %1$@",
+  "notification.assignment.title": "作业 · %1$@",
+  "notification.deadline.title": "截止日期 · %1$@",
+  "notification.review.title": "间隔审查 · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld 分钟第一个练习就足以让您入门。"
 }

@@ -104,6 +104,9 @@ struct Home: View {
         }
         .task(id: "\(calendarSyncEnabled):\(dataRevision):" + reminderRevision) { AppleCalendarSync.shared.refresh(db) }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged).debounce(for: .milliseconds(300), scheduler: RunLoop.main)) { _ in AppleCalendarSync.shared.refresh(db) }
+        .onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification).receive(on: RunLoop.main)) { _ in
+            Task { await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db); AppleCalendarSync.shared.refresh(db) }
+        }
         .task(id: reminderRevision) { await EventReminders.shared.refresh(db) }
         .onChange(of: phase, initial: true) { _, value in
             if value == .active {

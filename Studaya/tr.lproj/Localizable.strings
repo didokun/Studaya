@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "Bildirimleri kontrol edin ve yenileyin";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS, etkinliklerimizi bulmak, güncellemek ve silmek için tam erişim gerektirir. Studaya yalnızca kendi ihraç edilen etkinliklerini yönetir.";
 "min" = "dk.";
+"notification.assignment.title" = "Ödev · %1$@";
+"notification.control.title" = "Kısa sınav · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "Son tarih · %1$@";
+"notification.exam.title" = "Sınav · %1$@";
+"notification.presentation.title" = "Sunum · %1$@";
+"notification.review.title" = "Aralıklı inceleme · %1$@";
+"notification.session.body" = "%1$@ · %2$lld dk. Başlamak için ilk egzersiz yeterlidir.";
 "terminée(s)" = "tamamlandı";
 "À faire" = "yapmak";
 "À la fin de chaque matière" = "Her konunun sonunda";

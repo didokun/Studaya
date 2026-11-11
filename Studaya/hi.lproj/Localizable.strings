@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "सूचनाएं जांचें और ताज़ा करें";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS को हमारे ईवेंट ढूंढने, अपडेट करने और हटाने के लिए पूर्ण पहुंच की आवश्यकता होती है। स्टडीया केवल अपने स्वयं के निर्यातित आयोजनों का प्रबंधन करता है।";
 "min" = "मि";
+"notification.assignment.title" = "असाइनमेंट · %1$@";
+"notification.control.title" = "टेस्ट · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "समयसीमा · %1$@";
+"notification.exam.title" = "परीक्षा · %1$@";
+"notification.presentation.title" = "प्रस्तुति · %1$@";
+"notification.review.title" = "अंतराल समीक्षा · %1$@";
+"notification.session.body" = "%1$@ · %2$lld मि. एक पहला व्यायाम आपको आरंभ करने के लिए पर्याप्त है।";
 "terminée(s)" = "पूरा हुआ";
 "À faire" = "करना";
 "À la fin de chaque matière" = "प्रत्येक विषय के अंत में";

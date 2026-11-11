@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "알림 확인 및 새로고침";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS에서는 이벤트를 찾고 업데이트하고 삭제하려면 전체 액세스 권한이 필요합니다. Studaya는 자체적으로 내보낸 이벤트만 관리합니다.";
 "min" = "분";
+"notification.assignment.title" = "과제 · %1$@";
+"notification.control.title" = "쪽지 시험 · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "마감일 · %1$@";
+"notification.exam.title" = "시험 · %1$@";
+"notification.presentation.title" = "발표 · %1$@";
+"notification.review.title" = "간격 검토 · %1$@";
+"notification.session.body" = "%1$@ · %2$lld분. 첫 번째 연습만으로도 시작하기에 충분합니다.";
 "terminée(s)" = "완료";
 "À faire" = "해야 할 일";
 "À la fin de chaque matière" = "각 과목이 끝나면";

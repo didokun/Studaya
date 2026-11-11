@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld セッションと TD が無料のローカル分析によって検出されました。インポートする前に日付と詳細を確認してください。",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "構造化セッションが検出されませんでした。列のタイトルが見える状態で、正面から撮影した元の写真を試してください。読み取ったテキストから要素を追加することもできます。",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "ローカルAIの提案。追加する前に、各項目の種類、タイトル、日付、時刻を確認してください。",
-  "Révision de cours": "コースのレビュー"
+  "Révision de cours": "コースのレビュー",
+  "notification.exam.title": "試験 · %1$@",
+  "notification.control.title": "小テスト · %1$@",
+  "notification.presentation.title": "発表 · %1$@",
+  "notification.assignment.title": "割り当て · %1$@",
+  "notification.deadline.title": "締め切り · %1$@",
+  "notification.review.title": "間隔をあけたレビュー · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld 分始めるには、最初の演習で十分です。"
 }

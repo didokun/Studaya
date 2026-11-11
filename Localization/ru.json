@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "Сеансы %1$lld и TD обнаружены с помощью бесплатного локального анализа. Перед импортом проверьте даты и детали.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "Структурированные сеансы не обнаружены. Попробуйте исходную фотографию, сделанную спереди, с видимыми заголовками столбцов. Вы также можете добавить элемент из прочитанного текста.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Местные предложения по ИИ. Проверьте тип, название, дату и время каждого элемента перед его добавлением.",
-  "Révision de cours": "Обзор курса"
+  "Révision de cours": "Обзор курса",
+  "notification.exam.title": "Экзамен · %1$@",
+  "notification.control.title": "Контрольная · %1$@",
+  "notification.presentation.title": "Презентация · %1$@",
+  "notification.assignment.title": "Назначение · %1$@",
+  "notification.deadline.title": "Крайний срок · %1$@",
+  "notification.review.title": "Разнесенный обзор · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld мин. Для начала достаточно первого упражнения."
 }

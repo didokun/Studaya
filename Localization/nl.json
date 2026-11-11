@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld-sessies en TD's gedetecteerd door gratis lokale analyse. Controleer datums en details voordat u importeert.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "Er zijn geen gestructureerde sessies gedetecteerd. Probeer de originele foto, genomen vanaf de voorkant, met de kolomtitels zichtbaar. U kunt ook een element uit de gelezen tekst toevoegen.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Lokale AI-voorstellen. Controleer het type, de titel, de datum en de tijd van elk item voordat u het toevoegt.",
-  "Révision de cours": "Cursusoverzicht"
+  "Révision de cours": "Cursusoverzicht",
+  "notification.exam.title": "Examen · %1$@",
+  "notification.control.title": "Toets · %1$@",
+  "notification.presentation.title": "Presentatie · %1$@",
+  "notification.assignment.title": "Opdracht · %1$@",
+  "notification.deadline.title": "Deadline · %1$@",
+  "notification.review.title": "Gespreide recensie · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld min. Een eerste oefening is voldoende om u op weg te helpen."
 }

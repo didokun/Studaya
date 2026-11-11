@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld sessions and TDs detected by free local analysis. Check dates and details before importing.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "No structured sessions detected. Try the original photo, taken from the front, with the column titles visible. You can also add an element from the read text.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Local AI proposals. Check the type, title, date, and time of each item before adding it.",
-  "Révision de cours": "Course review"
+  "Révision de cours": "Course review",
+  "notification.exam.title": "Exam · %1$@",
+  "notification.control.title": "Test · %1$@",
+  "notification.presentation.title": "Presentation · %1$@",
+  "notification.assignment.title": "Assignment · %1$@",
+  "notification.deadline.title": "Deadline · %1$@",
+  "notification.review.title": "Spaced review · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld min. A first exercise is enough to get you started."
 }

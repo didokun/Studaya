@@ -9,6 +9,7 @@ struct FocusActivityAttributes: ActivityAttributes {
         var restEnd: Date
         var pausedSeconds: Int
         var paused: Bool
+        var isFreeFocus: Bool? = nil
     }
     var runID: String
 }

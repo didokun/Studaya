@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "Sesje %1$lld i niszczyciele czołgów wykryte w ramach bezpłatnej analizy lokalnej. Przed importem sprawdź daty i szczegóły.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "Nie wykryto żadnych sesji strukturalnych. Wypróbuj oryginalne zdjęcie zrobione od przodu, z widocznymi tytułami kolumn. Możesz także dodać element z przeczytanego tekstu.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Lokalne propozycje AI. Przed dodaniem każdego elementu sprawdź typ, tytuł, datę i godzinę.",
-  "Révision de cours": "Przegląd kursu"
+  "Révision de cours": "Przegląd kursu",
+  "notification.exam.title": "Egzamin · %1$@",
+  "notification.control.title": "Sprawdzian · %1$@",
+  "notification.presentation.title": "Prezentacja · %1$@",
+  "notification.assignment.title": "Przypisanie · %1$@",
+  "notification.deadline.title": "Termin · %1$@",
+  "notification.review.title": "Recenzja rozłożona · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld min. Aby zacząć, wystarczy pierwsze ćwiczenie."
 }

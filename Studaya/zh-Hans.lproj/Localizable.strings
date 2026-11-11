@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "检查并刷新通知";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS 需要完全访问权限才能查找、更新和删除我们的事件。 Studaya 仅管理自己的导出事件。";
 "min" = "分钟";
+"notification.assignment.title" = "作业 · %1$@";
+"notification.control.title" = "测验 · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "截止日期 · %1$@";
+"notification.exam.title" = "考试 · %1$@";
+"notification.presentation.title" = "课堂展示 · %1$@";
+"notification.review.title" = "间隔审查 · %1$@";
+"notification.session.body" = "%1$@ · %2$lld 分钟第一个练习就足以让您入门。";
 "terminée(s)" = "已完成";
 "À faire" = "要做的事";
 "À la fin de chaque matière" = "在每个科目的最后";

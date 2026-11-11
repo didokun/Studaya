@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "通知の確認と更新";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS では、イベントを検索、更新、削除するにはフルアクセスが必要です。 Sudaya は、エクスポートされた独自のイベントのみを管理します。";
 "min" = "分";
+"notification.assignment.title" = "割り当て · %1$@";
+"notification.control.title" = "小テスト · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "締め切り · %1$@";
+"notification.exam.title" = "試験 · %1$@";
+"notification.presentation.title" = "発表 · %1$@";
+"notification.review.title" = "間隔をあけたレビュー · %1$@";
+"notification.session.body" = "%1$@ · %2$lld 分始めるには、最初の演習で十分です。";
 "terminée(s)" = "完了しました";
 "À faire" = "やること";
 "À la fin de chaque matière" = "各科目の終わりに";

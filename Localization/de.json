@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld-Sitzungen und TDs, die durch kostenlose lokale Analyse erkannt wurden. Überprüfen Sie vor dem Import die Daten und Details.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "Keine strukturierten Sitzungen erkannt. Versuchen Sie es mit dem Originalfoto, aufgenommen von vorne, mit sichtbaren Spaltentiteln. Sie können auch ein Element aus dem gelesenen Text hinzufügen.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Lokale KI-Vorschläge. Überprüfen Sie Typ, Titel, Datum und Uhrzeit jedes Elements, bevor Sie es hinzufügen.",
-  "Révision de cours": "Kursrückblick"
+  "Révision de cours": "Kursrückblick",
+  "notification.exam.title": "Prüfung · %1$@",
+  "notification.control.title": "Test · %1$@",
+  "notification.presentation.title": "Referat · %1$@",
+  "notification.assignment.title": "Aufgabe · %1$@",
+  "notification.deadline.title": "Frist · %1$@",
+  "notification.review.title": "Abstandsrezension · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld min. Eine erste Übung reicht aus, um loszulegen."
 }

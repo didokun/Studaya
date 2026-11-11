@@ -1,6 +1,7 @@
 // Generated from Localization/*.json; see scripts/localize-resources.py.
 "En pause" = "Duraklatıldığında";
 "Focus en pause" = "Odak duraklatıldı";
+"Focus libre" = "Serbest odak";
 "Ouvre Studaya pour reprendre" = "Devam etmek için Studaya'yı açın";
 "Ouvre Studaya pour retrouver ta séance" = "Oturumunuzu bulmak için Studaya'yı açın";
 "Ouvre l’app pour reprendre" = "Devam etmek için uygulamayı açın";

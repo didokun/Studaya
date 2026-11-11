@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "تم اكتشاف جلسات %1$lld وTDs من خلال التحليل المحلي المجاني. التحقق من التواريخ والتفاصيل قبل الاستيراد.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "لم يتم اكتشاف أي جلسات منظمة. جرب الصورة الأصلية، المأخوذة من الأمام، مع ظهور عناوين الأعمدة. يمكنك أيضًا إضافة عنصر من النص المقروء.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "مقترحات الذكاء الاصطناعي المحلية. تحقق من نوع كل عنصر وعنوانه وتاريخه ووقته قبل إضافته.",
-  "Révision de cours": "مراجعة الدورة"
+  "Révision de cours": "مراجعة الدورة",
+  "notification.exam.title": "امتحان · %1$@",
+  "notification.control.title": "اختبار · %1$@",
+  "notification.presentation.title": "عرض تقديمي · %1$@",
+  "notification.assignment.title": "مهمة · %1$@",
+  "notification.deadline.title": "الموعد النهائي · %1$@",
+  "notification.review.title": "مراجعة متباعدة · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld دقيقة. التمرين الأول يكفي للبدء."
 }

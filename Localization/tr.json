@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld oturumları ve TD'ler ücretsiz yerel analizle tespit edildi. İçe aktarmadan önce tarihleri ​​ve ayrıntıları kontrol edin.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "Yapılandırılmış oturum algılanmadı. Sütun başlıkları görünür şekilde, önden çekilmiş orijinal fotoğrafı deneyin. Ayrıca okunan metinden bir öğe de ekleyebilirsiniz.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Yerel yapay zeka önerileri. Eklemeden önce her öğenin türünü, başlığını, tarihini ve saatini kontrol edin.",
-  "Révision de cours": "Kurs incelemesi"
+  "Révision de cours": "Kurs incelemesi",
+  "notification.exam.title": "Sınav · %1$@",
+  "notification.control.title": "Kısa sınav · %1$@",
+  "notification.presentation.title": "Sunum · %1$@",
+  "notification.assignment.title": "Ödev · %1$@",
+  "notification.deadline.title": "Son tarih · %1$@",
+  "notification.review.title": "Aralıklı inceleme · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld dk. Başlamak için ilk egzersiz yeterlidir."
 }

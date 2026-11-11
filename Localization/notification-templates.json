@@ -1,0 +1,10 @@
+{
+  "notification.exam.title": {"kind": "Examen"},
+  "notification.control.title": {"kind": "Contrôle"},
+  "notification.presentation.title": {"kind": "Présentation"},
+  "notification.assignment.title": {"kind": "Rendu"},
+  "notification.deadline.title": {"kind": "Échéance"},
+  "notification.review.title": {"kind": "Rappel espacé"},
+  "notification.deadline.body": {"literal": "%1$@ · %2$@"},
+  "notification.session.body": {"fragment": " · %lld min. Un premier exercice suffit pour te lancer."}
+}

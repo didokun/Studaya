@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "Sessões %1$lld e TDs detectados por análise local gratuita. Verifique datas e detalhes antes de importar.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "Nenhuma sessão estruturada detectada. Experimente a foto original, tirada de frente, com os títulos das colunas visíveis. Você também pode adicionar um elemento do texto lido.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "Propostas locais de IA. Verifique o tipo, título, data e hora de cada item antes de adicioná-lo.",
-  "Révision de cours": "Revisão do curso"
+  "Révision de cours": "Revisão do curso",
+  "notification.exam.title": "Exame · %1$@",
+  "notification.control.title": "Teste · %1$@",
+  "notification.presentation.title": "Apresentação · %1$@",
+  "notification.assignment.title": "Tarefa · %1$@",
+  "notification.deadline.title": "Prazo · %1$@",
+  "notification.review.title": "Revisão espaçada · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld min. Um primeiro exercício é suficiente para você começar."
 }

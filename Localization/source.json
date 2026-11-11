@@ -637,11 +637,20 @@
     "Écran verrouillé : ": "Écran verrouillé : ",
     "Établissement": "Établissement",
     "Études et calendrier": "Études et calendrier",
-    "à préciser": "à préciser"
+    "à préciser": "à préciser",
+    "notification.exam.title": "Examen · %1$@",
+    "notification.control.title": "Contrôle · %1$@",
+    "notification.presentation.title": "Présentation · %1$@",
+    "notification.assignment.title": "Rendu · %1$@",
+    "notification.deadline.title": "Échéance · %1$@",
+    "notification.review.title": "Rappel espacé · %1$@",
+    "notification.deadline.body": "%1$@ · %2$@",
+    "notification.session.body": "%1$@ · %2$lld min. Un premier exercice suffit pour te lancer."
   },
   "widgetKeys": [
     "En pause",
     "Focus en pause",
+    "Focus libre",
     "Ouvre Studaya pour reprendre",
     "Ouvre Studaya pour retrouver ta séance",
     "Ouvre l’app pour reprendre",

@@ -17,10 +17,10 @@ struct FocusTimerSnapshot: Equatable {
     func notifications(now: Date = .now) -> [StudyReminder] {
         guard length > 0, end > now.timeIntervalSince1970 else { return [] }
         let finish = Date(timeIntervalSince1970: end)
-        if resting { return [StudyReminder(id: "restEnd", title: String(localized: "Ta pause est terminée"), body: String(localized: "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux."), date: finish, tab: 2)] }
+        if resting { return [StudyReminder(id: "restEnd", title: NotificationText("Ta pause est terminée"), body: NotificationText("Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux."), date: finish, tab: 2)] }
         return [
-            StudyReminder(id: "workEnd", title: String(localized: "Focus terminé · place au repos 🌿"), body: String(localized: "Bravo pour ce temps de révision. Ta pause de \(breakSeconds / 60) min commence maintenant."), date: finish, tab: 2),
-            StudyReminder(id: "restEnd", title: String(localized: "Ta pause est terminée"), body: String(localized: "Tu peux repartir sur une séance ou t’arrêter ici. Ton effort compte déjà."), date: finish.addingTimeInterval(Double(breakSeconds)), tab: 2)
+            StudyReminder(id: "workEnd", title: NotificationText("Focus terminé · place au repos 🌿"), body: NotificationText("Bravo pour ce temps de révision. Ta pause de %lld min commence maintenant.", [.integer(breakSeconds / 60)]), date: finish, tab: 2),
+            StudyReminder(id: "restEnd", title: NotificationText("Ta pause est terminée"), body: NotificationText("Tu peux repartir sur une séance ou t’arrêter ici. Ton effort compte déjà."), date: finish.addingTimeInterval(Double(breakSeconds)), tab: 2)
         ]
     }
 }
@@ -60,6 +60,8 @@ struct FocusTimerSnapshot: Equatable {
     }
     func sync(_ db: ModelContext, requestPermission: Bool = false) async {
         generation += 1; let revision = generation
+        await NotificationLanguageMigration.prepare()
+        guard revision == generation else { return }
         let center = UNUserNotificationCenter.current()
         let p = StudyPreferences.current
         let timer = FocusTimerSnapshot.read(p)
@@ -83,7 +85,7 @@ struct FocusTimerSnapshot: Equatable {
             for notice in notices {
                 guard revision == generation else { return }
                 let content = UNMutableNotificationContent()
-                content.title = notice.title; content.body = notice.body; content.sound = .default; content.userInfo = ["tab": 2]
+                notice.apply(to: content)
                 let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, notice.date.timeIntervalSinceNow), repeats: false)
                 try await center.add(UNNotificationRequest(identifier: "studaya.focus." + notice.id, content: content, trigger: trigger))
             }
@@ -102,7 +104,7 @@ struct FocusTimerSnapshot: Equatable {
         let title = (subject?.displayCode ?? String(localized: "Focus libre")) + (chapter.map { " · " + $0.name } ?? "")
         let end = Date(timeIntervalSince1970: timer.end)
         let restEnd = timer.resting ? end : end.addingTimeInterval(Double(timer.breakSeconds))
-        let state = FocusActivityAttributes.ContentState(title: title, resting: timer.resting, end: end, restEnd: restEnd, pausedSeconds: timer.remaining, paused: timer.end == 0)
+        let state = FocusActivityAttributes.ContentState(title: title, resting: timer.resting, end: end, restEnd: restEnd, pausedSeconds: timer.remaining, paused: timer.end == 0, isFreeFocus: subject == nil && chapter == nil)
         let content = ActivityContent(state: state, staleDate: timer.end > 0 ? end : nil)
         let matching = activities.first { $0.attributes.runID == timer.runID }
         for activity in activities where activity.id != matching?.id { await activity.end(nil, dismissalPolicy: .immediate) }

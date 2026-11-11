@@ -36,6 +36,8 @@ def extract():
     key=item['key'];keys.add(key)
     if target=='StudayaFocusWidget':widget.add(key)
  keys.discard('analyse numer');keys.update(EXTRA);keys.update(EN_OVERRIDES)
+ templates=json.loads((DATA/'notification-templates.json').read_text()) if (DATA/'notification-templates.json').exists() else {}
+ keys.update(templates)
  # Existing English StoreKit keys already have reviewed French values.
  french={}
  existing=ROOT/'Studaya/fr.lproj/Localizable.strings'
@@ -120,12 +122,22 @@ def strings_file(path,values):
  path.parent.mkdir(parents=True,exist_ok=True)
  path.write_text('// Generated from Localization/*.json; see scripts/localize-resources.py.\n'+''.join(json.dumps(k,ensure_ascii=False)+' = '+json.dumps(v,ensure_ascii=False)+';\n' for k,v in sorted(values.items())))
 
+def notification_templates(values):
+ path=DATA/'notification-templates.json'
+ if not path.exists():return
+ for key,definition in json.loads(path.read_text()).items():
+  if 'kind' in definition:values[key]=values[definition['kind']]+' · %1$@'
+  elif 'literal' in definition:values[key]=definition['literal']
+  else:values[key]='%1$@'+re.sub(r'%(?:1\$)?lld', '%2$lld',values[definition['fragment']])
+
 def emit():
  data=json.loads((DATA/'source.json').read_text());source=data['strings']
+ notification_templates(source)
  for locale in LANGS:
   values=source if locale=='fr' else json.loads((DATA/(locale+'.json')).read_text())
   editorial=DATA/'core-reviewed.json'
   if editorial.exists():values.update(json.loads(editorial.read_text()).get(locale,{}))
+  notification_templates(values)
   missing=set(source)-set(values)
   if missing:raise ValueError(f'{locale}: {len(missing)} missing strings')
   for key,value in values.items():

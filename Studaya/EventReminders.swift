@@ -10,6 +10,8 @@ struct StudyReminder: Equatable {
     let date: Date
     var tab = 1
     var repeatsDaily = false
+    var localizedTitle: NotificationText? = nil
+    var localizedBody: NotificationText? = nil
 }
 
 enum ReminderPlan {
@@ -19,18 +21,35 @@ enum ReminderPlan {
             let morning = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: subject.exam)!
             for days in [7, 1, 0] {
                 let date = calendar.date(byAdding: .day, value: -days, to: morning)!
-                items.append(StudyReminder(id: "exam.\(subject.id).\(days)", title: String(localized: "Examen · ") + subject.displayCode, body: days == 0 ? String(localized: "Ton examen est prévu aujourd’hui. Consulte ta préparation.") : String(localized: "Plus que \(days) jour(s) pour préparer cet examen."), date: date))
+                let body = days == 0 ? NotificationText("Ton examen est prévu aujourd’hui. Consulte ta préparation.") : NotificationText("Plus que %lld jour(s) pour préparer cet examen.", [.integer(days)])
+                items.append(StudyReminder(id: "exam.\(subject.id).\(days)", title: NotificationText("notification.exam.title", [.text(subject.displayCode)]), body: body, date: date))
             }
         }
         for deadline in deadlines where !deadline.done && deadline.hasDueDate {
-            let name = subjects.first { $0.id == deadline.subjectID }?.displayCode ?? ""
-            let body = name + " · " + deadline.due.formatted(date: .abbreviated, time: .shortened)
-            items.append(StudyReminder(id: "deadline.\(deadline.id).reminder", title: StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), body: body, date: deadline.reminderDate))
-            if deadline.reminderDays != 0 { items.append(StudyReminder(id: "deadline.\(deadline.id).due", title: String(localized: "Échéance · ") + StudyLabels.deadline(deadline, subjects: subjects, chapters: chapters), body: body, date: deadline.due)) }
+            let subject = subjects.first { $0.id == deadline.subjectID }
+            let chapter = chapters.first { $0.id == deadline.chapterID }
+            let target = (subject?.displayCode ?? "") + (chapter.map { " · " + $0.name } ?? (deadline.title == subject?.name ? "" : " · " + deadline.title))
+            let key: String
+            switch deadline.kind {
+            case "Contrôle": key = "notification.control.title"
+            case "Présentation": key = "notification.presentation.title"
+            case "Examen", "Examen final": key = "notification.exam.title"
+            case "Rendu": key = "notification.assignment.title"
+            default: key = "notification.deadline.title"
+            }
+            // An international numeric timestamp avoids freezing a month name in the old language.
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.timeZone = calendar.timeZone; formatter.dateFormat = "yyyy-MM-dd HH:mm"
+            let body = NotificationText("notification.deadline.body", [.text(subject?.displayCode ?? ""), .text(formatter.string(from: deadline.due))])
+            let title = NotificationText(key, [.text(target)])
+            items.append(StudyReminder(id: "deadline.\(deadline.id).reminder", title: title, body: body, date: deadline.reminderDate))
+            if deadline.reminderDays != 0 { items.append(StudyReminder(id: "deadline.\(deadline.id).due", title: title, body: body, date: deadline.due)) }
         }
         for review in reviews where !review.done {
             guard let chapter = chapters.first(where: { $0.id == review.chapterID && $0.completed }) else { continue }
-            items.append(StudyReminder(id: "review.\(review.id)", title: String(localized: "Rappel espacé · ") + (subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name, body: String(localized: "Teste-toi sans correction. Ce rappel ne remet pas ton travail parmi les cours ou TD en cours."), date: review.due))
+            let target = (subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name
+            items.append(StudyReminder(id: "review.\(review.id)", title: NotificationText("notification.review.title", [.text(target)]), body: NotificationText("Teste-toi sans correction. Ce rappel ne remet pas ton travail parmi les cours ou TD en cours."), date: review.due))
         }
         return items.filter { $0.date > now }.sorted { ($0.date, $0.id) < ($1.date, $1.id) }
     }
@@ -43,6 +62,8 @@ enum ReminderPlan {
     func refresh(_ db: ModelContext) async {
         generation += 1
         let revision = generation
+        await NotificationLanguageMigration.prepare()
+        guard revision == generation else { return }
         let center = UNUserNotificationCenter.current()
         let pending = await center.pendingNotificationRequests()
         guard revision == generation else { return }
@@ -74,7 +95,7 @@ enum ReminderPlan {
             for item in scheduled {
                 guard revision == generation, !Task.isCancelled else { return }
                 let content = UNMutableNotificationContent()
-                content.title = item.title; content.body = item.body; content.sound = .default; content.userInfo = ["tab": item.tab]
+                item.apply(to: content)
                 let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: item.date)
                 try await center.add(UNNotificationRequest(identifier: "studaya.event." + item.id, content: content, trigger: UNCalendarNotificationTrigger(dateMatching: item.repeatsDaily ? Calendar.current.dateComponents([.hour, .minute], from: item.date) : components, repeats: item.repeatsDaily)))
             }

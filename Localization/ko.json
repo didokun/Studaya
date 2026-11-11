@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "무료 로컬 분석으로 감지된 %1$lld 세션 및 TD. 가져오기 전에 날짜와 세부정보를 확인하세요.",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "구조화된 세션이 감지되지 않았습니다. 열 제목이 보이는 정면에서 찍은 원본 사진을 사용해 보세요. 읽은 텍스트에서 요소를 추가할 수도 있습니다.",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "로컬 AI 제안. 각 항목을 추가하기 전에 유형, 제목, 날짜, 시간을 확인하세요.",
-  "Révision de cours": "강좌 복습"
+  "Révision de cours": "강좌 복습",
+  "notification.exam.title": "시험 · %1$@",
+  "notification.control.title": "쪽지 시험 · %1$@",
+  "notification.presentation.title": "발표 · %1$@",
+  "notification.assignment.title": "과제 · %1$@",
+  "notification.deadline.title": "마감일 · %1$@",
+  "notification.review.title": "간격 검토 · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld분. 첫 번째 연습만으로도 시작하기에 충분합니다."
 }

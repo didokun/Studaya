@@ -1,6 +1,7 @@
 // Generated from Localization/*.json; see scripts/localize-resources.py.
 "En pause" = "W przerwie";
 "Focus en pause" = "Fokus wstrzymany";
+"Focus libre" = "Swobodna ostrość";
 "Ouvre Studaya pour reprendre" = "Otwórz Studaya, aby wznowić";
 "Ouvre Studaya pour retrouver ta séance" = "Otwórz Studaya, aby znaleźć swoją sesję";
 "Ouvre l’app pour reprendre" = "Otwórz aplikację, aby wznowić";

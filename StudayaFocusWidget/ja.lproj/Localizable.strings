@@ -1,6 +1,7 @@
 // Generated from Localization/*.json; see scripts/localize-resources.py.
 "En pause" = "一時停止中";
 "Focus en pause" = "フォーカスが一時停止されました";
+"Focus libre" = "フリーフォーカス";
 "Ouvre Studaya pour reprendre" = "Sudayaを開いて再開してください";
 "Ouvre Studaya pour retrouver ta séance" = "Sudaya を開いてセッションを見つけます";
 "Ouvre l’app pour reprendre" = "アプリを開いて再開してください";

@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "Sprawdź i odśwież powiadomienia";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS wymaga pełnego dostępu, aby znajdować, aktualizować i usuwać nasze wydarzenia. Studaya zarządza tylko własnymi eksportowanymi wydarzeniami.";
 "min" = "min";
+"notification.assignment.title" = "Przypisanie · %1$@";
+"notification.control.title" = "Sprawdzian · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "Termin · %1$@";
+"notification.exam.title" = "Egzamin · %1$@";
+"notification.presentation.title" = "Prezentacja · %1$@";
+"notification.review.title" = "Recenzja rozłożona · %1$@";
+"notification.session.body" = "%1$@ · %2$lld min. Aby zacząć, wystarczy pierwsze ćwiczenie.";
 "terminée(s)" = "ukończone";
 "À faire" = "Zrobić";
 "À la fin de chaque matière" = "Na końcu każdego tematu";

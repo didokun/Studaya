@@ -38,7 +38,7 @@ final class LocalizationTests: XCTestCase {
         let base = try strings("fr")
         for language in L10n.supportedLocales {
             let catalog = try strings(language)
-            for key in base.keys { XCTAssertEqual(signature(key), signature(try XCTUnwrap(catalog[key])), language + ": " + key) }
+            for key in base.keys { XCTAssertEqual(signature(try XCTUnwrap(base[key])), signature(try XCTUnwrap(catalog[key])), language + ": " + key) }
         }
         let hindi = try strings("hi")
         let value = try XCTUnwrap(hindi["%lld séances terminées sur %lld"])

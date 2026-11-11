@@ -636,5 +636,13 @@
   "%lld séances et TD détectés par l’analyse locale gratuite. Vérifie les dates et les détails avant l’import.": "%1$lld सत्र और टीडी का निःशुल्क स्थानीय विश्लेषण द्वारा पता लगाया गया। आयात करने से पहले दिनांक और विवरण जांचें।",
   "Aucune séance structurée détectée. Essaie la photo originale, prise de face, avec les titres des colonnes visibles. Tu peux aussi ajouter un élément à partir du texte lu.": "कोई संरचित सत्र नहीं पाया गया. सामने से ली गई मूल तस्वीर आज़माएं, जिसमें कॉलम शीर्षक दिखाई दे रहे हों। आप पढ़े गए पाठ से एक तत्व भी जोड़ सकते हैं।",
   "Propositions de l’IA locale. Vérifie le type, le titre, la date et l’heure de chaque élément avant de l’ajouter.": "स्थानीय एआई प्रस्ताव। प्रत्येक आइटम को जोड़ने से पहले उसके प्रकार, शीर्षक, दिनांक और समय की जाँच करें।",
-  "Révision de cours": "पाठ्यक्रम समीक्षा"
+  "Révision de cours": "पाठ्यक्रम समीक्षा",
+  "notification.exam.title": "परीक्षा · %1$@",
+  "notification.control.title": "टेस्ट · %1$@",
+  "notification.presentation.title": "प्रस्तुति · %1$@",
+  "notification.assignment.title": "असाइनमेंट · %1$@",
+  "notification.deadline.title": "समयसीमा · %1$@",
+  "notification.review.title": "अंतराल समीक्षा · %1$@",
+  "notification.deadline.body": "%1$@ · %2$@",
+  "notification.session.body": "%1$@ · %2$lld मि. एक पहला व्यायाम आपको आरंभ करने के लिए पर्याप्त है।"
 }

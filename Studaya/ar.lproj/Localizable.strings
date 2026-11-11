@@ -616,6 +616,14 @@
 "Vérifier et actualiser les notifications" = "التحقق من الإخطارات وتحديثها";
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "يتطلب iOS الوصول الكامل للعثور على الأحداث الخاصة بنا وتحديثها وحذفها. تدير Studaya الأحداث المصدرة الخاصة بها فقط.";
 "min" = "دقيقة";
+"notification.assignment.title" = "مهمة · %1$@";
+"notification.control.title" = "اختبار · %1$@";
+"notification.deadline.body" = "%1$@ · %2$@";
+"notification.deadline.title" = "الموعد النهائي · %1$@";
+"notification.exam.title" = "امتحان · %1$@";
+"notification.presentation.title" = "عرض تقديمي · %1$@";
+"notification.review.title" = "مراجعة متباعدة · %1$@";
+"notification.session.body" = "%1$@ · %2$lld دقيقة. التمرين الأول يكفي للبدء.";
 "terminée(s)" = "اكتمل";
 "À faire" = "للقيام به";
 "À la fin de chaque matière" = "في نهاية كل موضوع";
