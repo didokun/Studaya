@@ -70,13 +70,13 @@ struct PlanningTimeline: View {
     @ViewBuilder private func details(_ index: Int) -> some View {
         switch index {
         case 0:
-            Text("\(subjects.count) matières · \(subjects.map(\.name).joined(separator: ", "))")
+            Text("\(subjects.count) matières · \(subjects.map(\.displayCode).joined(separator: ", "))")
         case 1:
             ForEach(subjects) { subject in
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(subject.name).fontWeight(.semibold)
+                    Text(subject.displayCode).fontWeight(.semibold)
                     ForEach(subject.units) { unit in
-                        Text("\(unit.kind) · \(unit.name) · début \(unit.start.formatted(date: .abbreviated, time: .omitted))")
+                        Text("\(unit.kind) · \(unit.name) · début \(unit.start?.formatted(date: .abbreviated, time: .omitted) ?? "à préciser")")
                     }
                 }
             }

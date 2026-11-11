@@ -70,11 +70,13 @@ import StoreKitTest
         XCTAssertNotNil(PhotoPlanning.parseDate("2026-11-12T14:30"))
         XCTAssertNotNil(PhotoPlanning.parseDate("2026-11-12"))
     }
-    func testOnlySelectedExplicitlyVerifiedDatedRowsCanBeImported() throws {
+    func testSelectedRowsCanBeImportedWithoutDateOrVerification() throws {
         var entry = ImportedPlanningEntry(title: "TD intégrales", kind: .td)
-        XCTAssertThrowsError(try PhotoPlanning.validate([entry]))
+        XCTAssertEqual(try PhotoPlanning.validate([entry]).count, 1)
+        var undatedDuplicate = entry; undatedDuplicate.id = UUID()
+        XCTAssertThrowsError(try PhotoPlanning.validate([entry, undatedDuplicate]))
         entry.date = Date()
-        XCTAssertThrowsError(try PhotoPlanning.validate([entry]))
+        XCTAssertEqual(try PhotoPlanning.validate([entry]).count, 1)
         entry.verified = true
         XCTAssertEqual(try PhotoPlanning.validate([entry]).count, 1)
         var unselected = ImportedPlanningEntry(); unselected.selected = false
@@ -84,6 +86,95 @@ import StoreKitTest
         var exam = entry; exam.kind = .exam
         var secondExam = exam; secondExam.title = "Deuxième examen"
         XCTAssertThrowsError(try PhotoPlanning.validate([exam, secondExam]))
+    }
+    func testUndatedPhotoImportPersistsWithoutInventingReminders() async throws {
+        let container = try Storage.container(memory: true), db = container.mainContext
+        let subject = Subject("Maths", exam: Date.now.addingTimeInterval(60 * 86400))
+        subject.hasExam = false; db.insert(subject); try db.save()
+        let rows = ImportedKind.allCases.map { ImportedPlanningEntry(title: "Import " + $0.rawValue, kind: $0) }
+        _ = try await PhotoPlanning.save(rows, subject: subject, replaceExam: false, db: db)
+        let chapters = try db.fetch(FetchDescriptor<Chapter>())
+        let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>())
+        XCTAssertEqual(chapters.count, 2)
+        XCTAssertTrue(chapters.allSatisfy { $0.startDate == nil })
+        XCTAssertEqual(deadlines.count, 3)
+        XCTAssertTrue(deadlines.allSatisfy { !$0.hasDueDate })
+        XCTAssertFalse(subject.hasExam)
+        XCTAssertTrue(ReminderPlan.make(subjects: [subject], deadlines: deadlines, chapters: chapters, reviews: []).isEmpty)
+        XCTAssertFalse(try db.fetch(FetchDescriptor<Session>()).contains { $0.deadlineID != nil })
+        let backup = try StudyBackup(db: db)
+        XCTAssertTrue(backup.deadlines.allSatisfy { $0.hasDueDate == false })
+        let decoded = try StudyBackup.decode(JSONEncoder().encode(backup))
+        let restored = try Storage.container(memory: true)
+        try decoded.restore(into: restored.mainContext)
+        XCTAssertTrue(try restored.mainContext.fetch(FetchDescriptor<StudyDeadline>()).allSatisfy { !$0.hasDueDate })
+    }
+    func testUndatedPhotoDraftRetainsMissingDatesThroughCreation() throws {
+        var draft = PathSubject(); draft.name = "Physique"
+        let rows = ImportedKind.allCases.map { ImportedPlanningEntry(title: "Import " + $0.rawValue, kind: $0) }
+        let merged = try RevisionPath.mergingPhoto(rows, into: draft)
+        XCTAssertTrue(merged.units.allSatisfy { $0.start == nil })
+        XCTAssertNil(merged.controls.first?.due)
+        XCTAssertNotNil(merged.undatedExam)
+        let container = try Storage.container(memory: true), db = container.mainContext
+        try RevisionPath.create([merged], db: db)
+        let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>())
+        XCTAssertEqual(deadlines.count, 3)
+        XCTAssertTrue(deadlines.allSatisfy { !$0.hasDueDate })
+    }
+    func testUntitledEventsKeepTheirUnitLinkThroughBackupAndDeletion() throws {
+        let container = try Storage.container(memory: true), db = container.mainContext
+        var draft = PathSubject(); draft.name = "Mathématiques"
+        var td = PathUnit(); td.name = "Intégrales"; td.kind = "TD"; td.start = nil
+        draft.units = [td]
+        draft.presentations = [PathEvent(due: nil, unitID: td.id)]
+        draft.controls = [PathEvent(due: nil)]
+        try RevisionPath.create([draft], db: db)
+        let chapter = try XCTUnwrap(db.fetch(FetchDescriptor<Chapter>()).first)
+        let items = try db.fetch(FetchDescriptor<StudyDeadline>())
+        let presentation = try XCTUnwrap(items.first { $0.kind == "Présentation" })
+        XCTAssertEqual(presentation.chapterID, chapter.id)
+        XCTAssertEqual(presentation.title, "Intégrales")
+        XCTAssertNil(items.first { $0.kind == "Contrôle" }?.chapterID)
+        XCTAssertEqual(items.first { $0.kind == "Contrôle" }?.title, "Mathématiques")
+        let backup = try StudyBackup.decode(JSONEncoder().encode(StudyBackup(db: db)))
+        let restored = try Storage.container(memory: true)
+        try backup.restore(into: restored.mainContext)
+        XCTAssertEqual(try restored.mainContext.fetch(FetchDescriptor<StudyDeadline>()).first { $0.kind == "Présentation" }?.chapterID, chapter.id)
+        try StudyActions.deleteChapter(chapter, db: db)
+        XCTAssertNil(presentation.chapterID)
+        XCTAssertEqual(presentation.title, "Mathématiques")
+    }
+    func testPhotoEventsCanSelectAnImportedTDWithoutTypingTitles() async throws {
+        let container = try Storage.container(memory: true), db = container.mainContext
+        let subject = Subject("Maths", exam: .now); subject.hasExam = false; db.insert(subject); try db.save()
+        let td = ImportedPlanningEntry(title: "Dérivées", kind: .td)
+        let presentation = ImportedPlanningEntry(kind: .presentation, unitID: td.id)
+        let control = ImportedPlanningEntry(kind: .control)
+        // Events may precede their target in the preview order.
+        _ = try await PhotoPlanning.save([presentation, control, td], subject: subject, replaceExam: false, db: db)
+        let chapter = try XCTUnwrap(db.fetch(FetchDescriptor<Chapter>()).first)
+        let items = try db.fetch(FetchDescriptor<StudyDeadline>())
+        XCTAssertEqual(items.first { $0.kind == "Présentation" }?.chapterID, chapter.id)
+        XCTAssertEqual(items.first { $0.kind == "Présentation" }?.title, "Dérivées")
+        XCTAssertEqual(items.first { $0.kind == "Contrôle" }?.title, "Maths")
+        var draft = PathSubject(); draft.name = "Maths"
+        let merged = try RevisionPath.mergingPhoto([presentation, control, td], into: draft)
+        XCTAssertEqual(merged.presentations.first?.unitID, merged.units.first?.id)
+        XCTAssertNoThrow(try RevisionPath.validate([merged]))
+    }
+    func testEventCannotLinkToAnotherSubjectOrMissingUnit() async throws {
+        let container = try Storage.container(memory: true), db = container.mainContext
+        let first = Subject("Maths", exam: .now), second = Subject("Physique", exam: .now)
+        first.hasExam = false; second.hasExam = false
+        db.insert(first); db.insert(second)
+        let chapter = Chapter("Optique", subject: second.id, target: 2); db.insert(chapter); try db.save()
+        let event = ImportedPlanningEntry(kind: .control, unitID: chapter.id)
+        do { _ = try await PhotoPlanning.save([event], subject: first, replaceExam: false, db: db); XCTFail("Cross-subject link accepted") } catch {}
+        XCTAssertTrue(try db.fetch(FetchDescriptor<StudyDeadline>()).isEmpty)
+        var draft = PathSubject(); draft.name = "Maths"; draft.units[0].name = "Algèbre"
+        draft.controls = [PathEvent(unitID: UUID())]
+        XCTAssertThrowsError(try RevisionPath.validate([draft]))
     }
     func testOCRReadsRealImageAndRejectsInvalidData() throws {
         let image = UIGraphicsImageRenderer(size: CGSize(width: 1600, height: 600)).image { context in

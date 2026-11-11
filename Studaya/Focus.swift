@@ -25,6 +25,7 @@ struct Focus: View {
     @AppStorage("timerRemaining") var paused = 0
     @AppStorage("timerLength") var length = 0
     @AppStorage("timerRest") var isRest = false
+    @ObservedObject private var companion = FocusCompanion.shared
     @State var error: String?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var duration: Int { length > 0 ? length : (isRest ? rest : work) * 60 }
@@ -43,22 +44,22 @@ struct Focus: View {
                             HStack(spacing: 12) {
                                 StudyBadge(symbol: "books.vertical.fill", size: 38)
                                 VStack(alignment: .leading, spacing: 3) {
-                                    Text(subjects.first { $0.id.uuidString == subject }?.name ?? "Focus libre").font(.headline)
+                                    Text(subjects.first { $0.id.uuidString == subject }?.displayCode ?? "Focus libre").font(.headline)
                                     if let chapter = chapters.first(where: { $0.id.uuidString == selectedChapter }) { Text(chapter.name).font(.subheadline).foregroundStyle(.secondary) }
                                 }
                             }
                             DisclosureGroup("Modifier la matière et le cours / TD", isExpanded: $choosingTarget) {
                         Picker("Matière", selection: Binding(get: { subject }, set: { subject = $0; selectedChapter = ""; selectedSession = ""; selectedReview = "" })) {
                             Text("Focus libre").tag("")
-                            ForEach(subjects) { Text($0.name).tag($0.id.uuidString) }
-                        }.studyMenu("Matière", value: subjects.first { $0.id.uuidString == subject }?.name ?? "Focus libre").disabled(length > 0)
+                            ForEach(subjects) { Text($0.displayCode + " · " + $0.name).tag($0.id.uuidString) }
+                        }.studyMenu("Matière", value: subjects.first { $0.id.uuidString == subject }?.displayCode ?? "Focus libre").disabled(length > 0)
                         Picker("Cours ou TD", selection: $selectedChapter) {
                             Text("Sans cours ou TD précis").tag("")
                             ForEach(chapters.filter { $0.subjectID.uuidString == subject && (!$0.completed || $0.id.uuidString == selectedChapter) }) { Text($0.kind + " · " + $0.name).tag($0.id.uuidString) }
                         }.studyMenu("Cours ou TD", value: chapters.first { $0.id.uuidString == selectedChapter }?.name ?? "Sans cours ou TD précis").disabled(length > 0 || !selectedSession.isEmpty || !selectedReview.isEmpty)
                             }
                         }.studyCard()
-                        if let session = sessions.first(where: { $0.id.uuidString == selectedSession }) { Text(session.title).font(.caption) }
+                        if let session = sessions.first(where: { $0.id.uuidString == selectedSession }) { Text(StudyLabels.session(session, subjects: subjects, chapters: chapters)).font(.caption) }
                         if !selectedReview.isEmpty { Label("Rappel espacé · sans rouvrir le travail terminé", systemImage: "brain.head.profile").font(.caption) }
                         ZStack {
                             Circle().fill(.white).shadow(color: StudyDesign.accent.opacity(0.08), radius: 24, y: 10)
@@ -89,12 +90,17 @@ struct Focus: View {
                     }.buttonStyle(Primary())
                     Button("Réinitialiser") { end = 0; paused = 0; length = 0; isRest = false; selectedSession = ""; selectedReview = ""; runID = "" }
                     if let error { Text(error).foregroundStyle(.red) }
+                    if !companion.status.isEmpty { Text(companion.status).font(.caption).foregroundStyle(.secondary) }
                 }.padding(.horizontal, 24).padding(.top, 12).padding(.bottom, 10).background(StudyDesign.canvas)
             }
             .onChange(of: seconds, initial: true) { _, seconds in if end > 0 && seconds == 0 { finish() } }
         }
         .studyScreen()
         .onAppear { loadTarget() }
+        .onReceive(companion.$completion.compactMap { $0 }) { completion in
+            finishedChapter = completion.chapterID; summary = true
+            companion.completion = nil
+        }
         .sheet(isPresented: $summary) { FocusSummary(chapterID: finishedChapter) }
     }
     func loadTarget() {
@@ -110,21 +116,15 @@ struct Focus: View {
         selectedReview = review?.id.uuidString ?? ""
     }
     func finish() {
-        if !isRest {
-            let token = UUID(uuidString: runID) ?? UUID()
-            runID = token.uuidString
-            do {
-                let log = try FocusRecorder.record(db: db, runID: token, subjectID: UUID(uuidString: subject), chapterID: UUID(uuidString: selectedChapter), sessionID: UUID(uuidString: selectedSession), reviewID: UUID(uuidString: selectedReview), minutes: duration / 60, date: Date(timeIntervalSince1970: end))
-                finishedChapter = log.chapterID; summary = true
-                selectedSession = ""; selectedReview = ""
-            } catch { db.rollback(); self.error = error.localizedDescription; return }
-        }
-        end = 0; paused = 0; length = 0; isRest.toggle()
+        do { try FocusCompanion.shared.reconcile(db) }
+        catch { db.rollback(); self.error = error.localizedDescription }
     }
+
 }
 
 struct FocusSummary: View {
     let chapterID: UUID?
+    @Query private var subjects: [Subject]
     @Query var chapters: [Chapter]
     @Environment(\.modelContext) private var db
     @Environment(\.dismiss) private var dismiss
@@ -136,7 +136,7 @@ struct FocusSummary: View {
             Form {
                 Label("Séance enregistrée", systemImage: "checkmark.circle.fill")
                 if let chapter = chapters.first(where: { $0.id == chapterID }) {
-                    Text(chapter.name)
+                    Text((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name)
                     if chapter.kind == "TD", !chapter.completed {
                         Stepper("\(exercises) exercice(s) terminé(s) pendant cette séance", value: $exercises, in: 0...max(0, chapter.exerciseCount - chapter.exercisesDone))
                         Text("Seuls les exercices que tu confirmes sont ajoutés à ta progression.").font(.footnote)

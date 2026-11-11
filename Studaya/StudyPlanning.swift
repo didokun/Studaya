@@ -1,12 +1,20 @@
 import SwiftUI
 import SwiftData
 
+struct PlanningUnitOption: Identifiable {
+    let id: UUID
+    let name: String
+    let kind: String
+}
+
 @Model final class StudyDeadline {
     var id = UUID()
     var subjectID = UUID()
+    var chapterID: UUID?
     var title = ""
     var kind = "Contrôle"
     var due = Date()
+    var hasDueDate = true
     var done = false
     var preparationSessions = 2
     var reminderDays = 2
@@ -38,6 +46,8 @@ enum StudyCoach {
 struct DeadlineRow: View {
     @Bindable var item: StudyDeadline
     @Environment(\.modelContext) private var db
+    @Query private var chapters: [Chapter]
+    @Query private var subjects: [Subject]
     @State private var error: String?
     var body: some View {
         HStack {
@@ -47,9 +57,11 @@ struct DeadlineRow: View {
             } label: { Image(systemName: item.done ? "checkmark.circle.fill" : "circle") }
                 .buttonStyle(.borderless).accessibilityLabel(item.done ? "Remettre à faire" : "Marquer comme terminé")
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.kind + " · " + item.title).font(.headline)
-                Text(item.due, format: .dateTime.day().month().hour().minute()).font(.caption)
-                if !item.done {
+                Text(StudyLabels.deadline(item, subjects: subjects, chapters: chapters)).font(.headline)
+                if item.hasDueDate {
+                    Text(item.due, format: .dateTime.day().month().hour().minute()).font(.caption)
+                } else { Text("Date à préciser").font(.caption).foregroundStyle(.secondary) }
+                if !item.done && item.hasDueDate {
                     Text(item.due < .now ? "En retard" : "Rappel " + item.reminderDate.formatted(date: .abbreviated, time: .shortened))
                         .font(.caption).foregroundStyle(item.due < .now ? .red : .secondary)
                 }
@@ -63,8 +75,10 @@ struct DeadlineEditor: View {
     var existing: StudyDeadline? = nil
     @Environment(\.modelContext) private var db
     @Environment(\.dismiss) private var dismiss
-    @State private var title = ""
+    @Query(sort: \Chapter.name) private var chapters: [Chapter]
+    @State private var chapterID: UUID?
     @State private var kind = "Contrôle"
+    @State private var hasDueDate = true
     @State private var due = Date.now.addingTimeInterval(7 * 86400)
     @State private var sessions = 2
     @State private var days = 2
@@ -74,12 +88,20 @@ struct DeadlineEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(subject.name) {
-                    TextField("Titre", text: $title)
+                Section(subject.displayCode) {
                     Picker("Type", selection: $kind) {
-                        ForEach(["Examen", "Contrôle", "Présentation", "Rendu"], id: \.self) { Text($0) }
+                        ForEach(["Examen", "Examen final", "Contrôle", "Présentation", "Rendu"], id: \.self) { Text($0) }
                     }
-                    DatePicker("Date limite", selection: $due)
+                    if kind == "Présentation" || kind == "Contrôle" {
+                        Picker("Cours ou TD lié", selection: $chapterID) {
+                            Text("Toute la matière").tag(nil as UUID?)
+                            ForEach(chapters.filter { $0.subjectID == subject.id }) { chapter in
+                                Text(chapter.kind + " · " + chapter.name).tag(Optional(chapter.id))
+                            }
+                        }
+                    } else { Label(subject.displayCode, systemImage: "books.vertical") }
+                    Toggle("Date connue", isOn: $hasDueDate)
+                    if hasDueDate { DatePicker("Date limite", selection: $due) }
                     Stepper("Préparation · \(sessions) séances", value: $sessions, in: 1...30)
                     Stepper("Rappel · \(days) jour(s) avant", value: $days, in: 0...30)
                     Text("Le rappel apparaît dans l’accueil et le calendrier. Active les notifications d’échéance dans Réglages pour le recevoir même lorsque l’app est fermée.").font(.footnote)
@@ -87,7 +109,7 @@ struct DeadlineEditor: View {
                 if existing != nil { Button("Supprimer l’échéance", role: .destructive) { confirmDelete = true } }
             }.studyScreen().navigationTitle("Échéance").toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Annuler") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(saved || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) }
+                ToolbarItem(placement: .confirmationAction) { Button("Enregistrer") { save() }.disabled(saved) }
             }
         }.confirmationDialog("Supprimer cette échéance et ses séances de préparation ?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("Supprimer", role: .destructive) {
@@ -95,7 +117,7 @@ struct DeadlineEditor: View {
                 do { try StudyActions.deleteDeadline(existing, db: db); try Scheduler.rebuild(db); dismiss() } catch { db.rollback(); message = error.localizedDescription }
             }
         }.onAppear {
-            if let existing { title = existing.title; kind = existing.kind; due = existing.due; sessions = existing.preparationSessions; days = existing.reminderDays }
+            if let existing { chapterID = existing.chapterID; kind = existing.kind; due = existing.due; hasDueDate = existing.hasDueDate; sessions = existing.preparationSessions; days = existing.reminderDays }
         }.alert("Planning", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
             Button("OK") { if saved { dismiss() } }
         } message: { Text(message ?? "") }
@@ -103,8 +125,11 @@ struct DeadlineEditor: View {
     private func save() {
         let item = existing ?? StudyDeadline(subject: subject.id)
         if existing == nil { db.insert(item) }
-        item.title = title.trimmingCharacters(in: .whitespacesAndNewlines); item.kind = kind
-        item.due = due; item.preparationSessions = sessions; item.reminderDays = days
+        let linked = (kind == "Présentation" || kind == "Contrôle") ? chapters.first { $0.id == chapterID && $0.subjectID == subject.id } : nil
+        item.chapterID = linked?.id
+        item.title = linked?.name ?? subject.name
+        item.kind = kind
+        item.due = due; item.hasDueDate = hasDueDate; item.preparationSessions = sessions; item.reminderDays = days
         do {
             let missing = try Scheduler.rebuild(db)
             saved = true

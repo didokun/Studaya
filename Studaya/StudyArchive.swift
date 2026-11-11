@@ -4,12 +4,13 @@ import SwiftData
 struct ReviewRow: View {
     let review: SpacedReview
     let chapter: Chapter
+    @Query private var subjects: [Subject]
     @Environment(\.modelContext) private var db
     @State private var focus = false
     @State private var error: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(chapter.name + " · J+\(review.intervalDays)", systemImage: "brain.head.profile").font(.headline)
+            Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name + " · J+\(review.intervalDays)", systemImage: "brain.head.profile").font(.headline)
             Text(review.due, format: .dateTime.day().month().hour().minute()).font(.caption)
             Text("Rappel d’un travail terminé · teste-toi sans correction").font(.caption).foregroundStyle(.secondary)
             HStack {
@@ -36,7 +37,7 @@ struct StudyArchive: View {
         List {
             Section("Cours et TD terminés") {
                 ForEach(chapters.filter { chapter in chapter.completed && matches(chapter.name + " " + (subjects.first(where: { $0.id == chapter.subjectID })?.name ?? "")) }) { chapter in
-                    NavigationLink { ChapterPage(chapter: chapter) } label: { Label(chapter.kind + " · " + chapter.name, systemImage: "checkmark.circle") }
+                    NavigationLink { ChapterPage(chapter: chapter) } label: { Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.kind + " · " + chapter.name, systemImage: "checkmark.circle") }
                 }
             }
             Section("Échéances terminées") {
@@ -52,7 +53,7 @@ struct StudyArchive: View {
             Section("Historique des rappels") {
                 ForEach(reviews.filter(\.done)) { review in
                     if let chapter = chapters.first(where: { $0.id == review.chapterID }), matches(chapter.name) {
-                        Label(chapter.name + " · J+\(review.intervalDays)", systemImage: "checkmark.circle.fill")
+                        Label((subjects.first { $0.id == chapter.subjectID }?.displayCode ?? "") + " · " + chapter.name + " · J+\(review.intervalDays)", systemImage: "checkmark.circle.fill")
                     }
                 }
             }

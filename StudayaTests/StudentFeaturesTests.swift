@@ -6,6 +6,54 @@ import SwiftData
     let now = Date(timeIntervalSince1970: 1794211200)
     var calendar: Calendar { var c = Calendar(identifier: .gregorian); c.timeZone = TimeZone(secondsFromGMT: 0)!; return c }
     let availability = Availability(weekdays: Set(1...7), startHour: 17, endHour: 19, minutes: 30)
+    func testSubjectCodesUseEveryWordAndAllowCustomOverrides() {
+        XCTAssertEqual(SubjectCode.initials("  Analyse numérique  "), "AN")
+        XCTAssertEqual(SubjectCode.initials("Économie et gestion"), "EEG")
+        XCTAssertEqual(SubjectCode.initials("Physique-chimie"), "PC")
+        XCTAssertEqual(SubjectCode.initials(""), "")
+        let subject = Subject("Analyse numérique", exam: now)
+        XCTAssertEqual(subject.displayCode, "AN")
+        XCTAssertEqual(subject.compactTitle("Analyse numérique · Analyse numérique"), "AN")
+        subject.name = "Analyse numérique avancée"
+        XCTAssertEqual(subject.displayCode, "ANA")
+        subject.code = " math-101 "
+        XCTAssertEqual(subject.displayCode, "MATH-101")
+        subject.name = "Autre nom"
+        XCTAssertEqual(subject.displayCode, "MATH-101")
+        subject.code = ""
+        XCTAssertEqual(subject.displayCode, "AN")
+    }
+    func testSubjectCodePersistsInPathAndBackupAndUpdatesExistingSessionLabels() throws {
+        let container = try Storage.container(memory: true), db = container.mainContext
+        var draft = PathSubject(); draft.name = "Analyse numérique"; draft.code = " ana "
+        draft.units[0].name = "Matrices"; draft.units[0].start = nil
+        try RevisionPath.create([draft], db: db, now: now)
+        let subject = try XCTUnwrap(db.fetch(FetchDescriptor<Subject>()).first)
+        let chapter = try XCTUnwrap(db.fetch(FetchDescriptor<Chapter>()).first)
+        XCTAssertEqual(subject.code, "ANA")
+        let session = Session(chapter, subject: subject, start: now, minutes: 30)
+        XCTAssertEqual(StudyLabels.session(session, subjects: [subject], chapters: [chapter]), "ANA · Matrices")
+        subject.code = "AN2"
+        XCTAssertEqual(StudyLabels.session(session, subjects: [subject], chapters: [chapter]), "AN2 · Matrices")
+        XCTAssertEqual(session.title, "Analyse numérique · Matrices")
+        let backup = try StudyBackup.decode(JSONEncoder().encode(StudyBackup(db: db)))
+        let restored = try Storage.container(memory: true)
+        try backup.restore(into: restored.mainContext)
+        XCTAssertEqual(try restored.mainContext.fetch(FetchDescriptor<Subject>()).first?.displayCode, "AN2")
+        var legacy = backup
+        legacy.subjects[0].code = nil
+        let oldStore = try Storage.container(memory: true)
+        try legacy.restore(into: oldStore.mainContext)
+        XCTAssertEqual(try oldStore.mainContext.fetch(FetchDescriptor<Subject>()).first?.displayCode, "AN")
+    }
+    func testDeadlineCodeIsShownOnceWithOrWithoutUnitLink() {
+        let subject = Subject("Analyse numérique", exam: now)
+        let item = StudyDeadline(subject: subject.id); item.title = subject.name
+        XCTAssertEqual(StudyLabels.deadline(item, subjects: [subject], chapters: []), "Contrôle · AN")
+        let chapter = Chapter("Matrices", subject: subject.id, target: 2)
+        item.chapterID = chapter.id
+        XCTAssertEqual(StudyLabels.deadline(item, subjects: [subject], chapters: [chapter]), "Contrôle · AN · Matrices")
+    }
     func seed(_ db: ModelContext) -> (Subject, Chapter) {
         let subject = Subject("Mathématiques", exam: calendar.date(byAdding: .day, value: 10, to: now)!)
         let chapter = Chapter("Intégrales", subject: subject.id, target: 3)

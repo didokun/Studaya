@@ -6,24 +6,28 @@ struct PathUnit: Identifiable {
     var name = ""
     var notes = ""
     var kind = "Cours"
-    var start = Date()
+    var start: Date? = Date()
     var sessions = 2
     var exercises = 5
 }
 struct PathEvent: Identifiable {
     var id = UUID()
     var title = ""
-    var due = Date.now.addingTimeInterval(14 * 86400)
+    var due: Date? = Date.now.addingTimeInterval(14 * 86400)
     var preparation = 2
+    var unitID: UUID?
 }
 struct PathSubject: Identifiable {
     var id = UUID()
     var name = ""
+    var code = ""
+    var displayCode: String { SubjectCode.resolve(code, name: name) }
     var year = 1
     var semester = 1
     var units = [PathUnit()]
     var presentations: [PathEvent] = []
     var controls: [PathEvent] = []
+    var undatedExam: PathEvent?
     var hasExam = false
     var exam = Date.now.addingTimeInterval(60 * 86400)
 }
@@ -37,11 +41,11 @@ struct PathSubject: Identifiable {
             guard !name.isEmpty, (1...8).contains(subject.year), (!usesSemesters || (1...2).contains(subject.semester)), keys.insert("\(name.lowercased()):\(subject.year):\(usesSemesters ? subject.semester : 0)").inserted else {
                 throw StudyError.invalid(usesSemesters ? "Chaque matière doit avoir un nom et ne figurer qu’une fois dans le même semestre." : "Chaque matière doit avoir un nom et ne figurer qu’une fois dans la même année.")
             }
-            guard !subject.units.isEmpty, subject.units.allSatisfy({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && ["Cours", "TD"].contains($0.kind) && (1...30).contains($0.sessions) && (1...100).contains($0.exercises) }) else {
+            guard !subject.units.isEmpty, subject.units.allSatisfy({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && ["Cours", "TD"].contains($0.kind) && (1...30).contains($0.sessions) && ($0.kind != "TD" || (1...100).contains($0.exercises)) }) else {
                 throw StudyError.invalid("Ajoute et nomme les cours ou TD de \(name).")
             }
-            guard (subject.presentations + subject.controls).allSatisfy({ !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (1...30).contains($0.preparation) }) else { throw StudyError.invalid("Nomme chaque présentation et contrôle de \(name).") }
-            if subject.hasExam, let latest = subject.units.map(\.start).max(), Calendar.current.startOfDay(for: subject.exam) <= Calendar.current.startOfDay(for: latest) {
+            guard (subject.presentations + subject.controls).allSatisfy({ event in (1...30).contains(event.preparation) && (event.unitID == nil || subject.units.contains { $0.id == event.unitID }) }) else { throw StudyError.invalid("Choisis un cours ou TD existant pour les événements liés de \(name).") }
+            if subject.hasExam, let latest = subject.units.compactMap(\.start).max(), Calendar.current.startOfDay(for: subject.exam) <= Calendar.current.startOfDay(for: latest) {
                 throw StudyError.invalid("L’examen de \(name) doit avoir lieu après le début de tous ses cours et TD.")
             }
         }
@@ -57,23 +61,28 @@ struct PathSubject: Identifiable {
                 let existing = old.first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame && $0.year == draft.year && (!usesSemesters || $0.semester == draft.semester) }
                 let subject = existing ?? Subject(name, exam: draft.exam)
                 if existing == nil { db.insert(subject); subject.hasExam = draft.hasExam; subject.examMode = profile?.examMode ?? "Par semestre" }
+                if existing == nil || !draft.code.isEmpty { subject.code = SubjectCode.normalize(draft.code) }
                 subject.year = draft.year
                 if usesSemesters { subject.semester = draft.semester }
                 if draft.hasExam { subject.exam = draft.exam; subject.hasExam = true }
                 let previous = TimelineOrder.chapters(try db.fetch(FetchDescriptor<Chapter>()).filter { $0.subjectID == subject.id })
                 for (position, chapter) in previous.enumerated() { chapter.timelineIndex = position }
+                var chapterIDs: [UUID: UUID] = [:]
                 for (offset, unit) in draft.units.enumerated() {
                     let chapter = Chapter(unit.name.trimmingCharacters(in: .whitespacesAndNewlines), subject: subject.id, target: unit.sessions)
+                    chapterIDs[unit.id] = chapter.id
                     chapter.timelineIndex = previous.count + offset
                     chapter.notes = unit.notes
                     chapter.kind = unit.kind; chapter.startDate = unit.start; chapter.exerciseCount = unit.exercises
                     db.insert(chapter)
                 }
-                for (kind, events) in [("Présentation", draft.presentations), ("Contrôle", draft.controls)] {
+                for (kind, events) in [("Présentation", draft.presentations), ("Contrôle", draft.controls), ("Examen final", draft.hasExam ? [] : draft.undatedExam.map { [$0] } ?? [])] {
                     for event in events {
                         let item = StudyDeadline(subject: subject.id)
-                        item.kind = kind; item.title = event.title.trimmingCharacters(in: .whitespacesAndNewlines)
-                        item.due = event.due; item.preparationSessions = event.preparation
+                        item.kind = kind
+                        item.chapterID = event.unitID.flatMap { chapterIDs[$0] }
+                        item.title = draft.units.first { $0.id == event.unitID }?.name ?? name
+                        item.hasDueDate = event.due != nil; if let date = event.due { item.due = date }; item.preparationSessions = event.preparation
                         db.insert(item)
                     }
                 }
@@ -111,7 +120,7 @@ struct RevisionPathBuilder: View {
         if step == 1 { return subjects[index].units.allSatisfy { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } }
         if step == 2 || step == 3 {
             let events = step == 2 ? subjects[index].presentations : subjects[index].controls
-            return events.allSatisfy { !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            return events.allSatisfy { event in event.unitID == nil || subjects[index].units.contains { $0.id == event.unitID } }
         }
         return true
     }
@@ -128,7 +137,7 @@ struct RevisionPathBuilder: View {
                         StudyPill(title: step == 0 ? "TON CAMPUS" : "TON PARCOURS", symbol: "sparkles")
                         Text(titles[step]).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         if (1...4).contains(step) {
-                            Text(subjects[index].name).font(.title2.weight(.semibold))
+                            Text(subjects[index].displayCode).font(.title2.weight(.semibold))
                             Text("Matière \(index + 1) sur \(subjects.count)").foregroundStyle(.secondary)
                         }
                         content
@@ -151,7 +160,7 @@ struct RevisionPathBuilder: View {
                         ContentUnavailableView("Nomme d’abord cette matière", systemImage: "books.vertical", description: Text("Reviens au parcours et renseigne le nom de la matière pour analyser sa photo de planning."))
                             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Fermer") { photoTarget = nil } } }
                     } else {
-                        PhotoPlanningImporter(subject: nil, draftSubjectName: target.name, draftExamDate: target.exam) { rows, replaceExam in
+                        PhotoPlanningImporter(subject: nil, draftSubjectName: target.name, draftExamDate: target.exam, draftUnits: subjects.first { $0.id == target.id }?.units.filter { !$0.name.isEmpty }.map { PlanningUnitOption(id: $0.id, name: $0.name, kind: $0.kind) } ?? []) { rows, replaceExam in
                             guard let position = subjects.firstIndex(where: { $0.id == target.id }) else { throw StudyError.invalid("Cette matière a été retirée du parcours.") }
                             subjects[position] = try RevisionPath.mergingPhoto(rows, into: subjects[position], replaceExam: replaceExam)
                         }
@@ -170,6 +179,7 @@ struct RevisionPathBuilder: View {
             ForEach($subjects) { $subject in
                 VStack(alignment: .leading, spacing: 14) {
                     TextField("Nom de la matière", text: $subject.name).textFieldStyle(StudyTextFieldStyle(boxed: true))
+                    SubjectCodeField(name: subject.name, code: $subject.code)
                     photoButton(subject)
                     Stepper("Année \(subject.year)", value: $subject.year, in: 1...max(1, profiles.first?.years ?? 8))
                     if profiles.first?.usesSemesters ?? true {
@@ -206,9 +216,16 @@ struct RevisionPathBuilder: View {
         case 5:
             ForEach(subjects) { subject in
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(subject.name).font(.title3.bold())
-                    ForEach(subject.units) { unit in Text("\(unit.kind) · \(unit.name) · début \(unit.start.formatted(date: .abbreviated, time: .omitted))") }
+                    Text(subject.displayCode).font(.title3.bold())
+                    Text(subject.name).font(.caption).foregroundStyle(.secondary)
+                    ForEach(subject.units) { unit in Text("\(unit.kind) · \(unit.name) · début \(unit.start?.formatted(date: .abbreviated, time: .omitted) ?? "à préciser")") }
                     Text("\(subject.presentations.count) présentations · \(subject.controls.count) contrôles")
+                    ForEach(subject.presentations) { event in
+                        Text("Présentation · " + (subject.units.first { $0.id == event.unitID }?.name ?? subject.displayCode))
+                    }
+                    ForEach(subject.controls) { event in
+                        Text("Contrôle · " + (subject.units.first { $0.id == event.unitID }?.name ?? subject.displayCode))
+                    }
                     Text(subject.hasExam ? "Examen final · " + subject.exam.formatted(date: .abbreviated, time: .omitted) : "Examen final à préciser")
                 }.padding().frame(maxWidth: .infinity, alignment: .leading).background(.white, in: RoundedRectangle(cornerRadius: 24))
             }
@@ -226,6 +243,8 @@ struct RevisionPathBuilder: View {
                 if subjects[index].units.count > 1 {
                     Button(role: .destructive) {
                         subjects[index].units.removeAll { $0.id == unit.id }
+                        for i in subjects[index].presentations.indices where subjects[index].presentations[i].unitID == unit.id { subjects[index].presentations[i].unitID = nil }
+                        for i in subjects[index].controls.indices where subjects[index].controls[i].unitID == unit.id { subjects[index].controls[i].unitID = nil }
                     } label: {
                         Image(systemName: "trash").foregroundStyle(.red).font(.subheadline)
                     }
@@ -239,7 +258,10 @@ struct RevisionPathBuilder: View {
                 Text("TD").tag("TD")
             }
             .pickerStyle(.segmented)
-            DatePicker("Date de début", selection: binding.start, displayedComponents: .date)
+            Toggle("Date de début connue", isOn: Binding(get: { binding.wrappedValue.start != nil }, set: { binding.wrappedValue.start = $0 ? Date() : nil }))
+            if unit.start != nil {
+                DatePicker("Date de début", selection: Binding(get: { binding.wrappedValue.start ?? .now }, set: { binding.wrappedValue.start = $0 }), displayedComponents: .date)
+            }
             Stepper("Objectif · \(unit.sessions) séances", value: binding.sessions, in: 1...30)
             if unit.kind == "TD" {
                 Stepper("\(unit.exercises) exercices", value: binding.exercises, in: 1...100)
@@ -252,7 +274,8 @@ struct RevisionPathBuilder: View {
             photoTarget = PathPhotoTarget(id: subject.id, name: subject.name.trimmingCharacters(in: .whitespacesAndNewlines), exam: subject.hasExam ? subject.exam : nil)
         } label: {
             HStack(spacing: 8) {
-                Label("Importer un planning en photo", systemImage: "camera.viewfinder")
+                Label("Importer une photo", systemImage: "camera.viewfinder")
+                    .font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.85)
                 Spacer()
                 Label("AI", systemImage: "sparkles")
                     .font(.caption.weight(.semibold))
@@ -265,8 +288,14 @@ struct RevisionPathBuilder: View {
     private func events(_ binding: Binding<[PathEvent]>) -> some View {
         ForEach(binding) { $event in
             VStack(alignment: .leading, spacing: 14) {
-                TextField("Titre", text: $event.title).textFieldStyle(StudyTextFieldStyle(boxed: true))
-                DatePicker("Date limite", selection: $event.due)
+                Picker("Cours ou TD lié", selection: $event.unitID) {
+                    Text("Toute la matière").tag(nil as UUID?)
+                    ForEach(subjects[index].units.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) { unit in
+                        Text(unit.kind + " · " + unit.name).tag(Optional(unit.id))
+                    }
+                }.pickerStyle(.menu).accessibilityIdentifier("event.unit")
+                Toggle("Date connue", isOn: Binding(get: { event.due != nil }, set: { event.due = $0 ? Date() : nil }))
+                if event.due != nil { DatePicker("Date limite", selection: Binding(get: { event.due ?? .now }, set: { event.due = $0 })) }
                 Stepper("Préparation · \(event.preparation) séances", value: $event.preparation, in: 1...30)
                 Button("Retirer", role: .destructive) { binding.wrappedValue.removeAll { $0.id == event.id } }
             }.padding().background(.white, in: RoundedRectangle(cornerRadius: 24))

@@ -43,7 +43,7 @@ struct PremiumInsightDetail: View {
                 Section("Temps étudié · 30 derniers jours") {
                     if subjects.isEmpty { Text("Ajoute une matière pour suivre ton temps de travail.") }
                     ForEach(subjects) { subject in
-                        LabeledContent(subject.name, value: "\(recent.filter { $0.subjectID == subject.id }.reduce(0) { $0 + $1.minutes }) min")
+                        LabeledContent(subject.displayCode, value: "\(recent.filter { $0.subjectID == subject.id }.reduce(0) { $0 + $1.minutes }) min")
                     }
                 }
             case .export:
@@ -59,7 +59,7 @@ struct PremiumInsightDetail: View {
     private var csvFile: FocusExport {
         var rows = ["Date,Matière,Minutes"]
         for log in logs.sorted(by: { $0.date < $1.date }) {
-            let title = subjects.first { $0.id == log.subjectID }?.name ?? "Focus libre"
+            let title = subjects.first { $0.id == log.subjectID }?.displayCode ?? "Focus libre"
             let safe = title.replacingOccurrences(of: "\"", with: "\"\"")
             rows.append("\(log.date.ISO8601Format()),\"\(safe)\",\(log.minutes)")
         }

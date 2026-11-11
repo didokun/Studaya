@@ -73,11 +73,11 @@ struct StudySettings: View {
         do {
             try StudyBackup.removeAll(db)
             try db.save()
-            for key in ["studentName","welcomed","weeklyHours","weekdays","startHour","endHour","sessionMinutes","focusMinutes","breakMinutes","focusSubject","timerEnd","timerRemaining","timerLength","timerRest","reminderHour","reminderEnabled","eventRemindersEnabled","focusChapter","focusSession","focusReview","focusRunID"] { StudyPreferences.current.removeObject(forKey: key) }
+            for key in [StudentNotificationOptions.key,"notificationAnchor","studentName","welcomed","weeklyHours","weekdays","startHour","endHour","sessionMinutes","focusMinutes","breakMinutes","focusSubject","timerEnd","timerRemaining","timerLength","timerRest","reminderHour","reminderEnabled","eventRemindersEnabled","focusChapter","focusSession","focusReview","focusRunID"] { StudyPreferences.current.removeObject(forKey: key) }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["studaya.daily"])
             StudyPreferences.current.removeObject(forKey: "dataChangeReason")
             StudyPreferences.current.set(UUID().uuidString, forKey: "dataRevision")
-            Task { await EventReminders.shared.refresh(db) }
+            Task { await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db) }
             dismiss()
         } catch { db.rollback(); self.error = error.localizedDescription }
     }
@@ -103,31 +103,7 @@ struct RhythmSettings: View {
 }
 
 struct ReminderSettings: View {
-    @AppStorage("reminderEnabled") var enabled = false
-    @AppStorage("reminderHour") var hour = 18
-    @State var message = ""
-    @State var busy = false
     var body: some View {
-        Form {
-            EventReminderSettings()
-            Stepper("Heure du rappel · \(hour) h", value: $hour, in: 0...23)
-            Button(enabled ? "Mettre à jour le rappel" : "Activer le rappel") {
-                busy = true
-                Task { @MainActor in
-                    defer { busy = false }
-                    let center = UNUserNotificationCenter.current()
-                    do {
-                        guard try await center.requestAuthorization(options: [.alert, .sound]) else { message = "Autorise les notifications de Studaya dans les réglages iOS."; return }
-                        let content = UNMutableNotificationContent()
-                        content.title = "Ton planning Studaya"; content.body = "Retrouve tes révisions du jour."; content.sound = .default
-                        let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: hour, minute: 0), repeats: true)
-                        try await center.add(UNNotificationRequest(identifier: "studaya.daily", content: content, trigger: trigger))
-                        enabled = true; message = "Rappel programmé."
-                    } catch { message = error.localizedDescription }
-                }
-            }.disabled(busy)
-            if enabled { Button("Désactiver le rappel") { UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["studaya.daily"]); enabled = false; message = "" } }
-            if !message.isEmpty { Text(message) }
-        }
+        Form { EventReminderSettings() }.studyScreen().navigationTitle("Rappels et notifications")
     }
 }

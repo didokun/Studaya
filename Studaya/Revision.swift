@@ -24,7 +24,7 @@ struct Library: View {
             Button("Créer mon Parcours de révision", systemImage: "sparkles") { creatingPath = true }
             ForEach(groups, id: \.self) { key in
                 Section(key) {
-                    ForEach(subjects.filter { group($0) == key && (search.isEmpty || $0.name.localizedCaseInsensitiveContains(search)) }) { subject in
+                    ForEach(subjects.filter { group($0) == key && (search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) || $0.displayCode.localizedCaseInsensitiveContains(search)) }) { subject in
                         subjectRow(subject)
                     }
                 }
@@ -49,7 +49,9 @@ struct Library: View {
             HStack(alignment: .top, spacing: 14) {
                 StudyBadge(symbol: StudyDesign.symbol(for: subject.name), color: color, size: 50)
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(subject.name).font(.system(.title3, design: .rounded, weight: .bold)).foregroundStyle(StudyDesign.ink)
+                    Text(subject.displayCode).font(.system(.title3, design: .rounded, weight: .bold)).foregroundStyle(StudyDesign.ink)
+                        .accessibilityLabel(subject.name + ", " + subject.displayCode)
+                    Text(subject.name).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     if subject.hasExam {
                         Label(subject.exam.formatted(.dateTime.day().month(.wide)), systemImage: "calendar").font(.caption.weight(.medium)).foregroundStyle(.secondary)
                     } else { Text("Date d’examen à préciser").font(.caption).foregroundStyle(.secondary) }
@@ -83,7 +85,8 @@ struct SubjectPage: View {
             Section {
                 Button { importPhoto = true } label: {
                     HStack(spacing: 12) {
-                        Label("Importer un planning en photo", systemImage: "camera.viewfinder")
+                        Label("Importer une photo", systemImage: "camera.viewfinder")
+                    .font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.85)
                         Spacer(minLength: 8)
                         Label("AI", systemImage: "sparkles")
                             .font(.caption.weight(.semibold))
@@ -129,7 +132,7 @@ struct SubjectPage: View {
                 ForEach(units.filter(\.completed)) { chapter in unitRow(chapter) }
                 ForEach(deadlines.filter { $0.subjectID == subject.id && $0.done }) { DeadlineRow(item: $0) }
             }
-        }.studyScreen().navigationTitle(subject.name)
+        }.studyScreen().navigationTitle(subject.displayCode)
         .sheet(isPresented: $edit) { RevisionEditor(kind: .subject(subject)) }
         .sheet(isPresented: $importPhoto) { PhotoPlanningGate(subject: subject) }
         .sheet(isPresented: $add) { RevisionEditor(kind: .chapter(subject.id, nil)) }
@@ -151,7 +154,7 @@ struct SubjectPage: View {
                     StudyBadge(symbol: chapter.completed ? "checkmark.seal.fill" : chapter.kind == "TD" ? "pencil.and.outline" : "text.book.closed.fill", color: chapter.completed ? StudyDesign.mint : StudyDesign.color(for: subject.name), size: 38)
                     Text(chapter.name).font(.headline)
                     Spacer(minLength: 0)
-                    StudyPill(title: chapter.kind, color: StudyDesign.color(for: subject.name))
+                    StudyPill(title: subject.displayCode + " · " + chapter.kind, color: StudyDesign.color(for: subject.name))
                 }
                 ProgressView(value: StudyCoach.progress(chapter, sessions: sessions))
                 Text(chapter.kind == "TD" ? "\(chapter.exercisesDone) / \(chapter.exerciseCount) exercices" : "\(Int(StudyCoach.progress(chapter, sessions: sessions) * 100)) % · \(chapter.requiredSessions) séances visées").font(.caption)
@@ -252,6 +255,7 @@ enum EditorKind {
 struct RevisionEditor: View {
     let kind: EditorKind
     @State var name = ""
+    @State private var code = ""
     @Query var profiles: [AcademicProfile]
     @State var year = 1
     @State var semester = 1
@@ -283,6 +287,7 @@ struct RevisionEditor: View {
                 switch kind {
                 case .subject:
                     TextField("Nom de la matière", text: $name)
+                    SubjectCodeField(name: name, code: $code)
                     Stepper("Année \(year)", value: $year, in: 1...max(year, profiles.first?.years ?? 8))
                     if profiles.first?.usesSemesters ?? true {
                         Picker("Semestre", selection: $semester) { Text("S1").tag(1); Text("S2").tag(2) }
@@ -312,7 +317,7 @@ struct RevisionEditor: View {
             }
         }.onAppear {
             switch kind {
-            case .subject(let existing): if let existing { name = existing.name; year = existing.year; semester = existing.semester; examMode = existing.examMode; hasExam = existing.hasExam; if existing.hasExam { exam = existing.exam } }
+            case .subject(let existing): if let existing { name = existing.name; code = existing.code; year = existing.year; semester = existing.semester; examMode = existing.examMode; hasExam = existing.hasExam; if existing.hasExam { exam = existing.exam } }
             case .chapter(_, let existing): if let existing { name = existing.name; unitStart = existing.startDate ?? .now; unitKind = existing.kind; exerciseCount = existing.exerciseCount; target = existing.target; notes = existing.notes; confidence = existing.confidence }
             case .card: break
             }
@@ -325,7 +330,7 @@ struct RevisionEditor: View {
             switch kind {
             case .subject(let existing):
                 let subject = existing ?? Subject(clean, exam: exam)
-                subject.name = clean; subject.exam = exam; subject.hasExam = hasExam
+                subject.name = clean; subject.code = SubjectCode.normalize(code); subject.exam = exam; subject.hasExam = hasExam
                 subject.year = year; subject.examMode = examMode
                 if profiles.first?.usesSemesters ?? true { subject.semester = semester }
                 if existing == nil { db.insert(subject) }

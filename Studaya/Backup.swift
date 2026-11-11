@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct SubjectData: Codable {
     var id: UUID
     var name: String
+    var code: String?
     var year: Int
     var semester: Int
     var examMode: String
@@ -13,6 +14,7 @@ struct SubjectData: Codable {
     init(_ model: Subject) {
         id = model.id
         name = model.name
+        code = model.code
         year = model.year
         semester = model.semester
         examMode = model.examMode
@@ -23,6 +25,7 @@ struct SubjectData: Codable {
         let model = Subject(name, exam: exam)
         model.id = id
         model.name = name
+        model.code = code ?? ""
         model.year = year
         model.semester = semester
         model.examMode = examMode
@@ -215,18 +218,22 @@ struct AcademicProfileData: Codable {
 struct StudyDeadlineData: Codable {
     var id: UUID
     var subjectID: UUID
+    var chapterID: UUID?
     var title: String
     var kind: String
     var due: Date
+    var hasDueDate: Bool?
     var done: Bool
     var preparationSessions: Int
     var reminderDays: Int
     init(_ model: StudyDeadline) {
         id = model.id
         subjectID = model.subjectID
+        chapterID = model.chapterID
         title = model.title
         kind = model.kind
         due = model.due
+        hasDueDate = model.hasDueDate
         done = model.done
         preparationSessions = model.preparationSessions
         reminderDays = model.reminderDays
@@ -235,9 +242,11 @@ struct StudyDeadlineData: Codable {
         let model = StudyDeadline(subject: subjectID)
         model.id = id
         model.subjectID = subjectID
+        model.chapterID = chapterID
         model.title = title
         model.kind = kind
         model.due = due
+        model.hasDueDate = hasDueDate ?? true
         model.done = done
         model.preparationSessions = preparationSessions
         model.reminderDays = reminderDays
@@ -308,6 +317,7 @@ struct BackupPreferences: Codable {
     var reminderHour: Int
     var reminderEnabled: Bool
     var eventRemindersEnabled: Bool
+    var notificationOptions: StudentNotificationOptions?
     init() {
         let p = StudyPreferences.current
         let rhythm = Availability.saved
@@ -317,6 +327,7 @@ struct BackupPreferences: Codable {
         breakMinutes = p.object(forKey: "breakMinutes") as? Int ?? 5
         weekdays = Array(rhythm.weekdays).sorted(); startHour = rhythm.startHour; endHour = rhythm.endHour; sessionMinutes = rhythm.minutes
         reminderHour = p.object(forKey: "reminderHour") as? Int ?? 18
+        notificationOptions = StudentNotificationOptions.load(p)
         reminderEnabled = p.bool(forKey: "reminderEnabled"); eventRemindersEnabled = p.bool(forKey: "eventRemindersEnabled")
     }
     func apply() {
@@ -325,6 +336,8 @@ struct BackupPreferences: Codable {
         p.set(focusMinutes, forKey: "focusMinutes"); p.set(breakMinutes, forKey: "breakMinutes")
         p.set(reminderHour, forKey: "reminderHour"); p.set(reminderEnabled, forKey: "reminderEnabled")
         p.set(eventRemindersEnabled, forKey: "eventRemindersEnabled")
+        p.set(try? JSONEncoder().encode(notificationOptions ?? StudentNotificationOptions()), forKey: StudentNotificationOptions.key)
+        p.set(Date(), forKey: "notificationAnchor")
         Availability(weekdays: Set(weekdays), startHour: startHour, endHour: endHour, minutes: sessionMinutes).persist()
         for key in ["timerEnd", "timerRemaining", "timerLength", "timerRest", "focusSubject", "focusChapter", "focusSession", "focusReview", "focusRunID"] { p.removeObject(forKey: key) }
     }
@@ -386,13 +399,14 @@ struct StudyBackup: Codable {
         try require(subjects.allSatisfy { (1...8).contains($0.year) && (1...2).contains($0.semester) && !$0.name.isEmpty && dateOK($0.exam) })
         try require(chapters.allSatisfy { subjectIDs.contains($0.subjectID) && ($0.startDate == nil || dateOK($0.startDate!)) && ["Cours", "TD"].contains($0.kind) && (1...100).contains($0.exerciseCount) && (0...$0.exerciseCount).contains($0.exercisesDone) && (1...3).contains($0.confidence) && (1...30).contains($0.target) })
         try require(cards.allSatisfy { chapterIDs.contains($0.chapterID) })
-        try require(deadlines.allSatisfy { subjectIDs.contains($0.subjectID) && dateOK($0.due) && (1...30).contains($0.preparationSessions) && (0...30).contains($0.reminderDays) })
+        try require(deadlines.allSatisfy { item in subjectIDs.contains(item.subjectID) && (item.chapterID == nil || chapters.contains { $0.id == item.chapterID && $0.subjectID == item.subjectID }) && dateOK(item.due) && (1...30).contains(item.preparationSessions) && (0...30).contains(item.reminderDays) })
         try require(reviews.allSatisfy { chapterIDs.contains($0.chapterID) && dateOK($0.due) && [2, 7, 21].contains($0.intervalDays) })
         try require(sessions.allSatisfy { dateOK($0.start) && (1...1440).contains($0.minutes) && ($0.subjectID == nil || subjectIDs.contains($0.subjectID!)) && ($0.deadlineID == nil || deadlineIDs.contains($0.deadlineID!)) && ($0.reviewID == nil || reviewIDs.contains($0.reviewID!)) })
         try require(logs.allSatisfy { dateOK($0.date) && (1...1440).contains($0.minutes) && ($0.subjectID == nil || subjectIDs.contains($0.subjectID!)) && ($0.chapterID == nil || chapterIDs.contains($0.chapterID!)) })
         try require(blocks.allSatisfy { dateOK($0.start) && dateOK($0.end) && dateOK($0.until) && $0.end > $0.start && (0...7).contains($0.weekday) && ($0.weekday == 0 || ($0.end.timeIntervalSince($0.start) <= 86400 && $0.until >= $0.start)) })
         try require(profiles.allSatisfy { (1...8).contains($0.years) && dateOK($0.firstDay) })
         let p = preferences
+        try require(p.notificationOptions?.valid ?? true)
         try require((1...60).contains(p.weeklyHours) && (5...90).contains(p.focusMinutes) && (1...30).contains(p.breakMinutes) && p.weekdays.allSatisfy { (1...7).contains($0) } && (0...22).contains(p.startHour) && p.endHour > p.startHour && p.endHour <= 23 && (5...60).contains(p.sessionMinutes) && (0...23).contains(p.reminderHour))
     }
     static func decode(_ data: Data) throws -> Self {
@@ -480,7 +494,7 @@ struct BackupSettings: View {
                 do {
                     try pending.restore(into: db)
                     self.pending = nil
-                    Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db) }
+                    Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db) }
                     message = "Parcours restauré. Vérifie les autorisations de notifications sur cet appareil."
                 } catch { message = error.localizedDescription }
             }

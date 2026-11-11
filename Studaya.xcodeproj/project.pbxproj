@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		494FFC4148C944B494C7F30B /* Studaya.storekit in Resources */ = {isa = PBXBuildFile; fileRef = D4BF00775C824F949F170D99 /* Studaya.storekit */; };
+		F0C05A00000000000000000D /* StudayaFocusWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F0C05A000000000000000002 /* StudayaFocusWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F0C05A00000000000000000F /* Studaya/FocusActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C05A00000000000000000E /* Studaya/FocusActivityAttributes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -18,19 +20,43 @@
 			remoteGlobalIDString = A0880208C04349DA89AD8E15;
 			remoteInfo = Studaya;
 		};
+		F0C05A00000000000000000B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8045EA593E6945539B330820 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F0C05A000000000000000001;
+			remoteInfo = StudayaFocusWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F0C05A00000000000000000C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F0C05A00000000000000000D /* StudayaFocusWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		66B3C81E4AA04C3D8FFAF6F6 /* StudayaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = StudayaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6804711D08F24129AE77BCAB /* Studaya.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Studaya.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A248032FEA0844F1969EAE30 /* StudayaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = StudayaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4BF00775C824F949F170D99 /* Studaya.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Studaya.storekit; sourceTree = "<group>"; };
+		F0C05A000000000000000002 /* StudayaFocusWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = StudayaFocusWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0C05A00000000000000000E /* Studaya/FocusActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Studaya/FocusActivityAttributes.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0D5A00E65D434B9EB5648BF2 /* StudayaTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = StudayaTests; sourceTree = "<group>"; };
 		153F0C3F14DE4A64BD5BC189 /* StudayaUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = StudayaUITests; sourceTree = "<group>"; };
 		5625957594C74CD99E59B372 /* Studaya */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Studaya; sourceTree = "<group>"; };
+		F0C05A000000000000000003 /* StudayaFocusWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = StudayaFocusWidget; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +81,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F0C05A000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -62,10 +95,12 @@
 			isa = PBXGroup;
 			children = (
 				5625957594C74CD99E59B372 /* Studaya */,
+				F0C05A000000000000000003 /* StudayaFocusWidget */,
 				0D5A00E65D434B9EB5648BF2 /* StudayaTests */,
 				153F0C3F14DE4A64BD5BC189 /* StudayaUITests */,
 				A6619AB657494C4986702A4C /* Products */,
 				D4BF00775C824F949F170D99 /* Studaya.storekit */,
+				E62D25A130A4B64D000C10E7 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -73,10 +108,19 @@
 			isa = PBXGroup;
 			children = (
 				6804711D08F24129AE77BCAB /* Studaya.app */,
+				F0C05A000000000000000002 /* StudayaFocusWidget.appex */,
 				66B3C81E4AA04C3D8FFAF6F6 /* StudayaTests.xctest */,
 				A248032FEA0844F1969EAE30 /* StudayaUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E62D25A130A4B64D000C10E7 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				F0C05A00000000000000000E /* Studaya/FocusActivityAttributes.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -131,10 +175,12 @@
 				4019DFDB304245299C23FC0B /* Sources */,
 				064CE38880864227AC5038F2 /* Frameworks */,
 				4DEDC06686AB4E3C959C7B75 /* Resources */,
+				F0C05A00000000000000000C /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F0C05A00000000000000000A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				5625957594C74CD99E59B372 /* Studaya */,
@@ -143,6 +189,26 @@
 			productName = Studaya;
 			productReference = 6804711D08F24129AE77BCAB /* Studaya.app */;
 			productType = "com.apple.product-type.application";
+		};
+		F0C05A000000000000000001 /* StudayaFocusWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F0C05A000000000000000009 /* Build configuration list for PBXNativeTarget "StudayaFocusWidget" */;
+			buildPhases = (
+				F0C05A000000000000000004 /* Sources */,
+				F0C05A000000000000000005 /* Frameworks */,
+				F0C05A000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F0C05A000000000000000003 /* StudayaFocusWidget */,
+			);
+			name = StudayaFocusWidget;
+			productName = StudayaFocusWidget;
+			productReference = F0C05A000000000000000002 /* StudayaFocusWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -165,6 +231,7 @@
 			projectRoot = "";
 			targets = (
 				A0880208C04349DA89AD8E15 /* Studaya */,
+				F0C05A000000000000000001 /* StudayaFocusWidget */,
 				1D7A10D527804FA39E2FB68D /* StudayaTests */,
 				44C6C0D351A3458380273E8D /* StudayaUITests */,
 			);
@@ -188,6 +255,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		8F4FE32B19F74D28AF38BA2C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F0C05A000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -218,6 +292,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F0C05A000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F0C05A00000000000000000F /* Studaya/FocusActivityAttributes.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -231,6 +313,11 @@
 			target = A0880208C04349DA89AD8E15 /* Studaya */;
 			targetProxy = 67C828F768A54C8590402801 /* PBXContainerItemProxy */;
 		};
+		F0C05A00000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F0C05A000000000000000001 /* StudayaFocusWidget */;
+			targetProxy = F0C05A00000000000000000B /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -241,6 +328,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U4X7CC9N42;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Studaya-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Studaya utilise l’appareil photo pour lire le planning que tu souhaites importer dans une matière.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -299,6 +387,7 @@
 				DEVELOPMENT_TEAM = U4X7CC9N42;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Studaya-Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Studaya utilise l’appareil photo pour lire le planning que tu souhaites importer dans une matière.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -354,6 +443,52 @@
 			};
 			name = Debug;
 		};
+		F0C05A000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U4X7CC9N42;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "StudayaFocusWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Studaya Focus";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.studaya.ios.focus;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F0C05A000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = U4X7CC9N42;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "StudayaFocusWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Studaya Focus";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = app.studaya.ios.focus;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -389,6 +524,15 @@
 			buildConfigurations = (
 				AE8991DDAB1542FE8809413B /* Debug */,
 				2766D1363618415B88A71190 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F0C05A000000000000000009 /* Build configuration list for PBXNativeTarget "StudayaFocusWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F0C05A000000000000000007 /* Debug */,
+				F0C05A000000000000000008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

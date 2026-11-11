@@ -4,6 +4,8 @@ import Charts
 
 struct SessionRow: View {
     @Bindable var session: Session
+    @Query private var subjects: [Subject]
+    @Query private var chapters: [Chapter]
     @State private var focus = false
     @State private var reschedule = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -13,7 +15,7 @@ struct SessionRow: View {
                 Image(systemName: session.done ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 25, weight: .medium)).foregroundStyle(session.done ? StudyDesign.mint : StudyDesign.accent.opacity(0.45))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(session.title).font(.headline).foregroundStyle(StudyDesign.ink).strikethrough(session.done, color: StudyDesign.mint)
+                    Text(StudyLabels.session(session, subjects: subjects, chapters: chapters)).font(.headline).foregroundStyle(StudyDesign.ink).strikethrough(session.done, color: StudyDesign.mint)
                     Text("\(session.activity) · \(session.start.formatted(date: .omitted, time: .shortened)) · \(session.minutes) min").font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
@@ -50,7 +52,7 @@ struct Today: View {
         chapters.filter { !$0.completed }.sorted { lhs, rhs in
             func due(_ unit: Chapter) -> Date {
                 let subject = subjects.first { $0.id == unit.subjectID }
-                let deadline = deadlines.filter { $0.subjectID == unit.subjectID && !$0.done }.map(\.due).min() ?? .distantFuture
+                let deadline = deadlines.filter { $0.subjectID == unit.subjectID && !$0.done && $0.hasDueDate }.map(\.due).min() ?? .distantFuture
                 return min(deadline, subject?.hasExam == true ? subject!.exam : .distantFuture)
             }
             return (due(lhs), lhs.confidence, lhs.name) < (due(rhs), rhs.confidence, rhs.name)
@@ -112,7 +114,7 @@ struct Today: View {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text(unit.name).font(.headline).foregroundStyle(StudyDesign.ink)
                                     Text(StudyCoach.advice(unit, sessions: sessions)).font(.subheadline).foregroundStyle(.secondary)
-                                    StudyPill(title: unit.kind, color: StudyDesign.mint)
+                                    StudyPill(title: (subjects.first { $0.id == unit.subjectID }?.displayCode ?? "") + " · " + unit.kind, color: StudyDesign.mint)
                                 }
                                 Spacer(minLength: 0)
                                 Image(systemName: "chevron.right").font(.caption.bold()).foregroundStyle(.secondary)
@@ -139,7 +141,7 @@ struct Today: View {
                         VStack(alignment: .leading, spacing: 14) {
                             HStack {
                                 StudyBadge(symbol: "graduationcap.fill", color: StudyDesign.coral)
-                                VStack(alignment: .leading) { Text(next.name).font(.headline); Text(next.exam, format: .dateTime.day().month(.wide)).font(.subheadline).foregroundStyle(.secondary) }
+                                VStack(alignment: .leading) { Text(next.displayCode).font(.headline); Text(next.exam, format: .dateTime.day().month(.wide)).font(.subheadline).foregroundStyle(.secondary) }
                                 Spacer()
                                 let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: .now), to: Calendar.current.startOfDay(for: next.exam)).day ?? 0
                                 StudyPill(title: days == 0 ? "Aujourd’hui" : "J−\(days)", color: StudyDesign.coral)
@@ -158,7 +160,7 @@ struct Today: View {
                 if today.isEmpty, let session = sessions.first(where: { !$0.done && $0.start > .now }) {
                     StudySection(title: "Prochaine séance") {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text(session.title).font(.headline)
+                            Text(StudyLabels.session(session, subjects: subjects, chapters: chapters)).font(.headline)
                             Text(session.start, format: .dateTime.weekday(.wide).day().month().hour().minute()).foregroundStyle(.secondary)
                             Button("Voir le planning") { tab = 1 }
                         }.studyCard()
@@ -272,8 +274,8 @@ struct Planner: View {
                     if let chapter = chapters.first(where: { $0.id == review.chapterID }) { ReviewRow(review: review, chapter: chapter) }
                 }
                 ForEach(subjects.filter { $0.hasExam && calendar.isDate($0.exam, inSameDayAs: date) }) { Label("Examen · " + $0.name, systemImage: "graduationcap") }
-                ForEach(deadlines.filter { !$0.done && (calendar.isDate($0.due, inSameDayAs: date) || calendar.isDate($0.reminderDate, inSameDayAs: date)) }) { item in
-                    if calendar.isDate(item.reminderDate, inSameDayAs: date) { Label("Rappel · " + item.title, systemImage: "bell.badge") }
+                ForEach(deadlines.filter { !$0.done && $0.hasDueDate && (calendar.isDate($0.due, inSameDayAs: date) || calendar.isDate($0.reminderDate, inSameDayAs: date)) }) { item in
+                    if calendar.isDate(item.reminderDate, inSameDayAs: date) { Label("Rappel · " + (subjects.first { $0.id == item.subjectID }?.compactTitle(item.title) ?? item.title), systemImage: "bell.badge") }
                     DeadlineRow(item: item)
                 }
                 ForEach(ReminderPlan.make(subjects: subjects, deadlines: [], chapters: [], reviews: [], now: .distantPast).filter { calendar.isDate($0.date, inSameDayAs: date) && !$0.id.hasSuffix(".0") }, id: \.id) { reminder in
@@ -293,7 +295,7 @@ struct Planner: View {
     }
     func marked(_ day: Date) -> Bool {
         ReminderPlan.make(subjects: subjects, deadlines: deadlines, chapters: chapters, reviews: reviews, now: .distantPast).contains { calendar.isDate($0.date, inSameDayAs: day) } || dailyReminder || subjects.contains { $0.hasExam && calendar.isDate($0.exam, inSameDayAs: day) }
-        || deadlines.contains { !$0.done && (calendar.isDate($0.due, inSameDayAs: day) || calendar.isDate($0.reminderDate, inSameDayAs: day)) }
+        || deadlines.contains { !$0.done && $0.hasDueDate && (calendar.isDate($0.due, inSameDayAs: day) || calendar.isDate($0.reminderDate, inSameDayAs: day)) }
     }
     func shift(_ days: Int) { date = calendar.date(byAdding: .day, value: days, to: date)! }
 }
@@ -325,7 +327,7 @@ struct Stats: View {
                         value + min(unit.requiredSessions, sessions.filter { $0.chapterID == unit.id && $0.done }.count)
                     }
                     VStack(alignment: .leading) {
-                        Text(subject.name).font(.headline)
+                        Text(subject.displayCode).font(.headline)
                         ProgressView(value: Double(finished), total: Double(max(1, total)))
                         Text("\(finished) / \(total) séances").font(.caption)
                     }

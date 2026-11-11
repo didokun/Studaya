@@ -76,3 +76,17 @@ extension View {
         }
     }
 }
+
+struct SubjectCodeField: View {
+    let name: String
+    @Binding var code: String
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            TextField("Code (facultatif)", text: $code, prompt: Text(SubjectCode.initials(name)))
+                .textInputAutocapitalization(.characters).autocorrectionDisabled()
+                .accessibilityIdentifier("subject.code")
+            Text("Code utilisé : " + SubjectCode.resolve(code, name: name) + " · initiales automatiques si vide")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+    }
+}

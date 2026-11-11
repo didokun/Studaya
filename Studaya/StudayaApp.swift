@@ -7,6 +7,7 @@ extension Color {
 }
 
 @main struct StudayaApp: App {
+    @UIApplicationDelegateAdaptor(StudyAppDelegate.self) private var appDelegate
     private let storage: Result<ModelContainer, Error>
     private let preferences: UserDefaults
     init() {
@@ -54,11 +55,21 @@ struct Home: View {
     @Query var subjects: [Subject]
     @Query var chapters: [Chapter]
     @Query var reviews: [SpacedReview]
+    @Query var logs: [FocusLog]
+    @AppStorage("timerEnd") private var focusEnd = 0.0
+    @AppStorage("timerRemaining") private var focusRemaining = 0
+    @AppStorage("timerLength") private var focusLength = 0
+    @AppStorage("timerRest") private var focusRest = false
+    @AppStorage("focusRunID") private var focusRunID = ""
+    private var focusRevision: String { "\(focusEnd):\(focusRemaining):\(focusLength):\(focusRest):\(focusRunID)" }
+
     @AppStorage("eventRemindersEnabled") private var eventRemindersEnabled = false
     var reminderRevision: String {
-        String(eventRemindersEnabled) + subjects.map { "\($0.id):\($0.name):\($0.hasExam):\($0.exam)" }.sorted().joined()
-        + deadlines.map { "\($0.id):\($0.title):\($0.kind):\($0.due):\($0.done):\($0.reminderDays)" }.sorted().joined()
-        + chapters.map { "\($0.id):\($0.name):\($0.completed)" }.sorted().joined()
+        String(eventRemindersEnabled) + subjects.map { "\($0.id):\($0.name):\($0.code):\($0.hasExam):\($0.exam)" }.sorted().joined()
+        + deadlines.map { "\($0.id):\($0.chapterID?.uuidString ?? ""):\($0.title):\($0.kind):\($0.due):\($0.hasDueDate):\($0.done):\($0.reminderDays)" }.sorted().joined()
+        + chapters.map { "\($0.id):\($0.name):\($0.completed):\($0.exercisesDone):\($0.exerciseCount)" }.sorted().joined()
+        + sessions.map { "\($0.id):\($0.start):\($0.done):\($0.title)" }.sorted().joined()
+        + logs.map { "\($0.id):\($0.date)" }.sorted().joined()
         + reviews.map { "\($0.id):\($0.due):\($0.done)" }.sorted().joined()
     }
     var body: some View {
@@ -81,9 +92,20 @@ struct Home: View {
         .fullScreenCover(isPresented: Binding(get: { profiles.isEmpty && !settings }, set: { _ in })) {
             AcademicSetup { tab = 0 }
         }
+        .onReceive(NotificationRouter.shared.$tab.compactMap { $0 }) { tab = $0; settings = false }
+        .onOpenURL { url in if url.scheme == "studaya" && url.host == "focus" { tab = 2; settings = false } }
+        .task(id: focusRevision) { await FocusCompanion.shared.sync(db, requestPermission: focusEnd > 0) }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { now in
+            if phase == .active && focusEnd > 0 && focusEnd <= now.timeIntervalSince1970 {
+                do { try FocusCompanion.shared.reconcile(db, now: now) } catch { message = error.localizedDescription }
+            }
+        }
         .task(id: reminderRevision) { await EventReminders.shared.refresh(db) }
         .onChange(of: phase, initial: true) { _, value in
-            if value == .active { Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db) } }
+            if value == .active {
+                do { try FocusCompanion.shared.reconcile(db) } catch { message = error.localizedDescription }
+                Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db) }
+            }
             if value == .active && sessions.contains(where: { !$0.done && !$0.pinned && $0.start.addingTimeInterval(Double($0.minutes * 60)) <= .now }) {
                 do { try Scheduler.rebuild(db) } catch { message = error.localizedDescription }
             }

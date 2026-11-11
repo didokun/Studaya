@@ -47,7 +47,7 @@ enum StudyError: LocalizedError {
            date < Calendar.current.startOfDay(for: start) { throw StudyError.invalid("La séance doit avoir lieu après la date de début du cours ou TD.") }
         let subjectID = session.subjectID ?? chapters.first(where: { $0.id == session.chapterID })?.subjectID
         var due: Date?
-        if let deadlineID = session.deadlineID { due = try db.fetch(FetchDescriptor<StudyDeadline>()).first { $0.id == deadlineID }?.due }
+        if let deadlineID = session.deadlineID { due = try db.fetch(FetchDescriptor<StudyDeadline>()).first { $0.id == deadlineID && $0.hasDueDate }?.due }
         else if let subject = subjects.first(where: { $0.id == subjectID }), subject.hasExam { due = subject.exam }
         if let due, limit > due { throw StudyError.invalid("La séance doit se terminer avant son échéance.") }
         session.start = date; session.pinned = true
@@ -58,6 +58,8 @@ enum StudyError: LocalizedError {
         for x in try db.fetch(FetchDescriptor<SpacedReview>()) where x.chapterID == chapter.id { db.delete(x) }
         for x in try db.fetch(FetchDescriptor<Session>()) where x.chapterID == chapter.id { db.delete(x) }
         for x in try db.fetch(FetchDescriptor<FocusLog>()) where x.chapterID == chapter.id { x.chapterID = nil; x.sessionID = nil }
+        let subjectName = try db.fetch(FetchDescriptor<Subject>()).first { $0.id == chapter.subjectID }?.name ?? "Matière"
+        for item in try db.fetch(FetchDescriptor<StudyDeadline>()) where item.chapterID == chapter.id { item.chapterID = nil; item.title = subjectName }
         db.delete(chapter)
     }
     static func deleteDeadline(_ item: StudyDeadline, db: ModelContext) throws {

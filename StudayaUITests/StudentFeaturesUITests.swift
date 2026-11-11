@@ -4,6 +4,97 @@ final class StudentFeaturesUITests: XCTestCase {
     @MainActor func reveal(_ element: XCUIElement, in app: XCUIApplication) {
         for _ in 0..<7 { if element.isHittable { return }; app.swipeUp() }
     }
+    @MainActor func testEventsSelectTDWithoutTypingTitles() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test", "-AppleLanguages", "(fr)"]
+        app.launch()
+        app.buttons["Commencer"].tap()
+        app.textFields["Formation"].tap(); app.textFields["Formation"].typeText("Licence\n")
+        app.buttons["Continuer"].tap()
+        app.buttons["Continuer"].tap()
+        app.buttons["Continuer"].tap()
+        app.buttons["Plus tard"].tap()
+        app.buttons["Continuer"].tap()
+        app.buttons["Valider mon profil"].tap(); app.buttons["Continuer gratuitement"].tap()
+        app.tabBars.buttons["Matières"].tap()
+        app.buttons["Créer mon Parcours de révision"].tap()
+        app.textFields["Nom de la matière"].tap(); app.textFields["Nom de la matière"].typeText("Maths\n")
+        app.textFields["subject.code"].tap(); app.textFields["subject.code"].typeText("MTH\n")
+        app.buttons["Continuer"].tap()
+        app.textFields["Nom du cours ou TD"].tap(); app.textFields["Nom du cours ou TD"].typeText("Intégrales\n")
+        app.segmentedControls.buttons["TD"].tap()
+        app.buttons["Continuer"].tap()
+        app.buttons["Ajouter une présentation"].tap()
+        XCTAssertFalse(app.textFields["Titre"].exists)
+        app.buttons["event.unit"].tap()
+        app.buttons["TD · Intégrales"].tap()
+        XCTAssertTrue(app.buttons["Continuer"].isEnabled)
+        app.buttons["Continuer"].tap()
+        app.buttons["Ajouter un contrôle"].tap()
+        XCTAssertFalse(app.textFields["Titre"].exists)
+        XCTAssertTrue(app.buttons["Continuer"].isEnabled)
+        app.buttons["Continuer"].tap()
+        XCTAssertTrue(app.switches["Date de l’examen final connue"].exists)
+        XCTAssertFalse(app.textFields["Titre"].exists)
+        app.buttons["Continuer"].tap()
+        XCTAssertTrue(app.staticTexts["Présentation · Intégrales"].exists)
+        XCTAssertTrue(app.staticTexts["Contrôle · MTH"].exists)
+    }
+    @MainActor func testSubjectCodeCanBeCreatedAndEdited() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test", "-AppleLanguages", "(fr)"]
+        app.launch()
+        app.buttons["Commencer"].tap()
+        app.textFields["Formation"].tap(); app.textFields["Formation"].typeText("Licence\n")
+        app.buttons["Continuer"].tap(); app.buttons["Continuer"].tap(); app.buttons["Continuer"].tap()
+        app.buttons["Plus tard"].tap(); app.buttons["Continuer"].tap()
+        app.buttons["Valider mon profil"].tap(); app.buttons["Continuer gratuitement"].tap()
+        app.tabBars.buttons["Matières"].tap()
+        app.buttons["Ajouter une matière"].tap()
+        app.textFields["Nom de la matière"].tap(); app.textFields["Nom de la matière"].typeText("Analyse numerique\n")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Code utilisé : AN ·")).firstMatch.exists)
+        app.textFields["subject.code"].tap(); app.textFields["subject.code"].typeText("ANA\n")
+        app.buttons["Enregistrer"].tap()
+        let row = app.buttons.containing(.staticText, identifier: "Analyse numerique").firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5)); row.tap()
+        app.buttons["Modifier la matière"].tap()
+        let field = app.textFields["subject.code"]
+        XCTAssertEqual(field.value as? String, "ANA")
+        field.tap(); field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "AN2\n")
+        app.buttons["Enregistrer"].tap()
+        XCTAssertTrue(app.navigationBars["AN2"].waitForExistence(timeout: 5))
+    }
+    @MainActor func testFocusSurvivesBackgroundAndNotificationSettingsAreAvailable() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-test", "-AppleLanguages", "(fr)"]
+        app.launch()
+        app.buttons["Commencer"].tap()
+        app.textFields["Formation"].tap(); app.textFields["Formation"].typeText("Licence\n")
+        app.buttons["Continuer"].tap(); app.buttons["Continuer"].tap(); app.buttons["Continuer"].tap()
+        app.buttons["Plus tard"].tap(); app.buttons["Continuer"].tap()
+        app.buttons["Valider mon profil"].tap(); app.buttons["Continuer gratuitement"].tap()
+        app.tabBars.buttons["Focus"].tap(); app.buttons["Commencer"].tap()
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let allow = springboard.alerts.buttons.matching(NSPredicate(format: "label IN %@", ["Autoriser", "Allow"])).firstMatch
+        if allow.waitForExistence(timeout: 4) { allow.tap() }
+        XCTAssertTrue(app.buttons["Mettre en pause"].waitForExistence(timeout: 5))
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        XCTAssertTrue(app.buttons["Mettre en pause"].waitForExistence(timeout: 5))
+        app.buttons["Mettre en pause"].tap()
+        XCTAssertTrue(app.buttons["Reprendre"].exists)
+        app.buttons["Réinitialiser"].tap()
+        app.buttons["Réglages"].tap(); app.buttons["Rappels et notifications"].tap()
+        XCTAssertTrue(app.switches["Planning du matin"].exists)
+        XCTAssertTrue(app.switches["Bilan du soir"].exists)
+        XCTAssertTrue(app.switches["À l’heure des séances"].exists)
+        let focus = app.switches["Fin de Focus, début et fin du repos"]
+        reveal(focus, in: app)
+        XCTAssertTrue(focus.exists)
+    }
     @MainActor func testTDArchiveAndAvailabilityAndBackupScreens() {
         continueAfterFailure = false
         let app = XCUIApplication()

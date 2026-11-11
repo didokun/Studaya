@@ -21,6 +21,7 @@ struct ImportedPlanningEntry: Identifiable {
     var verified = false
     var sessions = 2
     var exercises = 5
+    var unitID: UUID?
 }
 struct PlanningPhotoText: Sendable {
     let text: String
@@ -181,13 +182,13 @@ enum PlanningPhotoOCR {
     static func validate(_ entries: [ImportedPlanningEntry]) throws -> [ImportedPlanningEntry] {
         let selected = entries.filter(\.selected)
         guard !selected.isEmpty, selected.count <= 50 else { throw StudyError.invalid("Sélectionne entre 1 et 50 éléments à importer.") }
-        guard selected.allSatisfy({ !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && $0.date != nil && $0.date!.timeIntervalSince1970.isFinite && $0.verified && (1...30).contains($0.sessions) && (1...100).contains($0.exercises) }) else {
-            throw StudyError.invalid("Chaque élément sélectionné doit avoir un titre, une date et ta confirmation de vérification. Vérifie aussi l’heure des échéances.")
+        guard selected.allSatisfy({ (!$0.kind.isUnit || !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) && ($0.date?.timeIntervalSince1970.isFinite ?? true) && (1...30).contains($0.sessions) && ($0.kind != .td || (1...100).contains($0.exercises)) }) else {
+            throw StudyError.invalid("Nomme chaque cours ou TD sélectionné et vérifie les nombres de séances et d’exercices. Les dates sont facultatives.")
         }
         guard selected.filter({ $0.kind == .exam }).count <= 1 else { throw StudyError.invalid("Ne sélectionne qu’un examen final pour cette matière.") }
         let keys = selected.map { entry in
-            let date = entry.kind.isUnit ? Calendar.current.startOfDay(for: entry.date!) : entry.date!
-            return "\(entry.kind.rawValue):\(entry.title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()):\(date.timeIntervalSince1970)"
+            let date = entry.date.map { entry.kind.isUnit ? Calendar.current.startOfDay(for: $0) : $0 }
+            return "\(entry.kind.rawValue):\(entry.unitID?.uuidString ?? "matiere"):\(entry.kind.isUnit ? entry.title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() : ""):\(date?.timeIntervalSince1970.description ?? "sans-date")"
         }
         guard Set(keys).count == keys.count else { throw StudyError.invalid("Le brouillon contient des doublons. Décoche les éléments répétés.") }
         return selected
@@ -199,36 +200,52 @@ enum PlanningPhotoOCR {
         guard subjects.contains(where: { $0.id == subject.id }) else { throw StudyError.invalid("Cette matière n’existe plus.") }
         let chapters = try db.fetch(FetchDescriptor<Chapter>()).filter { $0.subjectID == subject.id }
         let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>()).filter { $0.subjectID == subject.id }
+        let importedUnits = rows.filter { $0.kind.isUnit }
+        let chapterIDs = Dictionary(uniqueKeysWithValues: importedUnits.map { ($0.id, UUID()) })
+        func linkedName(_ row: ImportedPlanningEntry) -> String? {
+            guard row.kind == .presentation || row.kind == .control, let id = row.unitID else { return nil }
+            return chapters.first { $0.id == id }?.name ?? importedUnits.first { $0.id == id }?.title
+        }
+        func name(_ row: ImportedPlanningEntry) -> String {
+            row.kind.isUnit ? row.title.trimmingCharacters(in: .whitespacesAndNewlines) : linkedName(row) ?? subject.name
+        }
         for row in rows {
-            let name = row.title.trimmingCharacters(in: .whitespacesAndNewlines)
-            if row.kind.isUnit, chapters.contains(where: { $0.kind == row.kind.rawValue && $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame && $0.startDate.map { Calendar.current.isDate($0, inSameDayAs: row.date!) } == true }) {
+            if (row.kind == .presentation || row.kind == .control), row.unitID != nil, linkedName(row) == nil {
+                throw StudyError.invalid("Choisis un cours ou TD de cette matière, ou sélectionne Toute la matière.")
+            }
+            let name = name(row)
+            if row.kind.isUnit, chapters.contains(where: { $0.kind == row.kind.rawValue && $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.startDate == nil && row.date == nil) || ($0.startDate != nil && row.date != nil && Calendar.current.isDate($0.startDate!, inSameDayAs: row.date!))) }) {
                 throw StudyError.invalid("\(name) existe déjà à cette date dans la matière.")
             }
-            if !row.kind.isUnit && row.kind != .exam, deadlines.contains(where: { $0.kind == row.kind.rawValue && $0.title.localizedCaseInsensitiveCompare(name) == .orderedSame && $0.due == row.date! }) { throw StudyError.invalid("Cette échéance existe déjà : \(name).") }
+            if !row.kind.isUnit && (row.kind != .exam || row.date == nil), deadlines.contains(where: { $0.kind == row.kind.rawValue && $0.title.localizedCaseInsensitiveCompare(name) == .orderedSame && (($0.hasDueDate && row.date != nil && $0.due == row.date!) || (!$0.hasDueDate && row.date == nil)) }) { throw StudyError.invalid("Cette échéance existe déjà : \(name).") }
         }
-        if let exam = rows.first(where: { $0.kind == .exam }) {
+        if let exam = rows.first(where: { $0.kind == .exam }), let examDate = exam.date {
             guard !subject.hasExam || replaceExam else { throw StudyError.invalid("Confirme le remplacement de la date d’examen existante.") }
             let starts = chapters.compactMap(\.startDate) + rows.filter { $0.kind.isUnit }.compactMap(\.date)
-            guard starts.allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: exam.date!) }) else { throw StudyError.invalid("L’examen final doit avoir lieu après le début des cours et TD.") }
+            guard starts.allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: examDate) }) else { throw StudyError.invalid("L’examen final doit avoir lieu après le début des cours et TD.") }
         } else if subject.hasExam {
-            guard rows.filter({ $0.kind.isUnit }).allSatisfy({ Calendar.current.startOfDay(for: $0.date!) < Calendar.current.startOfDay(for: subject.exam) }) else { throw StudyError.invalid("Un cours ou TD commence après l’examen final existant. Corrige la date avant l’import.") }
+            guard rows.filter({ $0.kind.isUnit }).compactMap(\.date).allSatisfy({ Calendar.current.startOfDay(for: $0) < Calendar.current.startOfDay(for: subject.exam) }) else { throw StudyError.invalid("Un cours ou TD commence après l’examen final existant. Corrige la date avant l’import.") }
         }
         do {
             let previous = TimelineOrder.chapters(chapters)
             for (position, chapter) in previous.enumerated() { chapter.timelineIndex = position }
             var position = previous.count
             for row in rows {
-                let title = row.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                let title = name(row)
                 if row.kind.isUnit {
                     let chapter = Chapter(title, subject: subject.id, target: row.sessions)
+                    chapter.id = chapterIDs[row.id]!
                     chapter.timelineIndex = position; position += 1
                     chapter.kind = row.kind.rawValue; chapter.startDate = row.date; chapter.exerciseCount = row.exercises
                     chapter.notes = row.evidence.isEmpty ? "" : "Source · planning importé\n" + row.evidence
                     db.insert(chapter)
-                } else if row.kind == .exam { subject.hasExam = true; subject.exam = row.date! }
+                } else if row.kind == .exam, let date = row.date { subject.hasExam = true; subject.exam = date }
                 else {
                     let item = StudyDeadline(subject: subject.id)
-                    item.kind = row.kind.rawValue; item.title = title; item.due = row.date!; item.preparationSessions = row.sessions
+                    if row.kind == .presentation || row.kind == .control {
+                        item.chapterID = row.unitID.flatMap { id in chapterIDs[id] ?? chapters.first { $0.id == id }?.id }
+                    }
+                    item.kind = row.kind.rawValue; item.title = title; item.hasDueDate = row.date != nil; if let date = row.date { item.due = date }; item.preparationSessions = row.sessions
                     db.insert(item)
                 }
             }

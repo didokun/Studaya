@@ -17,9 +17,11 @@ struct PhotoPlanningImporter: View {
     let subject: Subject?
     var draftSubjectName: String? = nil
     var draftExamDate: Date? = nil
+    var draftUnits: [PlanningUnitOption] = []
     var onDraftImport: (([ImportedPlanningEntry], Bool) throws -> Void)? = nil
     private var subjectName: String { subject?.name ?? draftSubjectName ?? "" }
     private var existingExam: Date? { if let subject, subject.hasExam { return subject.exam }; return draftExamDate }
+    @Query(sort: \Chapter.name) private var chapters: [Chapter]
     @Environment(\.modelContext) private var db
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var membership = Membership.shared
@@ -42,13 +44,14 @@ struct PhotoPlanningImporter: View {
             Section(subjectName) {
                 Text("Photographie un planning de cette matière ou sélectionne une image. La photo est analysée sur ton iPhone. Rien n’est ajouté sans ta validation.")
                 PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
-                    Label("Choisir une photo du planning", systemImage: "photo")
+                    Label("Galerie", systemImage: "photo")
                 }.disabled(busy)
                 Button("Prendre une photo", systemImage: "camera") { takePhoto() }
                     .disabled(busy || !UIImagePickerController.isSourceTypeAvailable(.camera))
                 if !UIImagePickerController.isSourceTypeAvailable(.camera) { Text("Appareil photo indisponible ici. Tu peux choisir une image.").font(.footnote).foregroundStyle(.secondary) }
                 if let preview { Image(uiImage: preview).resizable().scaledToFit().frame(maxHeight: 220).accessibilityLabel("Photo du planning sélectionnée") }
             }
+            if !status.isEmpty { Section { Text(status).font(.footnote).foregroundStyle(.secondary) } }
             if busy { Section { ProgressView("Lecture et analyse du planning…"); Button("Annuler l’analyse") { operationID = UUID(); work?.cancel(); busy = false; status = "Analyse annulée. Aucun élément ajouté." } } }
             if !entries.isEmpty {
                 Section("Prévisualisation · \(selectedCount) sélectionné(s)") {
@@ -63,7 +66,11 @@ struct PhotoPlanningImporter: View {
                         }
                     } card: { id in
                         if let i = entries.firstIndex(where: { $0.id == id }) {
-                            PhotoPlanningEntryCard(entry: $entries[i]) {
+                            PhotoPlanningEntryCard(entry: $entries[i], units:
+                                chapters.filter { $0.subjectID == subject?.id }.map { PlanningUnitOption(id: $0.id, name: $0.name, kind: $0.kind) }
+                                + draftUnits
+                                + entries.filter { $0.selected && $0.kind.isUnit && !$0.title.isEmpty }.map { PlanningUnitOption(id: $0.id, name: $0.title, kind: $0.kind.rawValue) }
+                            ) {
                                 entries.removeAll { $0.id == id }
                             }
                         }
@@ -71,17 +78,25 @@ struct PhotoPlanningImporter: View {
                     Button("Ajouter un élément manuellement", systemImage: "plus") { entries.append(ImportedPlanningEntry()) }
                         .disabled(busy || entries.count >= 50)
                 }
-                if let existingExam, entries.contains(where: { $0.selected && $0.kind == .exam }) {
+                if let existingExam, entries.contains(where: { $0.selected && $0.kind == .exam && $0.date != nil }) {
                     Section("Examen final existant") {
                         Text(existingExam, format: .dateTime.day().month().year())
                         Toggle("Remplacer cette date par celle de la photo", isOn: $replaceExam)
                     }
                 }
-                Section {
-                    Button(onDraftImport == nil ? "Ajouter les éléments vérifiés au planning" : "Ajouter au Parcours de révision") { save() }
-                        .disabled(busy || saved || (try? PhotoPlanning.validate(entries)) == nil)
-                    Text("Les cases de vérification sont obligatoires. L’import ne supprime pas les cours ou TD existants.").font(.footnote).foregroundStyle(.secondary)
+
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if !entries.isEmpty {
+                VStack(spacing: 6) {
+                    Button(onDraftImport == nil ? "Ajouter à la matière" : "Ajouter au parcours") { save() }
+                        .buttonStyle(Primary())
+                        .disabled(busy || saved || selectedCount == 0)
+                    Text("\(selectedCount) élément(s) sélectionné(s) · dates facultatives")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
+                .padding().background(.regularMaterial)
             }
         }
         .studyScreen()
@@ -190,8 +205,8 @@ struct PhotoPlanningImporter: View {
 
 private struct PhotoPlanningEntryCard: View {
     @Binding var entry: ImportedPlanningEntry
+    var units: [PlanningUnitOption]
     let onDelete: () -> Void
-    private var revision: String { "\(entry.title)|\(entry.kind)|\(String(describing: entry.date))|\(entry.sessions)|\(entry.exercises)" }
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
@@ -204,8 +219,15 @@ private struct PhotoPlanningEntryCard: View {
                 .buttonStyle(.borderless)
                 .accessibilityLabel("Supprimer cet élément")
             }
-            TextField("Titre du cours, TD ou échéance", text: $entry.title)
-                .textFieldStyle(StudyTextFieldStyle(boxed: true))
+            if entry.kind.isUnit {
+                TextField("Titre du cours ou TD", text: $entry.title)
+                    .textFieldStyle(StudyTextFieldStyle(boxed: true))
+            } else if entry.kind == .presentation || entry.kind == .control {
+                Picker("Cours ou TD lié", selection: $entry.unitID) {
+                    Text("Toute la matière").tag(nil as UUID?)
+                    ForEach(units) { unit in Text(unit.kind + " · " + unit.name).tag(Optional(unit.id)) }
+                }
+            } else { Text("Examen final de la matière").font(.subheadline) }
             Picker("Type", selection: $entry.kind) {
                 ForEach(ImportedKind.allCases) { Text($0.rawValue).tag($0) }
             }
@@ -217,7 +239,7 @@ private struct PhotoPlanningEntryCard: View {
                     DatePicker("", selection: Binding(get: { entry.date ?? .now }, set: { entry.date = $0 }), displayedComponents: entry.kind.isUnit ? [.date] : [.date, .hourAndMinute])
                         .labelsHidden()
                 } else {
-                    Text("Date à préciser").font(.caption).foregroundStyle(.orange)
+                    Text("Sans date").font(.caption).foregroundStyle(.secondary)
                 }
             }
             if entry.kind != .exam {
@@ -228,12 +250,9 @@ private struct PhotoPlanningEntryCard: View {
                 Stepper("\(entry.exercises) exercices", value: $entry.exercises, in: 1...100)
                     .font(.subheadline)
             }
-            Toggle("J’ai vérifié cet élément", isOn: $entry.verified)
-                .font(.footnote)
-                .tint(StudyDesign.mint)
+
         }
         .padding(.vertical, 4)
-        .onChange(of: revision) { _, _ in entry.verified = false }
     }
 }
 

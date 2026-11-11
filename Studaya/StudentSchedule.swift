@@ -107,6 +107,8 @@ struct UnavailabilitySettings: View {
 
 struct SessionReschedule: View {
     let session: Session
+    @Query private var subjects: [Subject]
+    @Query private var chapters: [Chapter]
     @Environment(\.modelContext) private var db
     @Environment(\.dismiss) private var dismiss
     @State private var date = Date()
@@ -114,7 +116,7 @@ struct SessionReschedule: View {
     var body: some View {
         NavigationStack {
             Form {
-                Text(session.title)
+                Text(StudyLabels.session(session, subjects: subjects, chapters: chapters))
                 DatePicker("Nouveau créneau", selection: $date, in: Date.now...)
                 Text("Ce créneau sera conservé lors des recalculs du planning.").font(.footnote)
                 Button("Reporter la séance") {

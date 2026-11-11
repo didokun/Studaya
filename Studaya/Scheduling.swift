@@ -39,7 +39,7 @@ enum Scheduler {
     @discardableResult static func rebuild(_ db: ModelContext, availability a: Availability = .saved,
                                            now: Date = .now, calendar: Calendar = .current) throws -> Int {
         let subjects = try db.fetch(FetchDescriptor<Subject>())
-        let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>()).filter { !$0.done }
+        let deadlines = try db.fetch(FetchDescriptor<StudyDeadline>()).filter { !$0.done && $0.hasDueDate }
         let chapters = try db.fetch(FetchDescriptor<Chapter>())
         let sessions = try db.fetch(FetchDescriptor<Session>())
         func relevant(_ session: Session) -> Bool {
