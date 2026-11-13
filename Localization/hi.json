@@ -644,5 +644,11 @@
   "notification.deadline.title": "समयसीमा · %1$@",
   "notification.review.title": "अंतराल समीक्षा · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld मि. एक पहला व्यायाम आपको आरंभ करने के लिए पर्याप्त है।"
+  "notification.session.body": "%1$@ · %2$lld मि. एक पहला व्यायाम आपको आरंभ करने के लिए पर्याप्त है।",
+  "Publicité": "विज्ञापन",
+  "Choix publicitaires": "विज्ञापन विकल्प",
+  "Impossible d’ouvrir les choix publicitaires": "विज्ञापन विकल्प नहीं खुल सके",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob मुफ़्त संस्करण के वयस्क उपयोगकर्ताओं को उनकी गोपनीयता पसंद के अनुसार विज्ञापन दिखाता है।",
+  "Âge : non renseigné": "उम्र: नहीं बताई गई",
+  "Âge : %lld ans": "उम्र: %lld वर्ष"
 }

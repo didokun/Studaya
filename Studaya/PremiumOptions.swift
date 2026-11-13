@@ -122,6 +122,8 @@ struct PremiumOptions: View {
                         Button(String(localized: "Restore purchases")) { Task { await restore() } }.disabled(busy)
                     }
                     if let message { Text(message).font(.footnote) }
+                    Link(String(localized: "Données et confidentialité"), destination: URL(string: "https://talinha.com/studaya/privacy/")!)
+                        .font(.footnote)
                     Link(String(localized: "Apple Standard EULA"), destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
                         .font(.footnote)
                 }.padding(.vertical, 12).frame(maxWidth: .infinity, alignment: .leading)

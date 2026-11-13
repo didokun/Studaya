@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Выберите существующий курс или учебное пособие для мероприятий, связанных с %1$@.";
 "Choisis un créneau futur pour une séance à faire." = "Выберите будущий слот для проведения сеанса.";
 "Choisis une matière pour cet import." = "Выберите материал для этого импорта.";
+"Choix publicitaires" = "Настройки рекламы";
 "Chronologie des cours et TD" = "Хронология курсов и обучающих программ";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Отметьте завершенные занятия, посмотрите, что осталось, и спокойно настройтесь завтра. Каждый маленький шаг имеет значение.";
 "Code (facultatif)" = "Код (необязательно)";
@@ -266,6 +267,7 @@
 "Galerie" = "Библиотека фотографий";
 "Garde une longueur d’avance." = "Будьте на шаг впереди.";
 "Get lifetime access" = "Получите пожизненный доступ";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob показывает рекламу совершеннолетним пользователям бесплатной версии с учётом их настроек конфиденциальности.";
 "Gérer mes indisponibilités" = "Управлять моей недоступностью";
 "Historique des rappels" = "История напоминаний";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Значки и коды: запланированные предметы · фиолетовая точка: напоминание или крайний срок.";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Импортировать расписание фотографий";
 "Importer une photo" = "Импортировать фотографию";
 "Impossible de programmer les rappels : " = "Невозможно запланировать напоминания: ";
+"Impossible d’ouvrir les choix publicitaires" = "Не удалось открыть настройки рекламы";
 "Indisponibilité" = "Недоступность";
 "Indisponibilités" = "Недоступность";
 "Jeu" = "Чт";
@@ -413,6 +416,7 @@
 "Présentations" = "Презентации";
 "Prévisualisation · %lld sélectionné(s)" = "Предварительный просмотр · Выбран %1$lld";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Готовы к новому шагу? Возвращайтесь в Focus, когда захотите.";
+"Publicité" = "Реклама";
 "Puis ta pause" = "Тогда твой перерыв";
 "Purchase could not be completed." = "Покупка не может быть завершена.";
 "Purchase could not be verified." = "Покупку не удалось подтвердить.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS требует полного доступа для поиска, обновления и удаления наших мероприятий. Studaya управляет только собственными экспортированными событиями.";
 "min" = "мин";
 "notification.assignment.title" = "Назначение · %1$@";
+"notification.coach.weekly.body" = "Вы уже изучили %1$@ мин за последние несколько дней. Подведите итоги и выберите свой приоритет на будущее.";
 "notification.control.title" = "Контрольная · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Крайний срок · %1$@";
+"notification.exam.countdown.body" = "Для подготовки к этому экзамену осталось всего %1$@ дня.";
 "notification.exam.title" = "Экзамен · %1$@";
+"notification.focus.break.body" = "Браво этому времени пересмотра. Ваш перерыв на %1$@ минуту начинается прямо сейчас.";
 "notification.presentation.title" = "Презентация · %1$@";
 "notification.review.title" = "Разнесенный обзор · %1$@";
-"notification.session.body" = "%1$@ · %2$lld мин. Для начала достаточно первого упражнения.";
+"notification.session.body" = "%1$@ · %2$@ мин. Для начала достаточно первого упражнения.";
 "terminée(s)" = "завершено";
 "À faire" = "Делать";
 "À la fin de chaque matière" = "В конце каждого предмета";
@@ -636,6 +643,8 @@
 "À savoir" = "Знать";
 "À toi de jouer !" = "Это зависит от вас!";
 "À venir" = "Скоро";
+"Âge : %lld ans" = "Возраст: %lld лет";
+"Âge : non renseigné" = "Возраст: не указан";
 "Échéance" = "Крайний срок";
 "Échéance · " = "Срок · ";
 "Échéances terminées" = "Сроки выполнены";

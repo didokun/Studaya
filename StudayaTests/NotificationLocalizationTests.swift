@@ -27,6 +27,8 @@ import UserNotifications
                     let rendered = String(format: template, arguments: text.arguments.map(\.formatValue))
                     XCTAssertFalse(rendered.isEmpty, language + ": " + text.key)
                     XCTAssertFalse(rendered.contains("ZXQ"))
+                    XCTAssertFalse(template.contains("lld"), language + ": numeric placeholder in deferred notification: " + text.key)
+                    XCTAssertFalse(rendered.contains("%@"), language + ": " + text.key)
                 }
             }
         }
@@ -47,6 +49,20 @@ import UserNotifications
         let archive = try NSKeyedArchiver.archivedData(withRootObject: content, requiringSecureCoding: true)
         XCTAssertFalse(archive.isEmpty)
     }
+    func testRevisionMinutesSurviveDeferredLocalizationAndNotificationSerialization() throws {
+        let text = NotificationText("notification.session.body", [.text("CDG · Synthèse"), .integer(25)])
+        XCTAssertEqual(text.rendered, "CDG · Synthèse · 25 min. A first exercise is enough to get you started.")
+        let notice = StudyReminder(id: "session.test", title: NotificationText("C’est ton moment de révision"), body: text, date: .now)
+        let content = UNMutableNotificationContent()
+        notice.apply(to: content)
+        XCTAssertTrue(content.body.contains("25 min"), content.body)
+        XCTAssertFalse(content.body.contains("lld"), content.body)
+        let data = try NSKeyedArchiver.archivedData(withRootObject: content, requiringSecureCoding: true)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: UNNotificationContent.self, from: data))
+        XCTAssertTrue(restored.body.contains("25 min"), restored.body)
+        XCTAssertFalse(restored.body.contains("lld"), restored.body)
+    }
+
     func testLanguageMigrationOnlyTargetsStudayaNotifications() {
         XCTAssertTrue(NotificationLanguageMigration.owns("studaya.daily"))
         XCTAssertTrue(NotificationLanguageMigration.owns("studaya.event.morning.daily"))

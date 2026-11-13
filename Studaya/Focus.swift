@@ -147,7 +147,7 @@ struct FocusSummary: View {
                     if let chapter = chapters.first(where: { $0.id == chapterID }), chapter.kind == "TD", !chapter.completed {
                         chapter.exercisesDone = min(chapter.exerciseCount, chapter.exercisesDone + exercises)
                     }
-                    do { try db.save(); dismiss() } catch { db.rollback(); saved = false; message = error.localizedDescription }
+                    do { try db.save(); dismiss(); SessionAdvertising.shared.showAtCompletion() } catch { db.rollback(); saved = false; message = error.localizedDescription }
                 }.disabled(saved)
             }.studyScreen().navigationTitle(String(localized: "Bilan Focus")).toolbar { Button(String(localized: "Fermer")) { dismiss() } }
         }.alert(String(localized: "Enregistrement"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }

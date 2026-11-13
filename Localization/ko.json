@@ -644,5 +644,11 @@
   "notification.deadline.title": "마감일 · %1$@",
   "notification.review.title": "간격 검토 · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld분. 첫 번째 연습만으로도 시작하기에 충분합니다."
+  "notification.session.body": "%1$@ · %2$lld분. 첫 번째 연습만으로도 시작하기에 충분합니다.",
+  "Publicité": "광고",
+  "Choix publicitaires": "광고 설정",
+  "Impossible d’ouvrir les choix publicitaires": "광고 설정을 열 수 없습니다",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob은 무료 버전의 성인 사용자에게 개인정보 보호 설정에 따라 광고를 표시합니다.",
+  "Âge : non renseigné": "나이: 미입력",
+  "Âge : %lld ans": "나이: %lld세"
 }

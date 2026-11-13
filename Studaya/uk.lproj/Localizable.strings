@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Виберіть існуючий курс або підручник для подій, пов’язаних із %1$@.";
 "Choisis un créneau futur pour une séance à faire." = "Виберіть майбутній слот для сесії.";
 "Choisis une matière pour cet import." = "Виберіть матеріал для цього імпорту.";
+"Choix publicitaires" = "Налаштування реклами";
 "Chronologie des cours et TD" = "Хронологія курсів і навчальних посібників";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Перевірте завершені сесії, подивіться, що залишилося, і спокійно налагодьте завтра. Кожен маленький крок має значення.";
 "Code (facultatif)" = "Код (необов'язково)";
@@ -266,6 +267,7 @@
 "Galerie" = "Бібліотека фотографій";
 "Garde une longueur d’avance." = "Будьте на крок попереду.";
 "Get lifetime access" = "Отримайте довічний доступ";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob показує рекламу повнолітнім користувачам безкоштовної версії відповідно до їхніх налаштувань конфіденційності.";
 "Gérer mes indisponibilités" = "Керуйте моєю недоступністю";
 "Historique des rappels" = "Історія нагадувань";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Піктограми та коди: заплановані теми · фіолетова крапка: нагадування або крайній термін";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Імпортуйте розклад фотографій";
 "Importer une photo" = "Імпортувати фото";
 "Impossible de programmer les rappels : " = "Не вдалося запланувати нагадування: ";
+"Impossible d’ouvrir les choix publicitaires" = "Не вдалося відкрити налаштування реклами";
 "Indisponibilité" = "Недоступність";
 "Indisponibilités" = "Недоступність";
 "Jeu" = "чт";
@@ -413,6 +416,7 @@
 "Présentations" = "Презентації";
 "Prévisualisation · %lld sélectionné(s)" = "Попередній перегляд · Вибрано %1$lld";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Готові до нового кроку? Повертайтеся до Focus, коли захочете.";
+"Publicité" = "Реклама";
 "Puis ta pause" = "Тоді ваша перерва";
 "Purchase could not be completed." = "Не вдалося завершити покупку.";
 "Purchase could not be verified." = "Не вдалося перевірити покупку.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS вимагає повного доступу для пошуку, оновлення та видалення наших подій. Studaya керує лише власними експортованими подіями.";
 "min" = "хв";
 "notification.assignment.title" = "призначення · %1$@";
+"notification.coach.weekly.body" = "Ви вже вивчили %1$@ хв за останні кілька днів. Підведіть підсумки та виберіть пріоритети на майбутнє.";
 "notification.control.title" = "Контрольна · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Дедлайн · %1$@";
+"notification.exam.countdown.body" = "Для підготовки до цього іспиту залишилося лише %1$@ дн.";
 "notification.exam.title" = "Іспит · %1$@";
+"notification.focus.break.body" = "Браво за час перегляду. Зараз починається ваша %1$@-хвилинна перерва.";
 "notification.presentation.title" = "Презентація · %1$@";
 "notification.review.title" = "Рознесений огляд · %1$@";
-"notification.session.body" = "%1$@ · %2$lld хв. Першої вправи достатньо, щоб почати.";
+"notification.session.body" = "%1$@ · %2$@ хв. Першої вправи достатньо, щоб почати.";
 "terminée(s)" = "завершено";
 "À faire" = "робити";
 "À la fin de chaque matière" = "В кінці кожного предмета";
@@ -636,6 +643,8 @@
 "À savoir" = "Знати";
 "À toi de jouer !" = "Вирішувати вам!";
 "À venir" = "Скоро буде";
+"Âge : %lld ans" = "Вік: %lld років";
+"Âge : non renseigné" = "Вік: не вказано";
 "Échéance" = "Дедлайн";
 "Échéance · " = "Дедлайн · ";
 "Échéances terminées" = "Дедлайни виконано";

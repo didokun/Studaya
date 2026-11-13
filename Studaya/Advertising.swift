@@ -8,22 +8,37 @@ import UserMessagingPlatform
     static let shared = AdConsent()
     @Published var ready = false
     @Published var needsOptions = false
-    private var preparing = false
+    private var preparation: Task<Void, Never>?
+    private var prepared = false
+    private var started = false
 
     func prepare() async {
-        guard !preparing else { return }
-        preparing = true
-        defer { preparing = false }
-        do {
+        if let preparation { await preparation.value; return }
+        guard !prepared else { return }
+        let task = Task { @MainActor in
             let info = ConsentInformation.shared
-            try await info.requestConsentInfoUpdate(with: RequestParameters())
-            try await ConsentForm.loadAndPresentIfRequired(from: nil)
-            needsOptions = info.privacyOptionsRequirementStatus == .required
-            if info.canRequestAds {
-                _ = await MobileAds.shared.start()
-                ready = true
+            do {
+                try await info.requestConsentInfoUpdate(with: RequestParameters())
+                try await ConsentForm.loadAndPresentIfRequired(from: nil)
+                self.prepared = true
+            } catch {
+                // UMP may still authorize requests using consent from a previous session.
             }
-        } catch { ready = false }
+            await self.refreshPermission()
+        }
+        preparation = task
+        await task.value
+        preparation = nil
+    }
+
+    func refreshPermission() async {
+        let info = ConsentInformation.shared
+        needsOptions = info.privacyOptionsRequirementStatus == .required
+        if info.canRequestAds, !started {
+            _ = await MobileAds.shared.start()
+            started = true
+        }
+        ready = info.canRequestAds && started
     }
 }
 
@@ -37,7 +52,7 @@ struct AdvertisingPrivacyOptions: View {
                 Task {
                     do {
                         try await ConsentForm.presentPrivacyOptionsForm(from: nil)
-                        consent.ready = ConsentInformation.shared.canRequestAds
+                        await consent.refreshPermission()
                     } catch { failed = true }
                 }
             }
@@ -50,6 +65,7 @@ struct AdvertisingPrivacyOptions: View {
 enum AdPolicy {
     static let ageKey = "studaya.profile.age"
     static func isAdult(_ age: Int) -> Bool { age >= 18 }
+    static func isEligible(premium: Bool?, age: Int) -> Bool { premium == false && isAdult(age) }
 }
 
 /// Identifiants fournis par les réglages de build (STUDAYA_ADMOB_*, via Info.plist).
@@ -59,14 +75,14 @@ enum AdUnits {
     static var interstitialID: String { Bundle.main.object(forInfoDictionaryKey: "StudayaInterstitialID") as? String ?? "" }
 }
 
-/// Bannière 320 × 50 en bas des écrans de consultation. Jamais pour Premium, ni sans consentement.
-private struct BrowsingBanner: View {
+/// Bannière identifiée en haut des écrans et dans les listes de révision. Jamais pour Premium, ni sans consentement.
+struct BrowsingBanner: View {
     @ObservedObject private var membership = Membership.shared
     @ObservedObject private var consent = AdConsent.shared
     @AppStorage(AdPolicy.ageKey) private var age = 0
     @State private var loaded = false
 
-    private var eligible: Bool { membership.premium == false && AdPolicy.isAdult(age) }
+    private var eligible: Bool { AdPolicy.isEligible(premium: membership.premium, age: age) }
 
     var body: some View {
         Group {
@@ -97,6 +113,7 @@ private struct BannerContainer: UIViewRepresentable {
     func makeUIView(context: Context) -> BannerView {
         let banner = BannerView(adSize: AdSizeBanner)
         banner.adUnitID = unit
+        banner.rootViewController = AdvertisingPresentation.root
         banner.delegate = context.coordinator
         banner.load(Request())
         return banner
@@ -119,50 +136,103 @@ private struct BannerContainer: UIViewRepresentable {
 }
 
 extension View {
-    /// Ajoute la bannière en bas de l’écran quand `enabled` est vrai (Accueil et Matières).
+    /// Adds a clearly labelled header only for eligible, consenting free users.
     func browsingAdvertising(_ enabled: Bool) -> some View {
-        safeAreaInset(edge: .bottom, spacing: 0) {
+        safeAreaInset(edge: .top, spacing: 0) {
             if enabled { BrowsingBanner() }
         }
     }
 }
 
-/// Interstitiel à la fin d’une séance : au plus une fois par jour, jamais pour Premium.
-@MainActor final class SessionAdvertising: ObservableObject {
+/// One global cooldown across every successful completion, persisted across launches.
+enum AdFrequencyPolicy {
+    static let interval: TimeInterval = 3600
+    static func allows(last: Date?, now: Date = .now) -> Bool {
+        guard let last else { return true }
+        return now.timeIntervalSince(last) >= interval
+    }
+}
+
+@MainActor private enum AdvertisingPresentation {
+    static var root: UIViewController? {
+        UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?.windows.first { $0.isKeyWindow }?.rootViewController
+    }
+    static var top: UIViewController? {
+        var controller = root
+        while let presented = controller?.presentedViewController { controller = presented }
+        return controller
+    }
+}
+
+/// Full screen only at a completed action; never displayed later when loading finishes.
+@MainActor final class SessionAdvertising: NSObject, ObservableObject, FullScreenContentDelegate {
     static let shared = SessionAdvertising()
-    private static let lastShownKey = "interstitialLastShownDay"
+    private static let lastShownKey = "studaya.ads.lastInterstitialImpression"
     private var ad: InterstitialAd?
+    private var loadedAt: Date?
+    private var loading = false
+    private var presenting = false
+    private var scheduled = false
 
     private var eligible: Bool {
-        Membership.shared.premium == false && AdPolicy.isAdult(UserDefaults.standard.integer(forKey: AdPolicy.ageKey))
-            && !AdUnits.interstitialID.isEmpty && !shownToday
+        AdPolicy.isEligible(premium: Membership.shared.premium, age: StudyPreferences.current.integer(forKey: AdPolicy.ageKey))
+            && !AdUnits.interstitialID.isEmpty
+            && AdFrequencyPolicy.allows(last: StudyPreferences.current.object(forKey: Self.lastShownKey) as? Date)
     }
 
     func preload() async {
-        guard eligible else { return }
+        guard eligible, !loading, !presenting else { return }
+        if let loadedAt, ad != nil, Date.now.timeIntervalSince(loadedAt) < 3500 { return }
+        loading = true
+        defer { loading = false }
         await AdConsent.shared.prepare()
         guard AdConsent.shared.ready, eligible else { return }
-        ad = try? await InterstitialAd.load(with: AdUnits.interstitialID, request: Request())
+        do {
+            let loaded = try await InterstitialAd.load(with: AdUnits.interstitialID, request: Request())
+            guard eligible else { return }
+            loaded.fullScreenContentDelegate = self
+            ad = loaded
+            loadedAt = .now
+        } catch { ad = nil; loadedAt = nil }
     }
 
     func showAtCompletion() {
-        guard eligible, ConsentInformation.shared.canRequestAds, let loaded = ad else {
-            Task { await preload() }
-            return
+        guard !scheduled, !presenting, eligible else { return }
+        scheduled = true
+        Task { @MainActor in
+            // Give the successfully saved form time to dismiss before presenting.
+            try? await Task.sleep(for: .milliseconds(650))
+            scheduled = false
+            let preferences = StudyPreferences.current
+            let working = preferences.double(forKey: "timerEnd") > Date.now.timeIntervalSince1970
+                && !preferences.bool(forKey: "timerRest")
+            guard eligible, !working, !presenting, UIApplication.shared.applicationState == .active,
+                  AdConsent.shared.ready, ConsentInformation.shared.canRequestAds else { return }
+            guard let loaded = ad, let loadedAt, Date.now.timeIntervalSince(loadedAt) < 3500 else {
+                await preload()
+                return
+            }
+            guard let controller = AdvertisingPresentation.top,
+                  !controller.isBeingDismissed, !controller.isBeingPresented,
+                  controller.viewIfLoaded?.window != nil else { return }
+            do {
+                try loaded.canPresent(from: controller)
+                presenting = true
+                loaded.present(from: controller)
+            } catch { ad = nil; self.loadedAt = nil; await preload() }
         }
-        ad = nil
-        UserDefaults.standard.set(Self.today, forKey: Self.lastShownKey)
-        loaded.present(from: nil)
-        Task { await preload() }
     }
 
-    private var shownToday: Bool {
-        UserDefaults.standard.string(forKey: Self.lastShownKey) == Self.today
+    func adDidRecordImpression(_ ad: any FullScreenPresentingAd) {
+        StudyPreferences.current.set(Date.now, forKey: Self.lastShownKey)
     }
-    private static var today: String {
-        let f = DateFormatter()
-        f.calendar = Calendar(identifier: .gregorian)
-        f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: .now)
+    func adDidDismissFullScreenContent(_ ad: any FullScreenPresentingAd) {
+        presenting = false; self.ad = nil; loadedAt = nil
+        Task { await preload() }
+    }
+    func ad(_ ad: any FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        presenting = false; self.ad = nil; loadedAt = nil
+        Task { await preload() }
     }
 }

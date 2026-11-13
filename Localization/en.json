@@ -646,7 +646,9 @@
   "notification.deadline.body": "%1$@ · %2$@",
   "notification.session.body": "%1$@ · %2$lld min. A first exercise is enough to get you started.",
   "Choix publicitaires": "Advertising choices",
-  "Impossible d’ouvrir les choix publicitaires": "Couldn’t open advertising choices",
+  "Impossible d’ouvrir les choix publicitaires": "Unable to open advertising choices",
   "Publicité": "Advertisement",
-  "Âge : non renseigné": "Age: not set"
+  "Âge : non renseigné": "Age: not set",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob serves ads to adult free users according to their privacy choices.",
+  "Âge : %lld ans": "Age: %lld years"
 }

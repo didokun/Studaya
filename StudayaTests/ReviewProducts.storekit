@@ -1,0 +1,93 @@
+{
+  "identifier": "aa2b2353-6330-4205-b390-8bf7378da7f6",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "80",
+      "familyShareable": false,
+      "internalID": "6a5ac059-cdb2-40db-bac4-2560d8a80fa9",
+      "localizations": [
+        {
+          "locale": "en_US",
+          "displayName": "Studaya Lifetime",
+          "description": "Lifetime Premium access."
+        },
+        {
+          "locale": "fr_FR",
+          "displayName": "Studaya à vie",
+          "description": "Accès Premium à vie."
+        }
+      ],
+      "productID": "studaya.premium.lifetime",
+      "referenceName": "Studaya Lifetime",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": {
+    "_locale": "en_US",
+    "_storefront": "USA"
+  },
+  "subscriptionGroups": [
+    {
+      "id": "c309cce4-9944-4f8f-a4c7-3899a0df08b6",
+      "localizations": [],
+      "name": "Studaya Premium",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "5",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "e323b003-f8c6-4b9b-89df-0b2783c697d7",
+          "localizations": [
+            {
+              "description": "Study insights and Focus exports.",
+              "displayName": "Studaya Premium monthly",
+              "locale": "en_US"
+            },
+            {
+              "description": "Bilan de concentration et export des sessions.",
+              "displayName": "Studaya Premium mensuel",
+              "locale": "fr_FR"
+            }
+          ],
+          "productID": "studaya.premium.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Studaya Premium monthly",
+          "subscriptionGroupID": "c309cce4-9944-4f8f-a4c7-3899a0df08b6",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "50",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "42f3b603-c93e-4d20-8b0a-b2752d8ef036",
+          "localizations": [
+            {
+              "description": "Study insights and Focus exports.",
+              "displayName": "Studaya Premium yearly",
+              "locale": "en_US"
+            },
+            {
+              "description": "Bilan de concentration et export des sessions.",
+              "displayName": "Studaya Premium annuel",
+              "locale": "fr_FR"
+            }
+          ],
+          "productID": "studaya.premium.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Studaya Premium yearly",
+          "subscriptionGroupID": "c309cce4-9944-4f8f-a4c7-3899a0df08b6",
+          "type": "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

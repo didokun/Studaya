@@ -1,6 +1,6 @@
 // Generated from Localization/*.json; see scripts/localize-resources.py.
 "" = "";
-"\nDate d’examen ; horaire non renseigné dans Studaya." = "\nExamination date; timetable not specified in Studaya.";
+"\nDate d’examen ; horaire non renseigné dans Studaya." = "\nExam date; time not set in Studaya.";
 "\nError: %@ (%lld)" = "\nError: %1$@ (%2$lld)";
 "\nResult: %lld/%lld products\nMissing: " = "\nResult: %1$lld/%2$lld products\nMissing: ";
 "\nUnderlying: %@ (%lld)" = "\nUnderlying: %1$@ (%2$lld)";
@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Choose an existing course or tutorial for %1$@ related events.";
 "Choisis un créneau futur pour une séance à faire." = "Choose a future slot for a session to do.";
 "Choisis une matière pour cet import." = "Choose a material for this import.";
+"Choix publicitaires" = "Advertising choices";
 "Chronologie des cours et TD" = "Chronology of courses and tutorials";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Check off your completed sessions, look at what’s left and calmly adjust tomorrow. Every little step counts.";
 "Code (facultatif)" = "Code (optional)";
@@ -266,6 +267,7 @@
 "Galerie" = "Photo library";
 "Garde une longueur d’avance." = "Stay one step ahead.";
 "Get lifetime access" = "Get lifetime access";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob serves ads to adult free users according to their privacy choices.";
 "Gérer mes indisponibilités" = "Manage my unavailability";
 "Historique des rappels" = "Reminder history";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Icons and codes: planned subjects · purple dot: reminder or deadline";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Import a photo schedule";
 "Importer une photo" = "Import a photo";
 "Impossible de programmer les rappels : " = "Unable to schedule reminders: ";
+"Impossible d’ouvrir les choix publicitaires" = "Unable to open advertising choices";
 "Indisponibilité" = "Unavailability";
 "Indisponibilités" = "Unavailability";
 "Jeu" = "Thu";
@@ -413,6 +416,7 @@
 "Présentations" = "Presentations";
 "Prévisualisation · %lld sélectionné(s)" = "Preview · %1$lld selected";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Ready for a new step? Come back to Focus whenever you want.";
+"Publicité" = "Advertisement";
 "Puis ta pause" = "Then your break";
 "Purchase could not be completed." = "Purchase could not be completed.";
 "Purchase could not be verified." = "Purchase could not be verified.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS requires full access to find, update and delete our events. Studaya only manages its own exported events.";
 "min" = "min";
 "notification.assignment.title" = "Assignment · %1$@";
+"notification.coach.weekly.body" = "You have already studied %1$@ min in the last few days. Take stock and choose your priority for the future.";
 "notification.control.title" = "Test · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Deadline · %1$@";
+"notification.exam.countdown.body" = "Only %1$@ day(s) left to prepare for this exam.";
 "notification.exam.title" = "Exam · %1$@";
+"notification.focus.break.body" = "Bravo for this revision time. Your %1$@ min break starts now.";
 "notification.presentation.title" = "Presentation · %1$@";
 "notification.review.title" = "Spaced review · %1$@";
-"notification.session.body" = "%1$@ · %2$lld min. A first exercise is enough to get you started.";
+"notification.session.body" = "%1$@ · %2$@ min. A first exercise is enough to get you started.";
 "terminée(s)" = "completed";
 "À faire" = "To do";
 "À la fin de chaque matière" = "At the end of each subject";
@@ -636,6 +643,8 @@
 "À savoir" = "To know";
 "À toi de jouer !" = "It's up to you!";
 "À venir" = "Coming soon";
+"Âge : %lld ans" = "Age: %lld years";
+"Âge : non renseigné" = "Age: not set";
 "Échéance" = "Deadline";
 "Échéance · " = "Deadline · ";
 "Échéances terminées" = "Deadlines completed";
@@ -643,11 +652,3 @@
 "Établissement" = "Establishment";
 "Études et calendrier" = "Studies and schedule";
 "à préciser" = "not set";
-"Âge : non renseigné" = "Age: not set";
-"Publicité" = "Advertisement";
-"Choix publicitaires" = "Advertising choices";
-"Impossible d’ouvrir les choix publicitaires" = "Couldn’t open advertising choices";
-"Âge : %lld ans" = "Age: %lld years";
-"%lld matières · %lld cours/TD · %lld séances. Sauvegarde du %@" = "%lld subjects · %lld lectures/tutorials · %lld sessions. Saved on %@";
-"\\nError: %@ (%lld)" = "\nError: %@ (%lld)";
-"\\nUnderlying: %@ (%lld)" = "\nUnderlying: %@ (%lld)";

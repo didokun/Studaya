@@ -21,7 +21,7 @@ enum ReminderPlan {
             let morning = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: subject.exam)!
             for days in [7, 1, 0] {
                 let date = calendar.date(byAdding: .day, value: -days, to: morning)!
-                let body = days == 0 ? NotificationText("Ton examen est prévu aujourd’hui. Consulte ta préparation.") : NotificationText("Plus que %lld jour(s) pour préparer cet examen.", [.integer(days)])
+                let body = days == 0 ? NotificationText("Ton examen est prévu aujourd’hui. Consulte ta préparation.") : NotificationText("notification.exam.countdown.body", [.integer(days)])
                 items.append(StudyReminder(id: "exam.\(subject.id).\(days)", title: NotificationText("notification.exam.title", [.text(subject.displayCode)]), body: body, date: date))
             }
         }

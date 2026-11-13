@@ -19,7 +19,7 @@ struct FocusTimerSnapshot: Equatable {
         let finish = Date(timeIntervalSince1970: end)
         if resting { return [StudyReminder(id: "restEnd", title: NotificationText("Ta pause est terminée"), body: NotificationText("Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux."), date: finish, tab: 2)] }
         return [
-            StudyReminder(id: "workEnd", title: NotificationText("Focus terminé · place au repos 🌿"), body: NotificationText("Bravo pour ce temps de révision. Ta pause de %lld min commence maintenant.", [.integer(breakSeconds / 60)]), date: finish, tab: 2),
+            StudyReminder(id: "workEnd", title: NotificationText("Focus terminé · place au repos 🌿"), body: NotificationText("notification.focus.break.body", [.integer(breakSeconds / 60)]), date: finish, tab: 2),
             StudyReminder(id: "restEnd", title: NotificationText("Ta pause est terminée"), body: NotificationText("Tu peux repartir sur une séance ou t’arrêter ici. Ton effort compte déjà."), date: finish.addingTimeInterval(Double(breakSeconds)), tab: 2)
         ]
     }

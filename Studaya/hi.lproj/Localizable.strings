@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "%1$@ संबंधित घटनाओं के लिए एक मौजूदा पाठ्यक्रम या ट्यूटोरियल चुनें।";
 "Choisis un créneau futur pour une séance à faire." = "किसी सत्र के लिए भविष्य का स्लॉट चुनें।";
 "Choisis une matière pour cet import." = "इस आयात के लिए एक सामग्री चुनें.";
+"Choix publicitaires" = "विज्ञापन विकल्प";
 "Chronologie des cours et TD" = "पाठ्यक्रम और ट्यूटोरियल का कालक्रम";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "अपने पूर्ण किए गए सत्रों की जाँच करें, जो बचा है उसे देखें और शांति से कल के लिए समायोजन करें। हर छोटा कदम मायने रखता है.";
 "Code (facultatif)" = "कोड (वैकल्पिक)";
@@ -266,6 +267,7 @@
 "Galerie" = "फोटो लाइब्रेरी";
 "Garde une longueur d’avance." = "एक कदम आगे रहो.";
 "Get lifetime access" = "आजीवन पहुंच प्राप्त करें";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob मुफ़्त संस्करण के वयस्क उपयोगकर्ताओं को उनकी गोपनीयता पसंद के अनुसार विज्ञापन दिखाता है।";
 "Gérer mes indisponibilités" = "मेरी अनुपलब्धता को प्रबंधित करें";
 "Historique des rappels" = "अनुस्मारक इतिहास";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "चिह्न और कोड: नियोजित विषय · बैंगनी बिंदु: अनुस्मारक या समय सीमा";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "एक फोटो शेड्यूल आयात करें";
 "Importer une photo" = "एक फोटो आयात करें";
 "Impossible de programmer les rappels : " = "अनुस्मारक शेड्यूल करने में असमर्थ: ";
+"Impossible d’ouvrir les choix publicitaires" = "विज्ञापन विकल्प नहीं खुल सके";
 "Indisponibilité" = "अनुपलब्धता";
 "Indisponibilités" = "अनुपलब्धता";
 "Jeu" = "गुरु";
@@ -413,6 +416,7 @@
 "Présentations" = "प्रस्तुतियाँ";
 "Prévisualisation · %lld sélectionné(s)" = "पूर्वावलोकन · %1$lld चयनित";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "एक नए कदम के लिए तैयार हैं? जब भी आप चाहें फोकस पर वापस आएं।";
+"Publicité" = "विज्ञापन";
 "Puis ta pause" = "फिर आपका ब्रेक";
 "Purchase could not be completed." = "खरीदारी पूरी नहीं हो सकी.";
 "Purchase could not be verified." = "खरीद सत्यापित नहीं की जा सकी.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS को हमारे ईवेंट ढूंढने, अपडेट करने और हटाने के लिए पूर्ण पहुंच की आवश्यकता होती है। स्टडीया केवल अपने स्वयं के निर्यातित आयोजनों का प्रबंधन करता है।";
 "min" = "मि";
 "notification.assignment.title" = "असाइनमेंट · %1$@";
+"notification.coach.weekly.body" = "आप पिछले कुछ दिनों में %1$@ मिनट का अध्ययन कर चुके हैं। जायजा लें और भविष्य के लिए अपनी प्राथमिकता चुनें।";
 "notification.control.title" = "टेस्ट · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "समयसीमा · %1$@";
+"notification.exam.countdown.body" = "इस परीक्षा की तैयारी के लिए केवल %1$@ दिन बचे हैं।";
 "notification.exam.title" = "परीक्षा · %1$@";
+"notification.focus.break.body" = "इस पुनरीक्षण समय के लिए शाबाश। आपका %1$@ मिनट का ब्रेक अब शुरू होता है।";
 "notification.presentation.title" = "प्रस्तुति · %1$@";
 "notification.review.title" = "अंतराल समीक्षा · %1$@";
-"notification.session.body" = "%1$@ · %2$lld मि. एक पहला व्यायाम आपको आरंभ करने के लिए पर्याप्त है।";
+"notification.session.body" = "%1$@ · %2$@ मि. एक पहला व्यायाम आपको आरंभ करने के लिए पर्याप्त है।";
 "terminée(s)" = "पूरा हुआ";
 "À faire" = "करना";
 "À la fin de chaque matière" = "प्रत्येक विषय के अंत में";
@@ -636,6 +643,8 @@
 "À savoir" = "जानना";
 "À toi de jouer !" = "यह आप पर निर्भर है!";
 "À venir" = "जल्द आ रहा है";
+"Âge : %lld ans" = "उम्र: %lld वर्ष";
+"Âge : non renseigné" = "उम्र: नहीं बताई गई";
 "Échéance" = "समयसीमा";
 "Échéance · " = "समय सीमा · ";
 "Échéances terminées" = "समय सीमा पूरी हो गई";

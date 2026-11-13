@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "%1$@ 関連のイベントの既存のコースまたはチュートリアルを選択してください。";
 "Choisis un créneau futur pour une séance à faire." = "今後セッションを行うスロットを選択します。";
 "Choisis une matière pour cet import." = "このインポートのマテリアルを選択してください。";
+"Choix publicitaires" = "広告の設定";
 "Chronologie des cours et TD" = "コースとチュートリアルの年表";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "完了したセッションをチェックし、残りを確認して、明日は落ち着いて調整します。あらゆる小さな一歩が重要です。";
 "Code (facultatif)" = "コード（オプション）";
@@ -266,6 +267,7 @@
 "Galerie" = "フォトライブラリー";
 "Garde une longueur d’avance." = "一歩先を行きましょう。";
 "Get lifetime access" = "生涯アクセスを取得する";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob は、無料版を利用する成人ユーザーにプライバシー設定に応じた広告を表示します。";
 "Gérer mes indisponibilités" = "不在時の対応を管理する";
 "Historique des rappels" = "リマインダー履歴";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "アイコンとコード: 予定されている主題 · 紫色の点: リマインダーまたは期限";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "写真スケジュールをインポートする";
 "Importer une photo" = "写真をインポートする";
 "Impossible de programmer les rappels : " = "リマインダーをスケジュールできません: ";
+"Impossible d’ouvrir les choix publicitaires" = "広告の設定を開けません";
 "Indisponibilité" = "利用不可";
 "Indisponibilités" = "利用不可";
 "Jeu" = "木";
@@ -413,6 +416,7 @@
 "Présentations" = "プレゼンテーション";
 "Prévisualisation · %lld sélectionné(s)" = "プレビュー · %1$lld が選択されました";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "新しいステップへの準備はできていますか?いつでもFocusに戻ってください。";
+"Publicité" = "広告";
 "Puis ta pause" = "それから休憩";
 "Purchase could not be completed." = "購入を完了できませんでした。";
 "Purchase could not be verified." = "購入を確認できませんでした。";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS では、イベントを検索、更新、削除するにはフルアクセスが必要です。 Sudaya は、エクスポートされた独自のイベントのみを管理します。";
 "min" = "分";
 "notification.assignment.title" = "割り当て · %1$@";
+"notification.coach.weekly.body" = "ここ数日間ですでに %1$@ 分間学習しました。現状を把握し、将来の優先順位を選択してください。";
 "notification.control.title" = "小テスト · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "締め切り · %1$@";
+"notification.exam.countdown.body" = "この試験の準備期間は残り %1$@ 日のみです。";
 "notification.exam.title" = "試験 · %1$@";
+"notification.focus.break.body" = "今回の改訂にはブラボーです。 %1$@ 分の休憩が始まります。";
 "notification.presentation.title" = "発表 · %1$@";
 "notification.review.title" = "間隔をあけたレビュー · %1$@";
-"notification.session.body" = "%1$@ · %2$lld 分始めるには、最初の演習で十分です。";
+"notification.session.body" = "%1$@ · %2$@ 分始めるには、最初の演習で十分です。";
 "terminée(s)" = "完了しました";
 "À faire" = "やること";
 "À la fin de chaque matière" = "各科目の終わりに";
@@ -636,6 +643,8 @@
 "À savoir" = "知ること";
 "À toi de jouer !" = "それはあなた次第です！";
 "À venir" = "近日公開予定";
+"Âge : %lld ans" = "年齢：%lld 歳";
+"Âge : non renseigné" = "年齢：未設定";
 "Échéance" = "締め切り";
 "Échéance · " = "締切・ ";
 "Échéances terminées" = "締め切りが完了しました";

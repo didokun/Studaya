@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Elija un curso o tutorial existente para %1$@ eventos relacionados.";
 "Choisis un créneau futur pour une séance à faire." = "Elija un espacio futuro para realizar una sesión.";
 "Choisis une matière pour cet import." = "Elija un material para esta importación.";
+"Choix publicitaires" = "Opciones publicitarias";
 "Chronologie des cours et TD" = "Cronología de cursos y tutorías.";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Marque sus sesiones completadas, observe lo que queda y ajústese con calma mañana. Cada pequeño paso cuenta.";
 "Code (facultatif)" = "Código (opcional)";
@@ -266,6 +267,7 @@
 "Galerie" = "Biblioteca de fotos";
 "Garde une longueur d’avance." = "Manténgase un paso por delante.";
 "Get lifetime access" = "Obtenga acceso de por vida";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob muestra anuncios a los usuarios gratuitos adultos según sus opciones de privacidad.";
 "Gérer mes indisponibilités" = "Gestionar mi indisponibilidad";
 "Historique des rappels" = "Historial de recordatorios";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Iconos y códigos: temas planificados · punto morado: recordatorio o fecha límite";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Importar una agenda de fotos";
 "Importer une photo" = "Importar una foto";
 "Impossible de programmer les rappels : " = "No se pueden programar recordatorios: ";
+"Impossible d’ouvrir les choix publicitaires" = "No se pueden abrir las opciones publicitarias";
 "Indisponibilité" = "Indisponibilidad";
 "Indisponibilités" = "Indisponibilidad";
 "Jeu" = "jueves";
@@ -413,6 +416,7 @@
 "Présentations" = "Presentaciones";
 "Prévisualisation · %lld sélectionné(s)" = "Vista previa · %1$lld seleccionado";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "¿Listo para un nuevo paso? Vuelve a Focus cuando quieras.";
+"Publicité" = "Publicidad";
 "Puis ta pause" = "Entonces tu descanso";
 "Purchase could not be completed." = "No se pudo completar la compra.";
 "Purchase could not be verified." = "No se pudo verificar la compra.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS requiere acceso completo para buscar, actualizar y eliminar nuestros eventos. Studaya sólo gestiona sus propios eventos exportados.";
 "min" = "mín.";
 "notification.assignment.title" = "tarea · %1$@";
+"notification.coach.weekly.body" = "Ya has estudiado %1$@ min en los últimos días. Haz un balance y elige tu prioridad para el futuro.";
 "notification.control.title" = "Prueba · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Fecha límite · %1$@";
+"notification.exam.countdown.body" = "Solo quedan %1$@ día(s) para prepararse para este examen.";
 "notification.exam.title" = "Examen · %1$@";
+"notification.focus.break.body" = "Bravo por este tiempo de revisión. Tu descanso mínimo de %1$@ comienza ahora.";
 "notification.presentation.title" = "Presentación · %1$@";
 "notification.review.title" = "revisión espaciada · %1$@";
-"notification.session.body" = "%1$@ · %2$lld mín. Un primer ejercicio es suficiente para empezar.";
+"notification.session.body" = "%1$@ · %2$@ mín. Un primer ejercicio es suficiente para empezar.";
 "terminée(s)" = "completado";
 "À faire" = "hacer";
 "À la fin de chaque matière" = "Al final de cada tema";
@@ -636,6 +643,8 @@
 "À savoir" = "saber";
 "À toi de jouer !" = "¡Depende de ti!";
 "À venir" = "Próximamente";
+"Âge : %lld ans" = "Edad: %lld años";
+"Âge : non renseigné" = "Edad: sin indicar";
 "Échéance" = "Fecha límite";
 "Échéance · " = "Fecha límite · ";
 "Échéances terminées" = "Plazos cumplidos";

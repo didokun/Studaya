@@ -644,5 +644,11 @@
   "notification.deadline.title": "Son tarih · %1$@",
   "notification.review.title": "Aralıklı inceleme · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld dk. Başlamak için ilk egzersiz yeterlidir."
+  "notification.session.body": "%1$@ · %2$lld dk. Başlamak için ilk egzersiz yeterlidir.",
+  "Publicité": "Reklam",
+  "Choix publicitaires": "Reklam tercihleri",
+  "Impossible d’ouvrir les choix publicitaires": "Reklam tercihleri açılamadı",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob, ücretsiz sürümün yetişkin kullanıcılarına gizlilik tercihlerine göre reklam gösterir.",
+  "Âge : non renseigné": "Yaş: belirtilmedi",
+  "Âge : %lld ans": "Yaş: %lld"
 }

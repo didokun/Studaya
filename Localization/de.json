@@ -644,5 +644,11 @@
   "notification.deadline.title": "Frist · %1$@",
   "notification.review.title": "Abstandsrezension · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld min. Eine erste Übung reicht aus, um loszulegen."
+  "notification.session.body": "%1$@ · %2$lld min. Eine erste Übung reicht aus, um loszulegen.",
+  "Publicité": "Werbung",
+  "Choix publicitaires": "Werbeoptionen",
+  "Impossible d’ouvrir les choix publicitaires": "Werbeoptionen können nicht geöffnet werden",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob zeigt erwachsenen Nutzern der kostenlosen Version Werbung entsprechend ihren Datenschutzeinstellungen.",
+  "Âge : non renseigné": "Alter: nicht angegeben",
+  "Âge : %lld ans": "Alter: %lld Jahre"
 }

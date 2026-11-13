@@ -50,12 +50,14 @@ struct StudySettings: View {
                         Form {
                             Text(String(localized: "Ton profil et tes révisions sont conservés sur cet appareil. Les achats sont gérés par Apple."))
                             Link(String(localized: "Conditions d’utilisation Apple"), destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                            Text(String(localized: "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité."))
+                            Link(String(localized: "Données et confidentialité"), destination: URL(string: "https://talinha.com/studaya/privacy/")!)
                             AdvertisingPrivacyOptions()
                             Button(String(localized: "Effacer les données de Studaya"), role: .destructive) { confirm = true }
                         }
                     }
                 }
-            }.studyScreen().navigationTitle(String(localized: "Réglages")).toolbar { Button(String(localized: "Terminé")) { dismiss() } }
+            }.studyScreen().browsingAdvertising(true).navigationTitle(String(localized: "Réglages")).toolbar { Button(String(localized: "Terminé")) { dismiss() } }
         }.sheet(isPresented: $edit) { if let p = profiles.first { AcademicSetup(profile: p) { edit = false } } }
         .alert(String(localized: "Effacer le profil et toutes les révisions ?"), isPresented: $confirm) {
             Button(String(localized: "Annuler"), role: .cancel) {}

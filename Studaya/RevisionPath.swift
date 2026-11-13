@@ -150,7 +150,7 @@ struct RevisionPathBuilder: View {
                         Button(step == 5 ? String(localized: "Créer mon planning") : String(localized: "Continuer")) { next() }.buttonStyle(Primary()).disabled(!currentValid)
                     }.padding()
                 } else if step == 7 {
-                    Button(String(localized: "Découvrir mon planning")) { onCreated(); dismiss() }.buttonStyle(Primary()).padding()
+                    Button(String(localized: "Découvrir mon planning")) { onCreated(); dismiss(); SessionAdvertising.shared.showAtCompletion() }.buttonStyle(Primary()).padding()
                 }
             }.studyScreen().navigationTitle(String(localized: "Parcours de révision")).navigationBarTitleDisplayMode(.inline)
             .toolbar { if step < 6 { ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Fermer")) { dismiss() } } } }

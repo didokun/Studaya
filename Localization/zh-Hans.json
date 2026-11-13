@@ -644,5 +644,11 @@
   "notification.deadline.title": "截止日期 · %1$@",
   "notification.review.title": "间隔审查 · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld 分钟第一个练习就足以让您入门。"
+  "notification.session.body": "%1$@ · %2$lld 分钟第一个练习就足以让您入门。",
+  "Publicité": "广告",
+  "Choix publicitaires": "广告选项",
+  "Impossible d’ouvrir les choix publicitaires": "无法打开广告选项",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob 根据成年免费用户的隐私选择展示广告。",
+  "Âge : non renseigné": "年龄：未填写",
+  "Âge : %lld ans": "年龄：%lld 岁"
 }

@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "اختر دورة تدريبية أو برنامجًا تعليميًا موجودًا للأحداث ذات الصلة بـ %1$@.";
 "Choisis un créneau futur pour une séance à faire." = "اختر فتحة مستقبلية لجلسة للقيام بها.";
 "Choisis une matière pour cet import." = "اختر مادة لهذا الاستيراد.";
+"Choix publicitaires" = "خيارات الإعلانات";
 "Chronologie des cours et TD" = "التسلسل الزمني للدورات والبرامج التعليمية";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "تحقق من جلساتك المكتملة، وانظر إلى ما تبقى وقم بالتعديل بهدوء غدًا. كل خطوة صغيرة مهمة.";
 "Code (facultatif)" = "الكود (اختياري)";
@@ -266,6 +267,7 @@
 "Galerie" = "مكتبة الصور";
 "Garde une longueur d’avance." = "البقاء خطوة واحدة إلى الأمام.";
 "Get lifetime access" = "احصل على إمكانية الوصول مدى الحياة";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "يعرض Google AdMob إعلانات للمستخدمين البالغين في النسخة المجانية وفقًا لخيارات الخصوصية الخاصة بهم.";
 "Gérer mes indisponibilités" = "إدارة عدم توفري";
 "Historique des rappels" = "تاريخ التذكير";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "الأيقونات والأكواد: المواضيع المخططة · النقطة الأرجوانية: تذكير أو موعد نهائي";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "استيراد جدول الصور";
 "Importer une photo" = "استيراد صورة";
 "Impossible de programmer les rappels : " = "غير قادر على جدولة التذكيرات: ";
+"Impossible d’ouvrir les choix publicitaires" = "تعذّر فتح خيارات الإعلانات";
 "Indisponibilité" = "عدم التوفر";
 "Indisponibilités" = "عدم التوفر";
 "Jeu" = "الخميس";
@@ -413,6 +416,7 @@
 "Présentations" = "العروض التقديمية";
 "Prévisualisation · %lld sélectionné(s)" = "معاينة · تم تحديد %1$lld";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "جاهز لخطوة جديدة؟ عد إلى التركيز وقتما تشاء.";
+"Publicité" = "إعلان";
 "Puis ta pause" = "ثم استراحة الخاص بك";
 "Purchase could not be completed." = "لا يمكن إكمال عملية الشراء.";
 "Purchase could not be verified." = "لا يمكن التحقق من الشراء.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "يتطلب iOS الوصول الكامل للعثور على الأحداث الخاصة بنا وتحديثها وحذفها. تدير Studaya الأحداث المصدرة الخاصة بها فقط.";
 "min" = "دقيقة";
 "notification.assignment.title" = "مهمة · %1$@";
+"notification.coach.weekly.body" = "لقد درست بالفعل %1$@ دقيقة في الأيام القليلة الماضية. قم بالتقييم واختر أولويتك للمستقبل.";
 "notification.control.title" = "اختبار · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "الموعد النهائي · %1$@";
+"notification.exam.countdown.body" = "لم يتبق سوى %1$@ يوم (أيام) للتحضير لهذا الاختبار.";
 "notification.exam.title" = "امتحان · %1$@";
+"notification.focus.break.body" = "برافو لهذا الوقت المراجعة. ستبدأ الآن استراحة مدتها %1$@ دقيقة.";
 "notification.presentation.title" = "عرض تقديمي · %1$@";
 "notification.review.title" = "مراجعة متباعدة · %1$@";
-"notification.session.body" = "%1$@ · %2$lld دقيقة. التمرين الأول يكفي للبدء.";
+"notification.session.body" = "%1$@ · %2$@ دقيقة. التمرين الأول يكفي للبدء.";
 "terminée(s)" = "اكتمل";
 "À faire" = "للقيام به";
 "À la fin de chaque matière" = "في نهاية كل موضوع";
@@ -636,6 +643,8 @@
 "À savoir" = "لنعرف";
 "À toi de jouer !" = "الأمر متروك لك!";
 "À venir" = "قريبا";
+"Âge : %lld ans" = "العمر: %lld سنة";
+"Âge : non renseigné" = "العمر: غير محدد";
 "Échéance" = "الموعد النهائي";
 "Échéance · " = "الموعد النهائي · ";
 "Échéances terminées" = "اكتملت المواعيد النهائية";

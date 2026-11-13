@@ -4,14 +4,16 @@ import UserNotifications
 /// Keep the localization key until delivery: changing the phone language must not
 /// leave a repeating notification frozen in the language used when it was scheduled.
 struct NotificationText: Equatable {
+    // Deferred notification localization substitutes object placeholders (%@).
+    // Numeric printf specifiers such as %lld are not safe in the delivery formatter.
     enum Argument: Equatable {
         case text(String)
         case integer(Int)
         var object: Any {
-            switch self { case .text(let value): value; case .integer(let value): NSNumber(value: value) }
+            switch self { case .text(let value): value; case .integer(let value): String(value) }
         }
         var formatValue: CVarArg {
-            switch self { case .text(let value): value; case .integer(let value): Int64(value) }
+            switch self { case .text(let value): value; case .integer(let value): String(value) }
         }
     }
     let key: String
@@ -41,7 +43,7 @@ extension StudyReminder {
 @MainActor enum NotificationLanguageMigration {
     private static var preparation: Task<Void, Never>?
     private static let preferenceKey = "notificationLocalizationVersion"
-    static var version: String { "delivery-localization-v2:" + (Bundle.main.preferredLocalizations.first ?? "en") }
+    static var version: String { "delivery-localization-v3:" + (Bundle.main.preferredLocalizations.first ?? "en") }
     static func owns(_ identifier: String) -> Bool {
         identifier == "studaya.daily" || identifier.hasPrefix("studaya.event.") || identifier.hasPrefix("studaya.focus.")
     }

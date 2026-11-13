@@ -644,5 +644,11 @@
   "notification.deadline.title": "Termin · %1$@",
   "notification.review.title": "Recenzja rozłożona · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld min. Aby zacząć, wystarczy pierwsze ćwiczenie."
+  "notification.session.body": "%1$@ · %2$lld min. Aby zacząć, wystarczy pierwsze ćwiczenie.",
+  "Publicité": "Reklama",
+  "Choix publicitaires": "Ustawienia reklam",
+  "Impossible d’ouvrir les choix publicitaires": "Nie można otworzyć ustawień reklam",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob wyświetla reklamy pełnoletnim użytkownikom bezpłatnej wersji zgodnie z ich ustawieniami prywatności.",
+  "Âge : non renseigné": "Wiek: nie podano",
+  "Âge : %lld ans": "Wiek: %lld lat"
 }

@@ -644,5 +644,11 @@
   "notification.deadline.title": "Deadline · %1$@",
   "notification.review.title": "Gespreide recensie · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld min. Een eerste oefening is voldoende om u op weg te helpen."
+  "notification.session.body": "%1$@ · %2$lld min. Een eerste oefening is voldoende om u op weg te helpen.",
+  "Publicité": "Advertentie",
+  "Choix publicitaires": "Advertentiekeuzes",
+  "Impossible d’ouvrir les choix publicitaires": "Advertentiekeuzes kunnen niet worden geopend",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob toont advertenties aan volwassen gratis gebruikers op basis van hun privacykeuzes.",
+  "Âge : non renseigné": "Leeftijd: niet ingevuld",
+  "Âge : %lld ans": "Leeftijd: %lld jaar"
 }

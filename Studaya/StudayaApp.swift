@@ -111,7 +111,7 @@ struct Home: View {
         .onChange(of: phase, initial: true) { _, value in
             if value == .active {
                 do { try FocusCompanion.shared.reconcile(db) } catch { message = error.localizedDescription }
-                Task { await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db); AppleCalendarSync.shared.refresh(db) }
+                Task { await SessionAdvertising.shared.preload(); await DailyReminder.sync(); await EventReminders.shared.refresh(db); await FocusCompanion.shared.sync(db); AppleCalendarSync.shared.refresh(db) }
             }
             if value == .active && sessions.contains(where: { !$0.done && !$0.pinned && $0.start.addingTimeInterval(Double($0.minutes * 60)) <= .now }) {
                 do { try Scheduler.rebuild(db) } catch { message = error.localizedDescription }
@@ -122,7 +122,7 @@ struct Home: View {
     func page<V: View>(_ name: String, _ icon: String, _ index: Int, @ViewBuilder content: () -> V) -> some View {
         NavigationStack {
             content().studyScreen()
-                .browsingAdvertising(index == 0 || index == 3)
+                .browsingAdvertising(true)
                 .navigationTitle(L10n.key(name)).navigationBarTitleDisplayMode(.inline).toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Image("Logo")

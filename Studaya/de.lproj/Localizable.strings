@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Wählen Sie einen vorhandenen Kurs oder ein Tutorial für %1$@-bezogene Veranstaltungen.";
 "Choisis un créneau futur pour une séance à faire." = "Wählen Sie einen zukünftigen Termin für eine Sitzung.";
 "Choisis une matière pour cet import." = "Wählen Sie ein Material für diesen Import.";
+"Choix publicitaires" = "Werbeoptionen";
 "Chronologie des cours et TD" = "Chronologie der Kurse und Tutorials";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Haken Sie Ihre abgeschlossenen Sitzungen ab, schauen Sie, was noch übrig ist, und passen Sie morgen in Ruhe an. Jeder kleine Schritt zählt.";
 "Code (facultatif)" = "Code (optional)";
@@ -266,6 +267,7 @@
 "Galerie" = "Fotobibliothek";
 "Garde une longueur d’avance." = "Bleiben Sie einen Schritt voraus.";
 "Get lifetime access" = "Erhalten Sie lebenslangen Zugriff";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob zeigt erwachsenen Nutzern der kostenlosen Version Werbung entsprechend ihren Datenschutzeinstellungen.";
 "Gérer mes indisponibilités" = "Meine Nichtverfügbarkeit verwalten";
 "Historique des rappels" = "Erinnerungsgeschichte";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Symbole und Codes: geplante Themen · lila Punkt: Erinnerung oder Frist";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Importieren Sie einen Fotozeitplan";
 "Importer une photo" = "Importieren Sie ein Foto";
 "Impossible de programmer les rappels : " = "Erinnerungen können nicht geplant werden: ";
+"Impossible d’ouvrir les choix publicitaires" = "Werbeoptionen können nicht geöffnet werden";
 "Indisponibilité" = "Nichtverfügbarkeit";
 "Indisponibilités" = "Nichtverfügbarkeit";
 "Jeu" = "Do";
@@ -413,6 +416,7 @@
 "Présentations" = "Präsentationen";
 "Prévisualisation · %lld sélectionné(s)" = "Vorschau · %1$lld ausgewählt";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Bereit für einen neuen Schritt? Kommen Sie zu Focus zurück, wann immer Sie wollen.";
+"Publicité" = "Werbung";
 "Puis ta pause" = "Dann ist deine Pause";
 "Purchase could not be completed." = "Der Kauf konnte nicht abgeschlossen werden.";
 "Purchase could not be verified." = "Der Kauf konnte nicht bestätigt werden.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS benötigt vollen Zugriff, um unsere Veranstaltungen zu finden, zu aktualisieren und zu löschen. Studaya verwaltet nur seine eigenen exportierten Veranstaltungen.";
 "min" = "min";
 "notification.assignment.title" = "Aufgabe · %1$@";
+"notification.coach.weekly.body" = "Sie haben in den letzten Tagen bereits %1$@ Minuten gelernt. Machen Sie eine Bestandsaufnahme und legen Sie Ihre Prioritäten für die Zukunft fest.";
 "notification.control.title" = "Test · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Frist · %1$@";
+"notification.exam.countdown.body" = "Nur noch %1$@ Tag(e) zur Vorbereitung auf diese Prüfung.";
 "notification.exam.title" = "Prüfung · %1$@";
+"notification.focus.break.body" = "Bravo für diese Überarbeitungszeit. Ihre %1$@-minütige Pause beginnt jetzt.";
 "notification.presentation.title" = "Referat · %1$@";
 "notification.review.title" = "Abstandsrezension · %1$@";
-"notification.session.body" = "%1$@ · %2$lld min. Eine erste Übung reicht aus, um loszulegen.";
+"notification.session.body" = "%1$@ · %2$@ min. Eine erste Übung reicht aus, um loszulegen.";
 "terminée(s)" = "abgeschlossen";
 "À faire" = "Zu tun";
 "À la fin de chaque matière" = "Am Ende jedes Themas";
@@ -636,6 +643,8 @@
 "À savoir" = "Zu wissen";
 "À toi de jouer !" = "Es liegt an Ihnen!";
 "À venir" = "Kommt bald";
+"Âge : %lld ans" = "Alter: %lld Jahre";
+"Âge : non renseigné" = "Alter: nicht angegeben";
 "Échéance" = "Frist";
 "Échéance · " = "Frist · ";
 "Échéances terminées" = "Fristen erfüllt";

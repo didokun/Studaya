@@ -645,7 +645,13 @@
     "notification.deadline.title": "Échéance · %1$@",
     "notification.review.title": "Rappel espacé · %1$@",
     "notification.deadline.body": "%1$@ · %2$@",
-    "notification.session.body": "%1$@ · %2$lld min. Un premier exercice suffit pour te lancer."
+    "notification.session.body": "%1$@ · %2$lld min. Un premier exercice suffit pour te lancer.",
+    "Publicité": "Publicité",
+    "Choix publicitaires": "Choix publicitaires",
+    "Impossible d’ouvrir les choix publicitaires": "Impossible d’ouvrir les choix publicitaires",
+    "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.",
+    "Âge : non renseigné": "Âge : non renseigné",
+    "Âge : %lld ans": "Âge : %lld ans"
   },
   "widgetKeys": [
     "En pause",

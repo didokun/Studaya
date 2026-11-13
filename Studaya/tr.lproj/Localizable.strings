@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "%1$@ ile ilgili etkinlikler için mevcut bir kurs veya öğreticiyi seçin.";
 "Choisis un créneau futur pour une séance à faire." = "Yapılacak bir oturum için gelecekteki bir zaman aralığı seçin.";
 "Choisis une matière pour cet import." = "Bu içe aktarma için bir malzeme seçin.";
+"Choix publicitaires" = "Reklam tercihleri";
 "Chronologie des cours et TD" = "Kursların ve öğreticilerin kronolojisi";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Tamamlanan oturumlarınızı kontrol edin, geriye kalanlara bakın ve yarın sakin bir şekilde uyum sağlayın. Her küçük adım önemlidir.";
 "Code (facultatif)" = "Kod (isteğe bağlı)";
@@ -266,6 +267,7 @@
 "Galerie" = "Fotoğraf kitaplığı";
 "Garde une longueur d’avance." = "Bir adım önde olun.";
 "Get lifetime access" = "Ömür boyu erişim elde edin";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob, ücretsiz sürümün yetişkin kullanıcılarına gizlilik tercihlerine göre reklam gösterir.";
 "Gérer mes indisponibilités" = "Müsait olmadığımı yönet";
 "Historique des rappels" = "Hatırlatma geçmişi";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Simgeler ve kodlar: planlanan konular · mor nokta: hatırlatma veya son tarih";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Fotoğraf programını içe aktarma";
 "Importer une photo" = "Fotoğrafı içe aktar";
 "Impossible de programmer les rappels : " = "Hatırlatıcılar planlanamıyor: ";
+"Impossible d’ouvrir les choix publicitaires" = "Reklam tercihleri açılamadı";
 "Indisponibilité" = "Kullanılamazlık";
 "Indisponibilités" = "Kullanılamazlık";
 "Jeu" = "Per";
@@ -413,6 +416,7 @@
 "Présentations" = "Sunumlar";
 "Prévisualisation · %lld sélectionné(s)" = "Önizleme · %1$lld seçildi";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Yeni bir adıma hazır mısınız? İstediğiniz zaman Focus'a geri dönün.";
+"Publicité" = "Reklam";
 "Puis ta pause" = "O zaman molan";
 "Purchase could not be completed." = "Satın alma tamamlanamadı.";
 "Purchase could not be verified." = "Satın alma doğrulanamadı.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS, etkinliklerimizi bulmak, güncellemek ve silmek için tam erişim gerektirir. Studaya yalnızca kendi ihraç edilen etkinliklerini yönetir.";
 "min" = "dk.";
 "notification.assignment.title" = "Ödev · %1$@";
+"notification.coach.weekly.body" = "Son birkaç günde zaten %1$@ dakika çalıştınız. Durumunuzu değerlendirin ve gelecek için önceliğinizi seçin.";
 "notification.control.title" = "Kısa sınav · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Son tarih · %1$@";
+"notification.exam.countdown.body" = "Bu sınava hazırlanmak için yalnızca %1$@ gün kaldı.";
 "notification.exam.title" = "Sınav · %1$@";
+"notification.focus.break.body" = "Bravo bu revizyon zamanı için. %1$@ dakikalık molanız şimdi başlıyor.";
 "notification.presentation.title" = "Sunum · %1$@";
 "notification.review.title" = "Aralıklı inceleme · %1$@";
-"notification.session.body" = "%1$@ · %2$lld dk. Başlamak için ilk egzersiz yeterlidir.";
+"notification.session.body" = "%1$@ · %2$@ dk. Başlamak için ilk egzersiz yeterlidir.";
 "terminée(s)" = "tamamlandı";
 "À faire" = "yapmak";
 "À la fin de chaque matière" = "Her konunun sonunda";
@@ -636,6 +643,8 @@
 "À savoir" = "bilmek";
 "À toi de jouer !" = "Bu size kalmış!";
 "À venir" = "Yakında";
+"Âge : %lld ans" = "Yaş: %lld";
+"Âge : non renseigné" = "Yaş: belirtilmedi";
 "Échéance" = "Son tarih";
 "Échéance · " = "Son tarih · ";
 "Échéances terminées" = "Son teslim tarihleri tamamlandı";

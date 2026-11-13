@@ -76,7 +76,7 @@ struct StudentNotificationOptions: Codable, Equatable {
             let minutes = logs.filter { $0.date >= weekStart && $0.date <= now }.reduce(0) { $0 + $1.minutes }
             if minutes > 0 {
                 let sunday = (0..<7).map { moment($0, hour: 16) }.first { calendar.component(.weekday, from: $0) == 1 && $0 > now }
-                if let sunday { append("coach.weekly", NotificationText("Regarde le chemin parcouru"), NotificationText("Tu as déjà étudié %lld min ces derniers jours. Fais ton bilan et choisis ta priorité pour la suite.", [.integer(minutes)]), sunday, tab: 4) }
+                if let sunday { append("coach.weekly", NotificationText("Regarde le chemin parcouru"), NotificationText("notification.coach.weekly.body", [.integer(minutes)]), sunday, tab: 4) }
             }
             // One actionable suggestion for today's fragile or completed TD, never an extra daily series.
             if let td = chapters.first(where: { $0.kind == "TD" && !$0.completed && $0.exercisesDone >= $0.exerciseCount }) {

@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "选择与 %1$@ 相关的活动的现有课程或教程。";
 "Choisis un créneau futur pour une séance à faire." = "选择一个会话的未来时段。";
 "Choisis une matière pour cet import." = "为此导入选择一种材料。";
+"Choix publicitaires" = "广告选项";
 "Chronologie des cours et TD" = "课程和教程的年表";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "检查已完成的课程，看看还剩下什么，然后冷静地调整明天。每一个小步骤都很重要。";
 "Code (facultatif)" = "代码（可选）";
@@ -266,6 +267,7 @@
 "Galerie" = "图片库";
 "Garde une longueur d’avance." = "保持领先一步。";
 "Get lifetime access" = "获得终身访问权限";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob 根据成年免费用户的隐私选择展示广告。";
 "Gérer mes indisponibilités" = "管理我的缺勤情况";
 "Historique des rappels" = "提醒历史";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "图标和代码：计划的科目 · 紫点：提醒或截止日期";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "导入照片时间表";
 "Importer une photo" = "导入照片";
 "Impossible de programmer les rappels : " = "无法安排提醒： ";
+"Impossible d’ouvrir les choix publicitaires" = "无法打开广告选项";
 "Indisponibilité" = "不可用";
 "Indisponibilités" = "不可用";
 "Jeu" = "星期四";
@@ -413,6 +416,7 @@
 "Présentations" = "演讲";
 "Prévisualisation · %lld sélectionné(s)" = "预览·已选择 %1$lld";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "准备好迈出新的一步了吗？随时返回 Focus。";
+"Publicité" = "广告";
 "Puis ta pause" = "然后你的休息时间";
 "Purchase could not be completed." = "购买无法完成。";
 "Purchase could not be verified." = "无法验证购买情况。";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS 需要完全访问权限才能查找、更新和删除我们的事件。 Studaya 仅管理自己的导出事件。";
 "min" = "分钟";
 "notification.assignment.title" = "作业 · %1$@";
+"notification.coach.weekly.body" = "过去几天您已经学习了 %1$@ 分钟。盘点一下并选择你未来的优先事项。";
 "notification.control.title" = "测验 · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "截止日期 · %1$@";
+"notification.exam.countdown.body" = "准备本次考试只剩下 %1$@ 天了。";
 "notification.exam.title" = "考试 · %1$@";
+"notification.focus.break.body" = "这次修订时间太棒了。您的 %1$@ 分钟休息时间现在开始。";
 "notification.presentation.title" = "课堂展示 · %1$@";
 "notification.review.title" = "间隔审查 · %1$@";
-"notification.session.body" = "%1$@ · %2$lld 分钟第一个练习就足以让您入门。";
+"notification.session.body" = "%1$@ · %2$@ 分钟第一个练习就足以让您入门。";
 "terminée(s)" = "已完成";
 "À faire" = "要做的事";
 "À la fin de chaque matière" = "在每个科目的最后";
@@ -636,6 +643,8 @@
 "À savoir" = "要知道";
 "À toi de jouer !" = "这取决于你！";
 "À venir" = "即将推出";
+"Âge : %lld ans" = "年龄：%lld 岁";
+"Âge : non renseigné" = "年龄：未填写";
 "Échéance" = "截止日期";
 "Échéance · " = "截止日期· ";
 "Échéances terminées" = "截止日期已完成";

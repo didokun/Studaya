@@ -132,7 +132,7 @@ struct SubjectPage: View {
                 ForEach(units.filter(\.completed)) { chapter in unitRow(chapter) }
                 ForEach(deadlines.filter { $0.subjectID == subject.id && $0.done }) { DeadlineRow(item: $0) }
             }
-        }.studyScreen().navigationTitle(subject.displayCode)
+        }.studyScreen().browsingAdvertising(true).navigationTitle(subject.displayCode)
         .sheet(isPresented: $edit) { RevisionEditor(kind: .subject(subject)) }
         .sheet(isPresented: $importPhoto) { PhotoPlanningGate(subject: subject) }
         .sheet(isPresented: $add) { RevisionEditor(kind: .chapter(subject.id, nil)) }
@@ -189,7 +189,7 @@ struct ChapterPage: View {
                     }
                 }
                 Button(chapter.completed ? String(localized: "Remettre en cours") : String(localized: "Valider et classer comme terminé")) {
-                    do { try StudyActions.complete(chapter, db: db) } catch { db.rollback(); message = error.localizedDescription }
+                    do { try StudyActions.complete(chapter, db: db); if chapter.completed { SessionAdvertising.shared.showAtCompletion() } } catch { db.rollback(); message = error.localizedDescription }
                 }.disabled(!chapter.completed && chapter.kind == "TD" && (chapter.exercisesDone < chapter.exerciseCount || !chapter.synthesisDone))
                 Button(String(localized: "Travailler ce cours ou TD"), systemImage: "timer") { focus = true }.disabled(chapter.completed)
                 Button(String(localized: "Modifier le cours ou TD")) { edit = true }
@@ -210,7 +210,7 @@ struct ChapterPage: View {
                 Button(String(localized: "Créer une flashcard"), systemImage: "plus") { add = true }
             }
             Button(String(localized: "Réviser les cartes")) { reviewing = true }.disabled(cards.isEmpty)
-        }.studyScreen().navigationTitle(chapter.name)
+        }.studyScreen().browsingAdvertising(true).navigationTitle(chapter.name)
         .alert(String(localized: "Planning"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") {} } message: { Text(message ?? "") }
         .sheet(isPresented: $add) { RevisionEditor(kind: .card(chapter.id)) }
         .sheet(isPresented: $edit) { RevisionEditor(kind: .chapter(chapter.subjectID, chapter)) }
@@ -314,6 +314,13 @@ struct RevisionEditor: View {
             }.studyScreen().navigationTitle(title).toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button(String(localized: "Annuler")) { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) { Button(String(localized: "Enregistrer")) { save() }.disabled(!valid || saved) }
+            }
+        }.onDisappear {
+            guard saved else { return }
+            switch kind {
+            case .subject(let existing): if existing == nil { SessionAdvertising.shared.showAtCompletion() }
+            case .chapter(_, let existing): if existing == nil { SessionAdvertising.shared.showAtCompletion() }
+            case .card: break
             }
         }.onAppear {
             switch kind {

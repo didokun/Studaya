@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Kies een bestaande cursus of tutorial voor %1$@ gerelateerde evenementen.";
 "Choisis un créneau futur pour une séance à faire." = "Kies een toekomstig tijdstip voor een sessie.";
 "Choisis une matière pour cet import." = "Kies een materiaal voor deze import.";
+"Choix publicitaires" = "Advertentiekeuzes";
 "Chronologie des cours et TD" = "Chronologie van cursussen en tutorials";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Vink je voltooide sessies af, kijk wat er nog over is en pas morgen rustig aan. Elke kleine stap telt.";
 "Code (facultatif)" = "Code (optioneel)";
@@ -266,6 +267,7 @@
 "Galerie" = "Fotobibliotheek";
 "Garde une longueur d’avance." = "Blijf een stap voor.";
 "Get lifetime access" = "Krijg levenslange toegang";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob toont advertenties aan volwassen gratis gebruikers op basis van hun privacykeuzes.";
 "Gérer mes indisponibilités" = "Beheer mijn onbeschikbaarheid";
 "Historique des rappels" = "Herinneringsgeschiedenis";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Pictogrammen en codes: geplande onderwerpen · paarse stip: herinnering of deadline";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Importeer een fotoschema";
 "Importer une photo" = "Importeer een foto";
 "Impossible de programmer les rappels : " = "Kan herinneringen niet plannen: ";
+"Impossible d’ouvrir les choix publicitaires" = "Advertentiekeuzes kunnen niet worden geopend";
 "Indisponibilité" = "Onbeschikbaarheid";
 "Indisponibilités" = "Onbeschikbaarheid";
 "Jeu" = "Do";
@@ -413,6 +416,7 @@
 "Présentations" = "Presentaties";
 "Prévisualisation · %lld sélectionné(s)" = "Voorbeeld · %1$lld geselecteerd";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Klaar voor een nieuwe stap? Kom terug naar Focus wanneer je maar wilt.";
+"Publicité" = "Advertentie";
 "Puis ta pause" = "Dan je pauze";
 "Purchase could not be completed." = "Aankoop kon niet worden voltooid.";
 "Purchase could not be verified." = "Aankoop kon niet worden geverifieerd.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS vereist volledige toegang om onze evenementen te vinden, bij te werken en te verwijderen. Studaya beheert alleen haar eigen geëxporteerde evenementen.";
 "min" = "min";
 "notification.assignment.title" = "Opdracht · %1$@";
+"notification.coach.weekly.body" = "Je hebt de afgelopen dagen al %1$@ min gestudeerd. Maak de balans op en kies uw prioriteit voor de toekomst.";
 "notification.control.title" = "Toets · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Deadline · %1$@";
+"notification.exam.countdown.body" = "Nog maar %1$@ dag(en) om je voor te bereiden op dit examen.";
 "notification.exam.title" = "Examen · %1$@";
+"notification.focus.break.body" = "Bravo voor deze herzieningstijd. Je pauze van %1$@ minuten begint nu.";
 "notification.presentation.title" = "Presentatie · %1$@";
 "notification.review.title" = "Gespreide recensie · %1$@";
-"notification.session.body" = "%1$@ · %2$lld min. Een eerste oefening is voldoende om u op weg te helpen.";
+"notification.session.body" = "%1$@ · %2$@ min. Een eerste oefening is voldoende om u op weg te helpen.";
 "terminée(s)" = "voltooid";
 "À faire" = "Te doen";
 "À la fin de chaque matière" = "Aan het einde van elk onderwerp";
@@ -636,6 +643,8 @@
 "À savoir" = "Om te weten";
 "À toi de jouer !" = "Het is aan jou!";
 "À venir" = "Binnenkort beschikbaar";
+"Âge : %lld ans" = "Leeftijd: %lld jaar";
+"Âge : non renseigné" = "Leeftijd: niet ingevuld";
 "Échéance" = "Deadline";
 "Échéance · " = "Deadline · ";
 "Échéances terminées" = "Deadlines voltooid";

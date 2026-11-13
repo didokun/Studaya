@@ -644,5 +644,11 @@
   "notification.deadline.title": "Prazo · %1$@",
   "notification.review.title": "Revisão espaçada · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld min. Um primeiro exercício é suficiente para você começar."
+  "notification.session.body": "%1$@ · %2$lld min. Um primeiro exercício é suficiente para você começar.",
+  "Publicité": "Publicidade",
+  "Choix publicitaires": "Opções de publicidade",
+  "Impossible d’ouvrir les choix publicitaires": "Não foi possível abrir as opções de publicidade",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "O Google AdMob exibe anúncios para usuários gratuitos adultos de acordo com suas opções de privacidade.",
+  "Âge : non renseigné": "Idade: não informada",
+  "Âge : %lld ans": "Idade: %lld anos"
 }

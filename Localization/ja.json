@@ -644,5 +644,11 @@
   "notification.deadline.title": "締め切り · %1$@",
   "notification.review.title": "間隔をあけたレビュー · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld 分始めるには、最初の演習で十分です。"
+  "notification.session.body": "%1$@ · %2$lld 分始めるには、最初の演習で十分です。",
+  "Publicité": "広告",
+  "Choix publicitaires": "広告の設定",
+  "Impossible d’ouvrir les choix publicitaires": "広告の設定を開けません",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob は、無料版を利用する成人ユーザーにプライバシー設定に応じた広告を表示します。",
+  "Âge : non renseigné": "年齢：未設定",
+  "Âge : %lld ans": "年齢：%lld 歳"
 }

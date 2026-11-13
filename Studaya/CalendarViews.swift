@@ -3,6 +3,8 @@ import SwiftData
 import Charts
 
 struct SessionRow: View {
+    @Environment(\.modelContext) private var db
+    @State private var saveError: String?
     @Bindable var session: Session
     @Query private var subjects: [Subject]
     @Query private var chapters: [Chapter]
@@ -12,7 +14,10 @@ struct SessionRow: View {
     var body: some View {
         Button {
             withAnimation(reduceMotion ? nil : .spring(duration: 0.3)) { session.done.toggle() }
-            if session.done { SessionAdvertising.shared.showAtCompletion() }
+            do {
+                try db.save()
+                if session.done { SessionAdvertising.shared.showAtCompletion() }
+            } catch { db.rollback(); saveError = error.localizedDescription }
         } label: {
             HStack(spacing: 14) {
                 Image(systemName: session.done ? "checkmark.circle.fill" : "circle")
@@ -24,6 +29,7 @@ struct SessionRow: View {
                 Spacer(minLength: 0)
             }.padding(.vertical, 5).frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
         }.buttonStyle(.plain).accessibilityValue(session.done ? String(localized: "Terminée") : String(localized: "À faire"))
+        .alert(String(localized: "Enregistrement"), isPresented: Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })) { Button("OK") {} } message: { Text(saveError ?? "") }
         .contextMenu {
             if !session.done {
                 Button(String(localized: "Travailler cette séance"), systemImage: "timer") { focus = true }
@@ -105,7 +111,10 @@ struct Today: View {
                         StudyEmpty(title: String(localized: "Une journée qui respire"), detail: String(localized: "Ton prochain créneau apparaîtra ici. Tu peux aussi lancer un Focus quand tu veux."), symbol: "sun.horizon.fill")
                     } else {
                         VStack(spacing: 16) {
-                            ForEach(today) { session in SessionRow(session: session) }
+                            ForEach(Array(today.enumerated()), id: \.element.id) { index, session in
+                                SessionRow(session: session)
+                                if index == min(1, today.count - 1) { BrowsingBanner() }
+                            }
                         }.studyCard()
                     }
                 }
@@ -294,7 +303,10 @@ struct Planner: View {
                 }
                 if dailyReminder { Label(String(localized: "Rappel quotidien de révision"), systemImage: "bell") }
                 if day.isEmpty { Text(String(localized: "Aucune séance prévue.")).foregroundStyle(.secondary) }
-                ForEach(day) { SessionRow(session: $0).listRowBackground(CalendarStudyKind.revision.color.opacity(0.05)) }
+                ForEach(Array(day.enumerated()), id: \.element.id) { index, session in
+                    SessionRow(session: session).listRowBackground(CalendarStudyKind.revision.color.opacity(0.05))
+                    if index == min(1, day.count - 1) { BrowsingBanner().listRowSeparator(.hidden) }
+                }
             }
             Button(String(localized: "Replanifier les séances à faire"), systemImage: "arrow.clockwise") {
                 do {

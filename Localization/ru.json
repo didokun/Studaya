@@ -644,5 +644,11 @@
   "notification.deadline.title": "Крайний срок · %1$@",
   "notification.review.title": "Разнесенный обзор · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld мин. Для начала достаточно первого упражнения."
+  "notification.session.body": "%1$@ · %2$lld мин. Для начала достаточно первого упражнения.",
+  "Publicité": "Реклама",
+  "Choix publicitaires": "Настройки рекламы",
+  "Impossible d’ouvrir les choix publicitaires": "Не удалось открыть настройки рекламы",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob показывает рекламу совершеннолетним пользователям бесплатной версии с учётом их настроек конфиденциальности.",
+  "Âge : non renseigné": "Возраст: не указан",
+  "Âge : %lld ans": "Возраст: %lld лет"
 }

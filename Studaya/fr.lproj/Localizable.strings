@@ -148,6 +148,7 @@
 "Choisis un cours ou TD existant pour les événements liés de %@." = "Choisis un cours ou TD existant pour les événements liés de %@.";
 "Choisis un créneau futur pour une séance à faire." = "Choisis un créneau futur pour une séance à faire.";
 "Choisis une matière pour cet import." = "Choisis une matière pour cet import.";
+"Choix publicitaires" = "Choix publicitaires";
 "Chronologie des cours et TD" = "Chronologie des cours et TD";
 "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte." = "Coche tes séances réalisées, regarde ce qui reste et ajuste tranquillement demain. Chaque petit pas compte.";
 "Code (facultatif)" = "Code (facultatif)";
@@ -266,6 +267,7 @@
 "Galerie" = "Galerie";
 "Garde une longueur d’avance." = "Garde une longueur d’avance.";
 "Get lifetime access" = "Acheter l’accès à vie";
+"Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité." = "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.";
 "Gérer mes indisponibilités" = "Gérer mes indisponibilités";
 "Historique des rappels" = "Historique des rappels";
 "Icônes et codes : matières prévues · point violet : rappel ou échéance" = "Icônes et codes : matières prévues · point violet : rappel ou échéance";
@@ -277,6 +279,7 @@
 "Importer un planning en photo" = "Importer un planning en photo";
 "Importer une photo" = "Importer une photo";
 "Impossible de programmer les rappels : " = "Impossible de programmer les rappels : ";
+"Impossible d’ouvrir les choix publicitaires" = "Impossible d’ouvrir les choix publicitaires";
 "Indisponibilité" = "Indisponibilité";
 "Indisponibilités" = "Indisponibilités";
 "Jeu" = "Jeu";
@@ -413,6 +416,7 @@
 "Présentations" = "Présentations";
 "Prévisualisation · %lld sélectionné(s)" = "Prévisualisation · %lld sélectionné(s)";
 "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux." = "Prêt pour une nouvelle étape ? Reviens dans Focus quand tu veux.";
+"Publicité" = "Publicité";
 "Puis ta pause" = "Puis ta pause";
 "Purchase could not be completed." = "Impossible de finaliser cet achat.";
 "Purchase could not be verified." = "Impossible de vérifier cet achat.";
@@ -617,13 +621,16 @@
 "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés." = "iOS demande un accès complet pour retrouver, mettre à jour et supprimer nos événements. Studaya gère uniquement ses propres événements exportés.";
 "min" = "min";
 "notification.assignment.title" = "Rendu · %1$@";
+"notification.coach.weekly.body" = "Tu as déjà étudié %@ min ces derniers jours. Fais ton bilan et choisis ta priorité pour la suite.";
 "notification.control.title" = "Contrôle · %1$@";
 "notification.deadline.body" = "%1$@ · %2$@";
 "notification.deadline.title" = "Échéance · %1$@";
+"notification.exam.countdown.body" = "Plus que %@ jour(s) pour préparer cet examen.";
 "notification.exam.title" = "Examen · %1$@";
+"notification.focus.break.body" = "Bravo pour ce temps de révision. Ta pause de %@ min commence maintenant.";
 "notification.presentation.title" = "Présentation · %1$@";
 "notification.review.title" = "Rappel espacé · %1$@";
-"notification.session.body" = "%1$@ · %2$lld min. Un premier exercice suffit pour te lancer.";
+"notification.session.body" = "%1$@ · %2$@ min. Un premier exercice suffit pour te lancer.";
 "terminée(s)" = "terminée(s)";
 "À faire" = "À faire";
 "À la fin de chaque matière" = "À la fin de chaque matière";
@@ -636,6 +643,8 @@
 "À savoir" = "À savoir";
 "À toi de jouer !" = "À toi de jouer !";
 "À venir" = "À venir";
+"Âge : %lld ans" = "Âge : %lld ans";
+"Âge : non renseigné" = "Âge : non renseigné";
 "Échéance" = "Échéance";
 "Échéance · " = "Échéance · ";
 "Échéances terminées" = "Échéances terminées";

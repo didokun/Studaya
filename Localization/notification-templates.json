@@ -1,10 +1,35 @@
 {
-  "notification.exam.title": {"kind": "Examen"},
-  "notification.control.title": {"kind": "Contrôle"},
-  "notification.presentation.title": {"kind": "Présentation"},
-  "notification.assignment.title": {"kind": "Rendu"},
-  "notification.deadline.title": {"kind": "Échéance"},
-  "notification.review.title": {"kind": "Rappel espacé"},
-  "notification.deadline.body": {"literal": "%1$@ · %2$@"},
-  "notification.session.body": {"fragment": " · %lld min. Un premier exercice suffit pour te lancer."}
+  "notification.exam.title": {
+    "kind": "Examen"
+  },
+  "notification.control.title": {
+    "kind": "Contrôle"
+  },
+  "notification.presentation.title": {
+    "kind": "Présentation"
+  },
+  "notification.assignment.title": {
+    "kind": "Rendu"
+  },
+  "notification.deadline.title": {
+    "kind": "Échéance"
+  },
+  "notification.review.title": {
+    "kind": "Rappel espacé"
+  },
+  "notification.deadline.body": {
+    "literal": "%1$@ · %2$@"
+  },
+  "notification.session.body": {
+    "fragment": " · %lld min. Un premier exercice suffit pour te lancer."
+  },
+  "notification.exam.countdown.body": {
+    "template": "Plus que %lld jour(s) pour préparer cet examen."
+  },
+  "notification.focus.break.body": {
+    "template": "Bravo pour ce temps de révision. Ta pause de %lld min commence maintenant."
+  },
+  "notification.coach.weekly.body": {
+    "template": "Tu as déjà étudié %lld min ces derniers jours. Fais ton bilan et choisis ta priorité pour la suite."
+  }
 }

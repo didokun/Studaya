@@ -128,7 +128,8 @@ def notification_templates(values):
  for key,definition in json.loads(path.read_text()).items():
   if 'kind' in definition:values[key]=values[definition['kind']]+' · %1$@'
   elif 'literal' in definition:values[key]=definition['literal']
-  else:values[key]='%1$@'+re.sub(r'%(?:1\$)?lld', '%2$lld',values[definition['fragment']])
+  elif 'template' in definition:values[key]=re.sub(r'%(\d+\$)?lld', lambda m:'%'+(m[1] or '')+'@', values[definition['template']])
+  else:values[key]='%1$@'+re.sub(r'%(?:1\$)?lld', '%2$@',values[definition['fragment']])
 
 def emit():
  data=json.loads((DATA/'source.json').read_text());source=data['strings']

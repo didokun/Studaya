@@ -644,5 +644,11 @@
   "notification.deadline.title": "Дедлайн · %1$@",
   "notification.review.title": "Рознесений огляд · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld хв. Першої вправи достатньо, щоб почати."
+  "notification.session.body": "%1$@ · %2$lld хв. Першої вправи достатньо, щоб почати.",
+  "Publicité": "Реклама",
+  "Choix publicitaires": "Налаштування реклами",
+  "Impossible d’ouvrir les choix publicitaires": "Не вдалося відкрити налаштування реклами",
+  "Google AdMob diffuse des publicités pour les utilisateurs gratuits majeurs, selon leurs choix de confidentialité.": "Google AdMob показує рекламу повнолітнім користувачам безкоштовної версії відповідно до їхніх налаштувань конфіденційності.",
+  "Âge : non renseigné": "Вік: не вказано",
+  "Âge : %lld ans": "Вік: %lld років"
 }
