@@ -177,7 +177,7 @@
   "S2": "S2",
   "Studaya": "Studaya",
   "Studaya Premium": "Studaya Premium",
-  "\nDate d’examen ; horaire non renseigné dans Studaya.": "\nExamination date; timetable not specified in Studaya.",
+  "\nDate d’examen ; horaire non renseigné dans Studaya.": "\nExam date; time not set in Studaya.",
   "\nError: %@ (%lld)": "\nError: %1$@ (%2$lld)",
   "\nResult: %lld/%lld products\nMissing: ": "\nResult: %1$lld/%2$lld products\nMissing: ",
   "\nUnderlying: %@ (%lld)": "\nUnderlying: %1$@ (%2$lld)",
@@ -644,5 +644,9 @@
   "notification.deadline.title": "Deadline · %1$@",
   "notification.review.title": "Spaced review · %1$@",
   "notification.deadline.body": "%1$@ · %2$@",
-  "notification.session.body": "%1$@ · %2$lld min. A first exercise is enough to get you started."
+  "notification.session.body": "%1$@ · %2$lld min. A first exercise is enough to get you started.",
+  "Choix publicitaires": "Advertising choices",
+  "Impossible d’ouvrir les choix publicitaires": "Couldn’t open advertising choices",
+  "Publicité": "Advertisement",
+  "Âge : non renseigné": "Age: not set"
 }

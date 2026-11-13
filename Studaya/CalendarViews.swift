@@ -10,7 +10,10 @@ struct SessionRow: View {
     @State private var reschedule = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        Button { withAnimation(reduceMotion ? nil : .spring(duration: 0.3)) { session.done.toggle() } } label: {
+        Button {
+            withAnimation(reduceMotion ? nil : .spring(duration: 0.3)) { session.done.toggle() }
+            if session.done { SessionAdvertising.shared.showAtCompletion() }
+        } label: {
             HStack(spacing: 14) {
                 Image(systemName: session.done ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 25, weight: .medium)).foregroundStyle(session.done ? StudyDesign.mint : StudyDesign.accent.opacity(0.45))

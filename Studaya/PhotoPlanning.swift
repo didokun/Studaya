@@ -77,8 +77,28 @@ enum PlanningPhotoOCR {
     static func requirePremium(_ premium: Bool?) throws {
         // AI photo planning is free for now (no Premium subscription required)
     }
+    /// Dates en anglais avec année explicite, par ex. « November 12, 2026 » ou « Thu, Nov 12 2026 14:30 ».
+    /// L’année n’est jamais devinée ; le format américain MM/JJ/AAAA reste refusé (ambigu).
+    static func parseEnglishDate(_ raw: String) -> Date? {
+        let pattern = #"^(?:[A-Za-z]+,?\s+)?([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)) else { return nil }
+        func group(_ index: Int) -> String? {
+            guard let range = Range(match.range(at: index), in: raw) else { return nil }
+            return String(raw[range])
+        }
+        let months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+        guard let name = group(1), let monthIndex = months.firstIndex(of: String(name.lowercased().prefix(3))),
+              let dayText = group(2), let day = Int(dayText), let year = group(3) else { return nil }
+        var iso = String(format: "%@-%02d-%02d", year, monthIndex + 1, day)
+        if let hour = group(4), let minute = group(5) {
+            iso += String(format: "T%02d:%02d", Int(hour) ?? 0, Int(minute) ?? 0)
+        }
+        return parseDate(iso)
+    }
     static func parseDate(_ raw: String?) -> Date? {
         guard let raw else { return nil }
+        if let english = parseEnglishDate(raw) { return english }
         let pattern = #"^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
               let match = regex.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)) else { return nil }

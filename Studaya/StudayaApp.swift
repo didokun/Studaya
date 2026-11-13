@@ -88,7 +88,7 @@ struct Home: View {
             message = StudyPreferences.current.string(forKey: "dataChangeReason")
         }
         .tint(StudyDesign.accent).preferredColorScheme(.light)
-        .task { await Membership.shared.refresh() }
+        .task { await Membership.shared.refresh(); await SessionAdvertising.shared.preload() }
         .task { await Membership.shared.observe() }
         .sheet(isPresented: $settings) { StudySettings() }
         .fullScreenCover(isPresented: Binding(get: { profiles.isEmpty && !settings }, set: { _ in })) {
@@ -121,7 +121,9 @@ struct Home: View {
     }
     func page<V: View>(_ name: String, _ icon: String, _ index: Int, @ViewBuilder content: () -> V) -> some View {
         NavigationStack {
-            content().studyScreen().navigationTitle(L10n.key(name)).navigationBarTitleDisplayMode(.inline).toolbar {
+            content().studyScreen()
+                .browsingAdvertising(index == 0 || index == 3)
+                .navigationTitle(L10n.key(name)).navigationBarTitleDisplayMode(.inline).toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Image("Logo")
                         .resizable()

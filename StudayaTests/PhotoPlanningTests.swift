@@ -61,6 +61,17 @@ import StoreKitTest
         XCTAssertNoThrow(try PhotoPlanning.requirePremium(false))
         XCTAssertNoThrow(try PhotoPlanning.requirePremium(true))
     }
+    func testEnglishDatesWithExplicitYear() {
+        let calendar = Calendar.current
+        let parsed = PhotoPlanning.parseDate("November 12, 2026")
+        XCTAssertNotNil(parsed)
+        XCTAssertEqual(calendar.component(.month, from: parsed!), 11)
+        XCTAssertEqual(calendar.component(.day, from: parsed!), 12)
+        XCTAssertNotNil(PhotoPlanning.parseDate("Thu, Nov 12 2026 14:30"))
+        XCTAssertNil(PhotoPlanning.parseDate("Feb 30, 2026"))
+        XCTAssertNil(PhotoPlanning.parseDate("November 12"))
+        XCTAssertNil(PhotoPlanning.parseDate("11/12/2026"))
+    }
     func testStrictDatesNeverGuessYearOrNormalizeInvalidDates() {
         XCTAssertNil(PhotoPlanning.parseDate(nil))
         XCTAssertNil(PhotoPlanning.parseDate("mardi 12 novembre"))

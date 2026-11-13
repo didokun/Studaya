@@ -643,3 +643,11 @@
 "Établissement" = "Establishment";
 "Études et calendrier" = "Studies and schedule";
 "à préciser" = "not set";
+"Âge : non renseigné" = "Age: not set";
+"Publicité" = "Advertisement";
+"Choix publicitaires" = "Advertising choices";
+"Impossible d’ouvrir les choix publicitaires" = "Couldn’t open advertising choices";
+"Âge : %lld ans" = "Age: %lld years";
+"%lld matières · %lld cours/TD · %lld séances. Sauvegarde du %@" = "%lld subjects · %lld lectures/tutorials · %lld sessions. Saved on %@";
+"\\nError: %@ (%lld)" = "\nError: %@ (%lld)";
+"\\nUnderlying: %@ (%lld)" = "\nUnderlying: %@ (%lld)";

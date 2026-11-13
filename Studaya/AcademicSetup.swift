@@ -7,6 +7,7 @@ struct AcademicSetup: View {
     @Environment(\.modelContext) private var db
     @Environment(\.dismiss) private var dismiss
     @AppStorage("studentName") private var savedName = ""
+    @AppStorage(AdPolicy.ageKey) private var age = 0
     @State private var name = ""
     @State private var level = "Licence"
     @State private var program = ""
@@ -24,7 +25,7 @@ struct AcademicSetup: View {
     private let symbols = ["book.pages","graduationcap","calendar","clock","bell.badge","checkmark.seal"]
     private var valid: Bool {
         switch step {
-        case 1: return !program.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case 1: return !program.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && age >= 13
         case 2: return Calendar.current.date(byAdding: .year, value: years, to: start)! > Date.now
         case 3: return !rhythm.weekdays.isEmpty
         default: return true
@@ -85,6 +86,8 @@ struct AcademicSetup: View {
             entry(String(localized: "Prénom (facultatif)"), $name)
             Picker(String(localized: "Niveau d’études"), selection: $level) { ForEach(["Lycée","BTS / BUT","Licence","Master","Doctorat","Autre"], id: \.self) { Text(L10n.key($0)) } }.studyMenu(String(localized: "Niveau d’études"), value: L10n.key(level))
             entry(String(localized: "Formation"), $program)
+            Stepper(age == 0 ? String(localized: "Âge : non renseigné") : String(localized: "Âge : \(age) ans"), value: $age, in: 0...99)
+                .accessibilityIdentifier("onboarding.age")
             entry(String(localized: "Université ou établissement (facultatif)"), $school)
         case 2:
             DatePicker(String(localized: "Début du planning"), selection: $start, in: Calendar.current.date(byAdding: .year, value: -2, to: .now)!..., displayedComponents: .date)

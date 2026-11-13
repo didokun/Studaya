@@ -50,6 +50,7 @@ struct StudySettings: View {
                         Form {
                             Text(String(localized: "Ton profil et tes révisions sont conservés sur cet appareil. Les achats sont gérés par Apple."))
                             Link(String(localized: "Conditions d’utilisation Apple"), destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                            AdvertisingPrivacyOptions()
                             Button(String(localized: "Effacer les données de Studaya"), role: .destructive) { confirm = true }
                         }
                     }
